@@ -1,0 +1,38 @@
+<svg width="100%" height="100%" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="grad1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f7d86f" />
+      <stop offset="100%" stop-color="#d97e2a" />
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ffd966" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#grad1)" rx="40" ry="40"/>
+
+  <g stroke="#fff4a3" stroke-width="3" fill="none" opacity="0.2" filter="url(#glow)">
+    <!-- Astrology Circles -->
+    <circle cx="150" cy="120" r="80"/>
+    <circle cx="620" cy="450" r="110"/>
+    <circle cx="450" cy="200" r="60"/>
+    <circle cx="350" cy="380" r="50"/>
+    <circle cx="700" cy="180" r="37"/>
+
+    <!-- Stars & Astrology Icons -->
+    <circle cx="400" cy="100" r="8" fill="#fff4a3"/>
+    <circle cx="680" cy="320" r="6" fill="#fff4a3"/>
+    <circle cx="200" cy="550" r="5" fill="#fff4a3"/>
+    <circle cx="510" cy="530" r="4" fill="#fff4a3"/>
+
+    <!-- Astrology symbols representation -->
+    <path d="M100 100 L160 60 L220 100 L160 140 Z" />
+    <path d="M390 350 q20 30 40 0 t40 0" />
+    <path d="M540 450 l20 35 l-40 0 z" />
+    <path d="M600 230 a30 30 0 1 1 -60 0 a30 30 0 1 1 60 0" />
+
+    <!-- Curves and lines -->
+    <path d="M150 300 Q250 250 350 300" />
+    <path d="M600 100 Q700 50 750 100" />
+  </g>
+</svg>

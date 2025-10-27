@@ -1,0 +1,26 @@
+<svg width="100%" height="100%" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="60%" cy="40%" r="100%" fx="60%" fy="40%">
+      <stop offset="0%" stop-color="#ffe48a" />
+      <stop offset="100%" stop-color="#d97e2a" />
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow stdDeviation="10" flood-color="#fff886" flood-opacity="0.7"/>
+    </filter>
+  </defs>
+  <rect width="1000" height="700" fill="url(#bg)"/>
+  <!-- Decorative rings -->
+  <circle cx="800" cy="140" r="120" stroke="#fff7b4" stroke-width="12" fill="none" opacity="0.23"/>
+  <circle cx="270" cy="580" r="90" stroke="#fff7b4" stroke-width="8" fill="none" opacity="0.15"/>
+  <circle cx="850" cy="510" r="50" stroke="#fff7b4" stroke-width="5" fill="none" opacity="0.16"/>
+  <!-- Astrological icons and geometric design -->
+  <text x="170" y="170" font-size="68" opacity="0.14" fill="#fff" font-family="serif">&#9800;</text>
+  <text x="770" y="400" font-size="78" opacity="0.13" fill="#fff" font-family="serif">&#9802;</text>
+  <text x="200" y="610" font-size="50" opacity="0.10" fill="#fff" font-family="serif">&#9792;</text>
+  <path d="M 60 600 Q 350 500 160 150" stroke="#fff" stroke-width="6" fill="none" opacity="0.07"/>
+  <path d="M 700 700 Q 820 600 680 260" stroke="#fff" stroke-width="7" fill="none" opacity="0.07"/>
+  <!-- Stars -->
+  <circle cx="922" cy="84" r="6" fill="#fff7b4" filter="url(#glow)" opacity="0.7"/>
+  <circle cx="360" cy="320" r="4.5" fill="#fff7b4" filter="url(#glow)" opacity="0.4"/>
+  <circle cx="470" cy="630" r="7" fill="#fff7b4" filter="url(#glow)" opacity="0.6"/>
+</svg>

@@ -1,0 +1,149 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #676279a2;
+  min-height: 100vh;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  position: relative;
+  top: -50%;
+  transform: translateY(0);
+  padding: 0;
+  border-radius: 5px;
+  max-height: 95vh;
+  min-width: 95vw;
+  max-width: 95vw;
+  background: white;
+  overflow-y: auto;
+  transition: top 0.7s ease-in-out, opacity 0.7s ease-in-out;
+  opacity: 0;
+}
+
+@media (min-width: 950px) {
+  .modal-content {
+    min-width: 900px;
+    max-width: 900px;
+  }
+
+  .modal-content::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb {
+    background-color: #EF4444;
+    border-radius: 3px;
+  }
+
+  .modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+}
+
+.ReactModal__Body--open {
+  overflow: hidden;
+}
+
+.ReactModal__Overlay {
+  opacity: 0;
+  transition: opacity 700ms ease-in-out;
+}
+
+.ReactModal__Overlay--after-open {
+  opacity: 1;
+}
+
+.ReactModal__Overlay--after-open .modal-content {
+  top: 0;
+  opacity: 1;
+}
+
+.ReactModal__Overlay--before-close .modal-content {
+  top: -50%;
+  opacity: 0;
+}
+
+/* Small Modal */
+.modal-overlay-small {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.856);
+  min-height: 100vh;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content-small {
+  position: relative;
+  top: -50%;
+  transform: translateY(0);
+  padding: 0;
+  border-radius: 5px;
+  max-height: 80vh;
+  max-width: 95vw;
+  min-width: 40vw;
+  background: white;
+  overflow-y: auto;
+  transition: top 0.7s ease-in-out, opacity 0.7s ease-in-out;
+  opacity: 0;
+}
+
+@media (min-width: 640px) {
+  .modal-content-small {
+    max-width: 400px;
+  }
+
+  .modal-content-small::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .modal-content-small::-webkit-scrollbar-thumb {
+    background-color: #EF4444;
+    border-radius: 3px;
+  }
+
+  .modal-content-small::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+}
+
+@media (max-width: 500px) {
+  .modal-content-small {
+    min-width: 95vw;
+  }
+}
+
+.ReactModal__Body--open {
+  overflow: hidden;
+}
+
+.ReactModal__Overlay {
+  opacity: 0;
+  transition: opacity 700ms ease-in-out;
+}
+
+.ReactModal__Overlay--after-open {
+  opacity: 1;
+}
+
+.ReactModal__Overlay--after-open .modal-content-small {
+  top: 0;
+  opacity: 1;
+}
+
+.ReactModal__Overlay--before-close .modal-content-small {
+  top: -50%;
+  opacity: 0;
+}

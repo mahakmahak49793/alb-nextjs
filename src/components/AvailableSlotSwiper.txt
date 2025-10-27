@@ -1,0 +1,92 @@
+// components/AvailableSlotSwiper.tsx
+import moment from 'moment';
+import { useEffect, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+
+import { toaster } from '@/utils/services/toast-service';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import * as AstrologerActions from '@/redux/actions/astrologerActions';
+
+// TypeScript interfaces
+interface AvailableSlotSwiperProps {
+  data: string[];
+  duration_minutes: string;
+  astrologerId: string;
+}
+
+const AvailableSlotSwiper: React.FC<AvailableSlotSwiperProps> = ({ 
+  data, 
+  duration_minutes, 
+  astrologerId 
+}) => {
+  const dispatch = useAppDispatch();
+  const { astrologerSlotTimeByDateData } = useAppSelector(state => state?.astrologerReducer);
+  const [slidesPerView, setSlidesPerView] = useState<number>(3);
+
+  useEffect(() => {
+    const handleResize = (): void => {
+      const width = window.innerWidth;
+      if (width <= 600) setSlidesPerView(5);
+      else if (width <= 770) setSlidesPerView(8);
+      else if (width <= 900) setSlidesPerView(10);
+      else if (width <= 1000) setSlidesPerView(5);
+      else if (width <= 1200) setSlidesPerView(6);
+      else setSlidesPerView(7);
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleDateClick = (date: string): void => {
+    if (duration_minutes) {
+      dispatch(AstrologerActions.getAstrologerSlotTimeByDate({ astrologerId, date }));
+    } else {
+      toaster.info({ text: 'Please first select session duration' });
+    }
+  };
+
+  return (
+    <Swiper
+      slidesPerView={slidesPerView}
+      grid={{ rows: 1 }}
+      spaceBetween={5}
+      autoplay={{ delay: 10000, disableOnInteraction: false }}
+      keyboard={{ enabled: true }}
+      className="mySwiper slot-swiper"
+      pagination={false}
+      navigation={true}
+      modules={[Autoplay, Pagination, Navigation]}
+    >
+      {data?.map((date, idx) => (
+        <SwiperSlide key={idx}>
+          <div className='flex justify-center items-center cursor-pointer py-1.5'>
+            <button
+              onClick={() => handleDateClick(date)}
+              className={`flex flex-col items-center py-1 w-16 rounded-md border transition text-xs ${
+                date === astrologerSlotTimeByDateData?.SlotDate
+                  ? "bg-[#26A040] text-white border-[#26A040]"
+                  : "border-gray-400 text-gray-700 hover:bg-[#26A040] hover:text-white hover:border-[#26A040]"
+              }`}
+            >
+              <span className="text-xs font-medium">{moment(date).format("DD MMM")}</span>
+              <span className="text-[10px] font-semibold uppercase">
+                {moment(date).format("ddd")}
+              </span>
+            </button>
+          </div>
+        </SwiperSlide>
+      ))}
+    </Swiper>
+  );
+};
+
+export default AvailableSlotSwiper;
