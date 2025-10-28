@@ -16,8 +16,8 @@ import {
 } from '@mui/material';
 import { Color } from '@/assets/colors/index';
 import { DeepSearchSpace, IndianRupee } from '@/utils/common-function/index';
-import DatatableHeading from '@/components/datatable/DatatableHeading';
-import MainDatatable from '@/components/datatable/MainDatatable';
+import DatatableHeading from '@/components/common/dataTable';
+import MainDatatable from '@/components/common/MainDatatable';
 
 // Define types for better TypeScript support
 interface Customer {
