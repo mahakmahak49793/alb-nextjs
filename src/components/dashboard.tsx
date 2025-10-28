@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { IndianRupee } from "@/utils/common-function";
 import { Grid } from "@mui/material";
 import moment from "moment";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { Color } from "@/assets/colors";
-import { IndianRupee } from "@/utils/common-function";
+import { useEffect, useState } from "react";
 
 import * as DashboardActions from "@/redux/actions/dashboardActions";
 
-import { ServicesChart,EarningChart } from "@/components/charts/pie-chart";
+import { AstrologerSvg, BlogSvg, CustomerSvg, EarningSvg, RechargeSvg, ReviewSvg, TodayAstrologerSvg, TodayCustomerSvg } from "@/assets/svg";
 import { RechargeReport } from "@/components/charts/bar-chart";
-import { AstrologerSvg,TodayAstrologerSvg,CustomerSvg,TodayCustomerSvg,BlogSvg,ReviewSvg,RechargeSvg,EarningSvg } from "@/assets/svg";
+import { EarningChart, ServicesChart } from "@/components/charts/pie-chart";
+
 
 interface ReportDateState {
   rechargeReportDate: Date;
@@ -116,7 +116,7 @@ const Dashboard = () => {
                   {dashboardData?.todayCustomerRegistration || 0}
                 </div>
               </div>
-              <TodayCustomerSvg />
+              <TodayCustomerSvg/>
             </div>
           </div>
         </Grid>
