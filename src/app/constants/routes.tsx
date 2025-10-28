@@ -16,212 +16,232 @@ import {
     RechargeRouteSvg,
     RemediesRouteSvg,
     SkillRouteSvg
-} from '../../assets/svg';
+} from '@/assets/svg';
 
-export const RouteName = [{
+interface SubRoute {
+    path: string;
+    name: string;
+    icon: JSX.Element;
+}
+
+interface Route {
+    path?: string;
+    name: string;
+    icon: JSX.Element;
+    subRoutes?: SubRoute[];
+}
+
+export const RouteName: Route[] = [
+    {
         path: "/",
         name: "Dashboard",
-        icon: < OtherRouteSvg / > ,
+        icon: <OtherRouteSvg />,
     },
     {
         path: "/customer",
         name: "Customer",
-        icon: < CustomerRouteSvg / > ,
+        icon: <CustomerRouteSvg />,
     },
     {
         name: "Astrologer",
-        icon: < AstrologerRouteSvg / > ,
-        subRoutes: [{
+        icon: <AstrologerRouteSvg />,
+        subRoutes: [
+            {
                 path: "/astrologer",
                 name: "List Of Astrologers",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/astrologer-enquiry",
                 name: "Astrologer Enquiry",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/astrologer-issues",
                 name: "Astrologer Issues",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/leave-request",
                 name: "Leave request",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
         ],
     },
     {
         name: "Astro Puja",
-        icon: < PoojaRouteSvg / > ,
-        subRoutes: [{
+        icon: <PoojaRouteSvg />,
+        subRoutes: [
+            {
                 path: "/astro-puja/category",
                 name: "Category",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/astro-puja/puja",
                 name: "Puja",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/astro-puja/puja-booked",
                 name: "Puja Booked",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
         ],
     },
     {
         name: "Live Session",
-        icon: < LiveRouteSvg / > ,
-        subRoutes: [{
+        icon: <LiveRouteSvg />,
+        subRoutes: [
+            {
                 path: "/live-session/category",
                 name: "Category",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/live-session/topic",
                 name: "Topic",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
         ],
     },
     {
         name: "Notification",
-        icon: < NotificationRouteSvg / > ,
-        subRoutes: [{
+        icon: <NotificationRouteSvg />,
+        subRoutes: [
+            {
                 path: "/customer-notification",
                 name: "Customer Notification",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/astrologer-notification",
                 name: "Astrologer Notification",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
         ],
     },
     {
         path: "/consultation",
         name: "Consultation",
-        icon: < SkillRouteSvg / > ,
+        icon: <SkillRouteSvg />,
     },
     {
         path: "/skill",
         name: "Skill",
-        icon: < SkillRouteSvg / > ,
+        icon: <SkillRouteSvg />,
     },
     {
         path: "/remedies",
         name: "Remedies",
-        icon: < RemediesRouteSvg / > ,
+        icon: <RemediesRouteSvg />,
     },
     {
         path: "/main-expertise",
         name: "Main Expertise",
-        icon: < MainExpertiesRouteSvg / > ,
+        icon: <MainExpertiesRouteSvg />,
     },
     {
         path: "/gift",
         name: "Gift",
-        icon: < GiftRouteSvg / > ,
+        icon: <GiftRouteSvg />,
     },
     {
         path: "/banner",
         name: "Banner",
-        icon: < BannerRouteSvg / > ,
+        icon: <BannerRouteSvg />,
     },
     {
         path: "/recharge",
         name: "Recharge",
-        icon: < RechargeRouteSvg / > ,
+        icon: <RechargeRouteSvg />,
     },
     {
         path: "/review",
         name: "Review",
-        icon: < RatingRouteSvg / > ,
+        icon: <RatingRouteSvg />,
     },
     {
         name: "Astroblog",
-        icon: < BlogsRouteSvg / > ,
-        subRoutes: [{
+        icon: <BlogsRouteSvg />,
+        subRoutes: [
+            {
                 path: "/astro-blog/category",
                 name: "Category",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/astro-blog/blog",
                 name: "Blog",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
         ],
     },
     {
         name: "Master",
-        icon: < OtherRouteSvg / > ,
-        subRoutes: [{
+        icon: <OtherRouteSvg />,
+        subRoutes: [
+            {
                 path: "/master/slot-management",
                 name: "Slot Management",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/master/platform-charges",
                 name: "Platform Charge",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/master/predefined-message",
                 name: "Predefined Message",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
         ],
     },
     {
-        path: "/pages",
         name: "Pages",
-        icon: < OtherRouteSvg / > ,
-        subRoutes: [{
+        icon: <OtherRouteSvg />,
+        subRoutes: [
+            {
                 path: "/pages/terms-and-conditions",
                 name: "Terms and Conditions",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/pages/privacy-policy",
                 name: "Privacy Policy",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
                 path: "/pages/about-us",
                 name: "About Us",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
-                path: "/displayHowToUse",
+                path: "/pages/how-to-use-screenshots",
                 name: "How to use- ScreenShots",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
             {
-                path: "/displayHowToUseVideos",
+                path: "/pages/how-to-use-videos",
                 name: "How to use - Videos",
-                icon: < OtherRouteSvg / > ,
+                icon: <OtherRouteSvg />,
             },
         ],
     },
     {
         path: "/reports/admin-earning",
         name: "Admin Earning",
-        icon: < OtherRouteSvg / > ,
+        icon: <OtherRouteSvg />,
     },
     {
         path: "/language",
         name: "Language",
-        icon: < LanguageRouteSvg / > ,
+        icon: <LanguageRouteSvg />,
     },
     {
         path: "/announcement",
         name: "Announcement",
-        icon: < AnnouncementRouteSvg fontSize = "30px" / > ,
+        icon: <AnnouncementRouteSvg fontSize="30px" />,
     },
 ];
