@@ -222,6 +222,10 @@ export const RouteName = [
     // icon: <OtherRouteSvg />,
   },
   {
+    path: "/reports/report-orders",
+    name: "Reports",
+  },
+  {
     path: "/language",
     name: "Language",
     // icon: <LanguageRouteSvg />,
