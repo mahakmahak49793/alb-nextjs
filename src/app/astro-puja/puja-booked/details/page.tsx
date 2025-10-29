@@ -129,7 +129,7 @@ const PujaBookedDetail: React.FC = () => {
   const [assignedAstrologerDetail, setAssignedAstrologerDetail] = useState('');
 
   // Handle input changes
-  const handleInputField = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputField = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setInputFieldDetail({
       ...inputFieldDetail,
       [event.target.name]: event.target.value,

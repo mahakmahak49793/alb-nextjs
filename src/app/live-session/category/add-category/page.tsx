@@ -11,7 +11,7 @@ interface InputFieldError {
   title: string;
 }
 
-const AddCategory = ({ mode = "Add" }: { mode?: string }) => {
+const AddCategory = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -100,8 +100,8 @@ const AddCategory = ({ mode = "Add" }: { mode?: string }) => {
 
   const updateLiveSessionCategory = async (categoryData: { categoryId: string; categoryName: string }) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/live-session/update_category`, {
-        method: 'PUT',
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/update_live_session_category`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(categoryData),
       });
@@ -128,10 +128,10 @@ const AddCategory = ({ mode = "Add" }: { mode?: string }) => {
           });
           
           if (result.success) {
-           Swal.fire({
+          await Swal.fire({
             icon: 'success',
             title: 'Success!',
-            text: 'Category created successfully!',
+            text: 'Category updated successfully!',
             showConfirmButton: false,
             timer: 1500
           }).then(() => {
@@ -147,7 +147,15 @@ const AddCategory = ({ mode = "Add" }: { mode?: string }) => {
           });
           
           if (result.success) {
+            await Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Category created successfully!',
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => {
             router.push("/live-session/category");
+          })
           } else {
             console.error('Failed to create category:', result.message);
           }

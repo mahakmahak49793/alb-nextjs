@@ -3,57 +3,52 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EditSvg, DeleteSvg } from "@/components/svgs/page";
 import MainDatatable from "@/components/common/MainDatatable";
-import moment from "moment";
 import Swal from "sweetalert2";
 
-interface Category {
+interface Remedies {
   _id: string;
-  categoryName: string;
-}
-
-interface LiveSessionTopic {
-  _id: string;
-  categoryId: Category;
-  topicName: string;
+  title: string;
+  description: string;
+  remedy?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 interface ApiResponse<T> {
-  topics: never[];
+  remedies: never[];
   success: boolean;
   data: T;
   message?: string;
 }
 
-const Topic = () => {
+const Remedies = () => {
   const router = useRouter();
-  const [liveSessionTopicData, setLiveSessionTopicData] = useState<LiveSessionTopic[]>([]);
+  const [remediesData, setRemediesData] = useState<Remedies[]>([]);
   const [loading, setLoading] = useState(true);
 
   // API call functions
-  const getLiveSessionTopic = async () => {
+  const getRemedies = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/get_live_session_topic`);
-      const data: ApiResponse<LiveSessionTopic[]> = await response.json();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/view-remedy`);
+      const data: ApiResponse<Remedies[]> = await response.json();
       
       if (data.success) {
-        setLiveSessionTopicData(data.topics || []);
+        setRemediesData(data.remedies || []);
       } else {
-        console.error('Failed to fetch topics:', data.message);
+        console.error('Failed to fetch remedies:', data.message);
       }
     } catch (error) {
-      console.error('Error fetching topics:', error);
+      console.error('Error fetching remedies:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteLiveSessionTopic = async (topicId: string) => {
+  const deleteRemedies = async (remedyId: string, remedyTitle: string) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
-      text: "You want to delete this topic!",
+      text: `You want to delete the remedy "${remedyTitle}"!`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -65,12 +60,12 @@ const Topic = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete_live_session_topic`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete-remedy`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ topicId }),
+          body: JSON.stringify({ remedyId }),
         });
         
         const data = await response.json();
@@ -78,24 +73,24 @@ const Topic = () => {
         if (data.success) {
           Swal.fire(
             'Deleted!',
-            'Topic has been deleted successfully.',
+            'Remedy has been deleted successfully.',
             'success'
           );
-          getLiveSessionTopic();
+          getRemedies();
         } else {
           Swal.fire(
             'Error!',
-            data.message || 'Failed to delete topic.',
+            data.message || 'Failed to delete remedy.',
             'error'
           );
         }
       } catch (error) {
         Swal.fire(
           'Error!',
-          'Something went wrong while deleting topic.',
+          'Something went wrong while deleting remedy.',
           'error'
         );
-        console.error('Error deleting topic:', error);
+        console.error('Error deleting remedy:', error);
       }
     }
   };
@@ -115,48 +110,45 @@ const Topic = () => {
   };
 
   // DataTable Columns
-  const categoryColumns = [
+  const columns = [
     { 
       name: 'S.No.', 
-      selector: (row: LiveSessionTopic, index?: number) => (index || 0) + 1, 
+      selector: (row: Remedies, index?: number) => (index || 0) + 1, 
       width: '80px' 
     },
     { 
-      name: 'Category', 
-      selector: (row: LiveSessionTopic) => row?.categoryId?.categoryName || 'N/A'
+      name: 'Remedies', 
+      selector: (row: Remedies) => row?.title || 'N/A', 
+      width: "200px" 
     },
     { 
-      name: 'Topic', 
-      cell: (row: LiveSessionTopic) => (
+      name: 'Description', 
+      cell: (row: Remedies) => (
         <div 
-          onClick={() => openTextModal('Topic', row?.topicName || '')}
+          onClick={() => openTextModal('Description', row?.description || '')}
           className="cursor-pointer hover:text-blue-600 transition-colors line-clamp-2"
-          dangerouslySetInnerHTML={{ 
-            __html: row?.topicName 
-              ? row.topicName.length > 50 
-                ? row.topicName.slice(0, 50) + '...' 
-                : row.topicName
-              : 'N/A'
-          }}
-        />
+        >
+          {row?.description 
+            ? row.description.length > 100 
+              ? row.description.substring(0, 100) + '...' 
+              : row.description
+            : 'N/A'
+          }
+        </div>
       )
     },
-    { 
-      name: 'Created Date', 
-      selector: (row: LiveSessionTopic) => moment(row?.createdAt)?.format('DD MMM YYYY @ hh:mm a') 
-    },
-    {
+  {
   name: 'Action',
-  cell: (row: LiveSessionTopic) => (
-    <div className="flex gap-5 items-center">
+  cell: (row: Remedies) => (
+    <div className="flex gap-5 items-center justify-center">
       <div 
-        onClick={() => router.push(`/live-session/topic/add-topic?edit=true&id=${row._id}`)} 
+        onClick={() => router.push(`/remedies/add-remedies?edit=true&id=${row._id}`)} 
         className="cursor-pointer hover:opacity-70 transition-opacity"
       >
         <EditSvg />
       </div>
       <div 
-        onClick={() => deleteLiveSessionTopic(row._id)} 
+        onClick={() => deleteRemedies(row._id, row.title)} 
         className="cursor-pointer hover:opacity-70 transition-opacity"
       >
         <DeleteSvg />
@@ -164,24 +156,24 @@ const Topic = () => {
     </div>
   ),
   width: "180px"
-}
+},
   ];
 
   useEffect(() => {
-    getLiveSessionTopic();
+    getRemedies();
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <MainDatatable 
-        data={liveSessionTopicData} 
-        columns={categoryColumns} 
-        title={'Session Topic'} 
-        url={'/live-session/topic/add-topic'}
+        data={remediesData} 
+        columns={columns} 
+        title={'Remedies'} 
+        url={'/remedies/add-remedies'}
         isLoading={loading}
       />
     </div>
   );
 };
 
-export default Topic;
+export default Remedies;

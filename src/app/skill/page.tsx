@@ -6,48 +6,48 @@ import MainDatatable from "@/components/common/MainDatatable";
 import moment from "moment";
 import Swal from "sweetalert2";
 
-interface LiveSessionCategory {
+interface Skill {
   _id: string;
-  categoryName: string;
+  skill: string;
   createdAt: string;
   updatedAt: string;
 }
 
 interface ApiResponse<T> {
-  categories: never[];
+  skills: never[];
   success: boolean;
   data: T;
   message?: string;
 }
 
-const Category = () => {
+const Skill = () => {
   const router = useRouter();
-  const [liveSessionCategoryData, setLiveSessionCategoryData] = useState<LiveSessionCategory[]>([]);
+  const [skillData, setSkillData] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
 
   // API call functions
-  const getLiveSessionCategory = async () => {
+  const getSkill = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/get_live_session_category`);
-      const data: ApiResponse<LiveSessionCategory[]> = await response.json();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/get-skill`);
+      const data: ApiResponse<Skill[]> = await response.json();
       
       if (data.success) {
-        setLiveSessionCategoryData(data.categories  || []);
+        setSkillData(data.skills  || []);
       } else {
-        console.error('Failed to fetch categories:', data.message);
+        console.error('Failed to fetch skills:', data.message);
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('Error fetching skills:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteLiveSessionCategory = async (categoryId: string) => {
+  const deleteSkill = async (skillId: string, skillName: string) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
-      text: "You want to delete this category!",
+      text: `You want to delete the skill "${skillName}"!`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -59,12 +59,12 @@ const Category = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete_live_session_category`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete-skill`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ categoryId }),
+          body: JSON.stringify({ skillId }),
         });
         
         const data = await response.json();
@@ -72,24 +72,24 @@ const Category = () => {
         if (data.success) {
           Swal.fire(
             'Deleted!',
-            'Category has been deleted successfully.',
+            'Skill has been deleted successfully.',
             'success'
           );
-          getLiveSessionCategory();
+          getSkill();
         } else {
           Swal.fire(
             'Error!',
-            data.message || 'Failed to delete category.',
+            data.message || 'Failed to delete skill.',
             'error'
           );
         }
       } catch (error) {
         Swal.fire(
           'Error!',
-          'Something went wrong while deleting category.',
+          'Something went wrong while deleting skill.',
           'error'
         );
-        console.error('Error deleting category:', error);
+        console.error('Error deleting skill:', error);
       }
     }
   };
@@ -98,29 +98,30 @@ const Category = () => {
   const columns = [
     { 
       name: 'S.No.', 
-      selector: (row: LiveSessionCategory, index?: number) => (index || 0) + 1, 
-      width: '80px' 
+      selector: (row: Skill, index?: number) => (index || 0) + 1 
     },
     { 
-      name: 'Title', 
-      selector: (row: LiveSessionCategory) => row?.categoryName 
+      name: 'Main Expertise', 
+      selector: (row: Skill) => (
+        <div className="capitalize">{row?.skill || 'N/A'}</div>
+      )
     },
     { 
       name: 'Created Date', 
-      selector: (row: LiveSessionCategory) => moment(row?.createdAt)?.format('DD MMM YYYY @ hh:mm a') 
+      selector: (row: Skill) => moment(row?.createdAt)?.format('DD-MMM-YYYY @ hh:mm a') 
     },
     {
       name: 'Action',
-      cell: (row: LiveSessionCategory) => (
+      cell: (row: Skill) => (
         <div className="flex gap-5 items-center">
           <div 
-            onClick={() => router.push(`/live-session/category/add-category?edit=true&id=${row._id}&name=${encodeURIComponent(row.categoryName)}`)} 
+            onClick={() => router.push(`/skill/add-skill?edit=true&id=${row._id}&skill=${encodeURIComponent(row.skill)}`)} 
             className="cursor-pointer hover:opacity-70 transition-opacity"
           >
             <EditSvg />
           </div>
           <div 
-            onClick={() => deleteLiveSessionCategory(row._id)} 
+            onClick={() => deleteSkill(row._id, row.skill)} 
             className="cursor-pointer hover:opacity-70 transition-opacity"
           >
             <DeleteSvg />
@@ -132,20 +133,20 @@ const Category = () => {
   ];
 
   useEffect(() => {
-    getLiveSessionCategory();
+    getSkill();
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <MainDatatable 
-        data={liveSessionCategoryData} 
+        data={skillData} 
         columns={columns} 
-        title={'Session Category'} 
-        url={'/live-session/category/add-category'}
+        title={'Skill'} 
+        url={'/skill/add-skill'}
         isLoading={loading}
       />
     </div>
   );
-}
+};
 
-export default Category;
+export default Skill;
