@@ -84,7 +84,8 @@ const Category = () => {
   const categoryColumns = [
     { 
       name: 'S.No.', 
-      selector: (row: PujaCategory, index: number) => index + 1 
+          selector: (row: PujaCategory, index?: number) => (index || 0) + 1, // Make index optional
+
     },
     { 
       name: 'Title', 
@@ -94,26 +95,26 @@ const Category = () => {
       name: 'Created Date', 
       selector: (row: PujaCategory) => moment(row?.createdAt)?.format('DD-MMM-YYYY @ hh:mm a') 
     },
-    {
-      name: 'Action',
-      cell: (row: PujaCategory) => (
-        <div style={{ display: "flex", gap: "20px", alignItems: "center" }} >
-          <div 
-            onClick={() => router.push('/astro-puja/category/edit-category', { state: { stateData: row } })} 
-            style={{ cursor: "pointer" }}
-          >
-            <EditSvg />
-          </div>
-          <div 
-            onClick={() => deletePujaCategory(row?._id)} 
-            style={{ cursor: "pointer" }}
-          >
-            <DeleteSvg />
-          </div>
-        </div>
-      ),
-      width: "180px"
-    },
+   {
+  name: 'Action',
+  cell: (row: PujaCategory) => (
+    <div className="flex gap-5 items-center">
+      <div 
+        onClick={() => router.push(`/astro-puja/category/add-category?edit=true&id=${row._id}&name=${encodeURIComponent(row.categoryName)}`)} 
+        className="cursor-pointer hover:opacity-70 transition-opacity"
+      >
+        <EditSvg />
+      </div>
+      <div 
+        onClick={() => deletePujaCategory(row._id)} 
+        className="cursor-pointer hover:opacity-70 transition-opacity"
+      >
+        <DeleteSvg />
+      </div>
+    </div>
+  ),
+  width: "180px"
+},
   ];
 
   useEffect(() => {

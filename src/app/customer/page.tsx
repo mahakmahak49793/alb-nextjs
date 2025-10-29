@@ -21,7 +21,6 @@ import { DeepSearchSpace, IndianRupee } from '@/utils/common-function/index';
 import DatatableHeading from '@/components/common/dataTable';
 import MainDatatable from '@/components/common/MainDatatable';
 
-
 // Define types for better TypeScript support
 interface Customer {
   _id: string;

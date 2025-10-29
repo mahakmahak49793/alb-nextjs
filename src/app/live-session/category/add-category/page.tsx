@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Swal from "sweetalert2";
 
 interface InputFieldDetail {
   title: string;
@@ -27,13 +28,16 @@ const AddCategory = () => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(editMode && !categoryNameFromUrl);
 
+  // Regex pattern for validation
+  const Regex_Accept_Everything = /^[\s\S]*$/;
+
   // Fetch category data if in edit mode
   useEffect(() => {
     const fetchCategoryData = async () => {
       if (editMode && categoryId && !categoryNameFromUrl) {
         try {
           setFetching(true);
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/puja/get_puja_category/${categoryId}`);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/live-session/get_category/${categoryId}`);
           const data = await response.json();
           
           if (data.success && data.data) {
@@ -58,24 +62,21 @@ const AddCategory = () => {
   const handleInputField = (event: React.ChangeEvent<HTMLInputElement>) => 
     setInputFieldDetail({ ...inputFieldDetail, [event.target.name]: event.target.value });
 
-  // Regex pattern for validation
-  const Regex_Accept_Alpha_Dot_Comma_Space = /^[a-zA-Z.,\s]+$/;
-
-  //! Handle Validation
+  //! Handle validation
   const handleValidation = () => {
     let isValid = true;
     const { title } = inputFieldDetail;
 
     if (!title) {
-      handleInputFieldError("title", "Please Enter Title")
+      handleInputFieldError("title", "Please Enter Title");
       isValid = false;
     }
-    if (!Regex_Accept_Alpha_Dot_Comma_Space.test(title)) {
-      handleInputFieldError("title", "Please Enter Valid Title")
+    if (!Regex_Accept_Everything.test(title)) {
+      handleInputFieldError("title", "Please Enter Valid Title");
       isValid = false;
     }
     if (title.toString().length > 70) {
-      handleInputFieldError("title", "Please Enter Title Less Than 70 Letter")
+      handleInputFieldError("title", "Please Enter Title Less Than 70 Letter");
       isValid = false;
     }
 
@@ -83,9 +84,9 @@ const AddCategory = () => {
   };
 
   // API call functions
-  const createCategory = async (categoryData: { categoryName: string }) => {
+  const createLiveSessionCategory = async (categoryData: { categoryName: string }) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/puja/create_puja_category`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/create_live_session_category`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(categoryData),
@@ -97,9 +98,9 @@ const AddCategory = () => {
     }
   };
 
-  const updateCategory = async (categoryData: { categoryId: string; categoryName: string }) => {
+  const updateLiveSessionCategory = async (categoryData: { categoryId: string; categoryName: string }) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/puja/update_puja_category`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/update_live_session_category`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(categoryData),
@@ -121,24 +122,40 @@ const AddCategory = () => {
       try {
         if (editMode && categoryId) {
           // Update existing category
-          const result = await updateCategory({
+          const result = await updateLiveSessionCategory({
             categoryId: categoryId,
             categoryName: title
           });
           
           if (result.success) {
-            router.push("/astro-puja/category");
+          await Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Category updated successfully!',
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => {
+            router.push("/live-session/category");
+          });
           } else {
             console.error('Failed to update category:', result.message);
           }
         } else {
           // Create new category
-          const result = await createCategory({
+          const result = await createLiveSessionCategory({
             categoryName: title
           });
           
           if (result.success) {
-            router.push("/astro-puja/category");
+            await Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Category created successfully!',
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => {
+            router.push("/live-session/category");
+          })
           } else {
             console.error('Failed to create category:', result.message);
           }
@@ -154,7 +171,7 @@ const AddCategory = () => {
   if (fetching) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-gray-600">Loading...</div>
+        <div className="text-xl text-gray-600">Loading category data...</div>
       </div>
     );
   }
@@ -162,18 +179,20 @@ const AddCategory = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="text-xl font-semibold text-gray-800">
-            {editMode ? 'Edit' : 'Add'} Puja Category
+            {editMode ? 'Edit' : 'Add'} Session Category
           </div>
           <button 
-            onClick={() => router.push("/astro-puja/category")}
+            onClick={() => router.push("/live-session/category")}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg cursor-pointer text-sm font-medium transition duration-200"
           >
             Display
           </button>
         </div>
 
+        {/* Form */}
         <div className="space-y-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
