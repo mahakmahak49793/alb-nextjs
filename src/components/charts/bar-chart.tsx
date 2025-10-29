@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import { useAppSelector } from '@/store/hooks';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { Color } from '@/assets/colors';
 
@@ -20,9 +19,12 @@ interface TransformedData {
   data: TransformedDataItem[];
 }
 
+interface RechargeReportProps {
+  rechargeReportData?: RechargeReportData;
+}
+
 // Function to get the number of days in a month, accounting for leap years in February
 function getDaysInMonth(year: number, month: number): number {
-  // Month is 0-based for the Date object (0 = January, 1 = February, etc.)
   return new Date(year, month + 1, 0).getDate();
 }
 
@@ -66,9 +68,7 @@ function transformData(originalData: RechargeReportData): TransformedData | null
   return transformedData;
 }
 
-const RechargeReport = (): React.JSX.Element => {
-  const { rechargeReportData } = useAppSelector((state: any) => state?.dashboardReducer);
-
+const RechargeReport: React.FC<RechargeReportProps> = ({ rechargeReportData }) => {
   const rechargeReportDataa = rechargeReportData && transformData(rechargeReportData);
   const data = rechargeReportDataa?.data || [];
 
@@ -79,11 +79,19 @@ const RechargeReport = (): React.JSX.Element => {
     type: 'piecewise' as const, 
     thresholds: [minQuantity + 1, maxQuantity], 
     colors: ['red', Color?.primary, 'green'] 
-  };  //! Set thresholds and colors for lowest, middle, and highest data values
+  };
+
+  if (!rechargeReportData || Object.keys(rechargeReportData).length === 0) {
+    return (
+      <div className="flex items-center justify-center h-80 text-gray-500">
+        No recharge data available
+      </div>
+    );
+  }
 
   return (
     <>
-      <div style={{ fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: '16px',height:400}}>
+      <div style={{ fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: '16px', height: 400 }}>
         Recharge report for {rechargeReportDataa?.year}
       </div>
 

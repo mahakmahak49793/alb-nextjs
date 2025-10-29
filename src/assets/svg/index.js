@@ -978,3 +978,34 @@ export const BlogSvg = ({ w = '45', h = '45' }) => {
         /svg> < / >
     )
 };
+
+
+export const DeleteSvg = ({ h = '20', w = '20' }) => {
+    return ( <
+        >
+        <
+        svg xmlns = "http://www.w3.org/2000/svg"
+        height = { h }
+        width = { w }
+        viewBox = "0 0 24 24" > < path fill = "currentColor"
+        d = "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2zM18 4h-2.5l-.71-.71c-.18-.18-.44-.29-.7-.29H9.91c-.26 0-.52.11-.7.29L8.5 4H6c-.55 0-1 .45-1 1s.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1" / > < /svg> < / >
+    )
+}
+
+
+export const EditSvg = ({ h = '20', w = '20' }) => {
+    return ( <
+        >
+        <
+        svg xmlns = "http://www.w3.org/2000/svg"
+        height = { h }
+        width = { w }
+        viewBox = "0 0 24 24" > < g fill = "none"
+        stroke = "currentColor"
+        strokeLinecap = "round"
+        strokeLinejoin = "round"
+        strokeWidth = "3" > < path d = "m16.475 5.408l2.117 2.117m-.756-3.982L12.109 9.27a2.1 2.1 0 0 0-.58 1.082L11 13l2.648-.53c.41-.082.786-.283 1.082-.579l5.727-5.727a1.853 1.853 0 1 0-2.621-2.621" / > < path d = "M19 15v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3" / > < /g></svg >
+        <
+        />
+    )
+}

@@ -4,6 +4,8 @@
 import moment from 'moment';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Eye, Edit, Wallet } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -16,8 +18,9 @@ import {
 } from '@mui/material';
 import { Color } from '@/assets/colors/index';
 import { DeepSearchSpace, IndianRupee } from '@/utils/common-function/index';
-import DatatableHeading from '@/components/datatable/DatatableHeading';
-import MainDatatable from '@/components/datatable/MainDatatable';
+import DatatableHeading from '@/components/common/dataTable';
+import MainDatatable from '@/components/common/MainDatatable';
+
 
 // Define types for better TypeScript support
 interface Customer {
@@ -56,7 +59,7 @@ export default function Customer() {
     const fetchCustomers = async () => {
       try {
         setLoading(true);
-        const res = await fetch('http://localhost:3003/api/customers/get-all-customers');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/get-all-customers`);
         const data: ApiResponse = await res.json();
         
         if (data.success && Array.isArray(data.customers)) {
@@ -147,7 +150,7 @@ export default function Customer() {
           alert('Wallet updated successfully!');
           handleWalletModalClose();
           // Refetch data
-          fetch('http://localhost:3003/api/customers/get-all-customers')
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/get-all-customers`)
             .then(res => res.json())
             .then(data => {
               if (data.success && Array.isArray(data.customers)) {
@@ -251,26 +254,29 @@ export default function Customer() {
     {
       name: 'Action',
       cell: (row: Customer) => (
-        <div className="flex gap-5 justify-center items-center">
-          <div 
-            onClick={() => router.push(`/customer/view-customer?id=${row._id}`)} 
-            className="cursor-pointer text-blue-600 hover:text-blue-800 transition-colors"
-          >
-            View
-          </div>
-          <div 
-            onClick={() => router.push(`/customer/edit-customer?id=${row._id}`)} 
-            className="cursor-pointer text-green-600 hover:text-green-800 transition-colors"
-          >
-            Edit
-          </div>
-          <div 
-            onClick={() => handleWalletModalOpen(row._id)} 
-            className="cursor-pointer text-purple-600 hover:text-purple-800 transition-colors"
-          >
-            Wallet
-          </div>
-        </div>
+      <div className="flex gap-5 justify-center items-center">
+  <div 
+    onClick={() => router.push(`/customer/view-customer?id=${row._id}`)} 
+    className="cursor-pointer text-blue-600 hover:text-blue-800 transition-colors"
+  >
+    <Eye size={20} />
+  </div>
+
+  <div 
+    onClick={() => router.push(`/customer/edit-customer?id=${row._id}`)} 
+    className="cursor-pointer text-green-600 hover:text-green-800 transition-colors"
+  >
+    <Edit size={20} />
+  </div>
+
+  <div 
+    onClick={() => handleWalletModalOpen(row._id)} 
+    className="cursor-pointer text-purple-600 hover:text-purple-800 transition-colors"
+  >
+    <Wallet size={20} />
+  </div>
+</div>
+
       ),
       width: "150px"
     },
@@ -278,29 +284,21 @@ export default function Customer() {
 
   return (
     <>
-      <div className="p-5 bg-white mb-5 rounded-lg border border-gray-200">
-        <DatatableHeading 
+    {/* /    <DatatableHeading
           title="Customer" 
           data={customerData} 
           url="/customer/add-customer" 
-        />
+        /> */}
 
-        <div className="flex justify-end gap-5 items-center mb-5 bg-white">
-          <input 
-            type='search' 
-            value={searchText} 
-            onChange={(e) => setSearchText(e.target.value)} 
-            placeholder='Search your data...' 
-            className="px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 w-full max-w-[250px] text-sm"
-          />
-        </div>
+     
 
         <MainDatatable
           columns={columns}
           data={filteredData}
+          title="Customer"
           isLoading={loading}
+          url="/customer/add-customer" 
         />
-      </div>
 
       {/* Wallet Modal */}
       <Dialog 

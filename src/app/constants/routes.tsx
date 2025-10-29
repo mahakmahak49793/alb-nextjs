@@ -49,22 +49,22 @@ export const RouteName: Route[] = [
             {
                 path: "/astrologer",
                 name: "List Of Astrologers",
-                icon: <OtherRouteSvg />,
+                icon: <AstrologerRouteSvg />,
             },
             {
                 path: "/astrologer-enquiry",
                 name: "Astrologer Enquiry",
-                icon: <OtherRouteSvg />,
+                icon: <AstrologerRouteSvg />,
             },
             {
                 path: "/astrologer-issues",
                 name: "Astrologer Issues",
-                icon: <OtherRouteSvg />,
+                icon: <AstrologerRouteSvg />,
             },
             {
                 path: "/leave-request",
                 name: "Leave request",
-                icon: <OtherRouteSvg />,
+                icon: <AstrologerRouteSvg />,
             },
         ],
     },
@@ -75,17 +75,17 @@ export const RouteName: Route[] = [
             {
                 path: "/astro-puja/category",
                 name: "Category",
-                icon: <OtherRouteSvg />,
+                icon: <PoojaRouteSvg />,
             },
             {
                 path: "/astro-puja/puja",
                 name: "Puja",
-                icon: <OtherRouteSvg />,
+                icon: <PoojaRouteSvg />,
             },
             {
                 path: "/astro-puja/puja-booked",
                 name: "Puja Booked",
-                icon: <OtherRouteSvg />,
+                icon: <PoojaRouteSvg />,
             },
         ],
     },
@@ -96,12 +96,12 @@ export const RouteName: Route[] = [
             {
                 path: "/live-session/category",
                 name: "Category",
-                icon: <OtherRouteSvg />,
+                icon: <LiveRouteSvg />,
             },
             {
                 path: "/live-session/topic",
                 name: "Topic",
-                icon: <OtherRouteSvg />,
+                icon: <LiveRouteSvg />,
             },
         ],
     },
@@ -112,12 +112,12 @@ export const RouteName: Route[] = [
             {
                 path: "/customer-notification",
                 name: "Customer Notification",
-                icon: <OtherRouteSvg />,
+                icon: <NotificationRouteSvg />,
             },
             {
                 path: "/astrologer-notification",
                 name: "Astrologer Notification",
-                icon: <OtherRouteSvg />,
+                icon: <NotificationRouteSvg />,
             },
         ],
     },
@@ -168,12 +168,12 @@ export const RouteName: Route[] = [
             {
                 path: "/astro-blog/category",
                 name: "Category",
-                icon: <OtherRouteSvg />,
+                icon: <BlogsRouteSvg />,
             },
             {
                 path: "/astro-blog/blog",
                 name: "Blog",
-                icon: <OtherRouteSvg />,
+                icon: <BlogsRouteSvg />,
             },
         ],
     },

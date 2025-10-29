@@ -61,7 +61,7 @@ const SidebarMenu = ({ route, showAnimation }: SidebarMenuProps) => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-    dispatch(CommonActions.setIsSidebarOpne(true));
+    dispatch(CommonActions.setIsSidebarOpen(true));
   };
 
   useEffect(() => {

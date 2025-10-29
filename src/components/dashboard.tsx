@@ -3,15 +3,43 @@
 import { useEffect, useState } from "react";
 import { Grid } from "@mui/material";
 import moment from "moment";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Color } from "@/assets/colors";
 import { IndianRupee } from "@/utils/common-function";
 
-import * as DashboardActions from "@/redux/actions/dashboardActions";
-
-import { ServicesChart,EarningChart } from "@/components/charts/pie-chart";
+import { ServicesChart, EarningChart } from "@/components/charts/pie-chart";
 import { RechargeReport } from "@/components/charts/bar-chart";
-import { AstrologerSvg,TodayAstrologerSvg,CustomerSvg,TodayCustomerSvg,BlogSvg,ReviewSvg,RechargeSvg,EarningSvg } from "@/assets/svg";
+import { AstrologerSvg, TodayAstrologerSvg, CustomerSvg, TodayCustomerSvg, BlogSvg, ReviewSvg, RechargeSvg, EarningSvg } from "@/assets/svg";
+
+// Types
+interface DashboardData {
+  totalAstrologer?: number;
+  todayAstrologerRegistration?: number;
+  totalCustomer?: number;
+  todayCustomerRegistration?: number;
+  totalAdminEarning?: number;
+  totalRecharge?: number;
+  totalReviews?: number;
+  totalBlogs?: number;
+}
+
+interface ServiceItem {
+  type: string;
+  count: number;
+}
+
+interface EarningReportData {
+  VideoCall?: number;
+  chat?: number;
+  live_video_call?: number;
+  gift?: number;
+  call?: number;
+  puja?: number;
+  'Wallet Rechrge'?: number;
+}
+
+interface RechargeReportData {
+  [key: string]: number;
+}
 
 interface ReportDateState {
   rechargeReportDate: Date;
@@ -19,9 +47,13 @@ interface ReportDateState {
 }
 
 const Dashboard = () => {
-  const dispatch = useAppDispatch();
-  const { dashboardData } = useAppSelector((state) => state?.dashboardReducer);
-
+  const [dashboardData, setDashboardData] = useState<DashboardData>({});
+  const [serviceUsedReportData, setServiceUsedReportData] = useState<ServiceItem[]>([]);
+  const [earningReportData, setEarningReportData] = useState<EarningReportData>({});
+  const [rechargeReportData, setRechargeReportData] = useState<RechargeReportData>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const [reportDate, setReportDate] = useState<ReportDateState>({ 
     rechargeReportDate: new Date(), 
     earningChartDate: null 
@@ -29,32 +61,151 @@ const Dashboard = () => {
   
   const { rechargeReportDate, earningChartDate } = reportDate;
 
-  useEffect(() => {
-    dispatch(
-      DashboardActions?.getRechargeReport({ 
-        month: rechargeReportDate?.getMonth() + 1, 
-        year: rechargeReportDate?.getFullYear() 
-      })
-    );
-  }, [rechargeReportDate, dispatch]);
+  // API Function to fetch dashboard data
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/get_dashboard`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setDashboardData(data.dashboardData || data.data || {});
+      } else {
+        throw new Error(data.message || 'Failed to fetch dashboard data');
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // API Function to fetch recharge report
+  const fetchRechargeReport = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/get_recharge_report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          month: rechargeReportDate?.getMonth() + 1, 
+          year: rechargeReportDate?.getFullYear() 
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setRechargeReportData(data.rechargeReport || data.data || {});
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching recharge report:', error);
+    }
+  };
+
+  // API Function to fetch earning report
+  const fetchEarningReport = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/get_earning_report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          month: isNaN(earningChartDate?.getMonth() as number) 
+            ? '' 
+            : ((earningChartDate?.getMonth() || 0) + 1)?.toString()?.padStart(2, '0'), 
+          year: isNaN(earningChartDate?.getFullYear() as number) 
+            ? '' 
+            : earningChartDate?.getFullYear() 
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setEarningReportData(data.earningReport || data.data || {});
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching earning report:', error);
+    }
+  };
+
+  // API Function to fetch service used report
+  const fetchServiceUsedReport = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/get_service_used_report`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setServiceUsedReportData(data.serviceUsedReport || data.data || []);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching service used report:', error);
+    }
+  };
 
   useEffect(() => {
-    dispatch(
-      DashboardActions?.getEarningReport({ 
-        month: isNaN(earningChartDate?.getMonth() as number) 
-          ? '' 
-          : ((earningChartDate?.getMonth() || 0) + 1)?.toString()?.padStart(2, '0'), 
-        year: isNaN(earningChartDate?.getFullYear() as number) 
-          ? '' 
-          : earningChartDate?.getFullYear() 
-      })
-    );
-  }, [earningChartDate, dispatch]);
+    fetchRechargeReport();
+  }, [rechargeReportDate]);
 
   useEffect(() => {
-    dispatch(DashboardActions?.getDashboard());
-    dispatch(DashboardActions?.getServiceUsedReport());
-  }, [dispatch]);
+    if (earningChartDate) {
+      fetchEarningReport();
+    }
+  }, [earningChartDate]);
+
+  useEffect(() => {
+    fetchDashboardData();
+    fetchServiceUsedReport();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-600">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">Error: {error}</div>
+          <button 
+            onClick={fetchDashboardData}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5 p-4 min-h-screen">
@@ -133,7 +284,7 @@ const Dashboard = () => {
               type="month" 
               className="outline-none p-2 border border-gray-300 rounded-lg absolute right-5 top-5 z-10 bg-white"
             />
-            <RechargeReport />
+            <RechargeReport rechargeReportData={rechargeReportData} />
           </div>
         </Grid>
 
@@ -206,7 +357,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between w-full">
               <div className="text-lg font-semibold text-gray-800">Services Used</div>
             </div>
-            <ServicesChart />
+            <ServicesChart serviceUsedReportData={serviceUsedReportData} />
           </div>
         </Grid>
 
@@ -221,7 +372,7 @@ const Dashboard = () => {
                 className="outline-none p-2 border border-gray-300 rounded-lg bg-white"
               />
             </div>
-            <EarningChart />
+            <EarningChart earningReportData={earningReportData} />
           </div>
         </Grid>
       </Grid>
