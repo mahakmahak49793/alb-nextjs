@@ -373,19 +373,19 @@ export default function Customer() {
         <div className="flex gap-5 justify-center items-center">
           <div 
             onClick={() => router.push(`/customer/view-customer?id=${row._id}`)} 
-            className="cursor-pointer text-red-600 hover:text-red-800 transition-colors"
+            className="cursor-pointer transition-colors"
           >
             <ViewSvg/>
           </div>
           <div 
             onClick={() => handleEditCustomer(row)} 
-            className="cursor-pointer text-green-600 hover:text-green-800 transition-colors"
+            className="cursor-pointer transition-colors"
           >
             <EditSvg/>
           </div>
           <div 
             onClick={() => handleWalletModalOpen(row._id)} 
-            className="cursor-pointer text-purple-600 hover:text-purple-800 transition-colors"
+            className="cursor-pointer transition-colors"
           >
             <WalletSvg/>
           </div>
