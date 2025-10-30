@@ -620,11 +620,11 @@ function AddAstrologerContent() {
                 value={form.country}
                 onChange={(e: SelectChangeEvent<string>) => {
                   handleSelectChange(e);
-                  const country = Country.getAllCountries().find(c => c.name === e.target.value);
+                  const country = Country.getAllCountries().find((c:any )=> c.name === e.target.value);
                   setSelectedCountry(country || { name: 'India', isoCode: 'IN' });
                 }}
               >
-                {Country.getAllCountries().map(c => (
+                {Country.getAllCountries().map((c:any) => (
                   <MenuItem key={c.isoCode} value={c.name}>{c.name}</MenuItem>
                 ))}
               </Select>
@@ -639,11 +639,11 @@ function AddAstrologerContent() {
                 value={form.state}
                 onChange={(e: SelectChangeEvent<string>) => {
                   handleSelectChange(e);
-                  const state = State.getStatesOfCountry(selectedCountry.isoCode).find(s => s.name === e.target.value);
+                  const state = State.getStatesOfCountry(selectedCountry.isoCode).find((s:any) => s.name === e.target.value);
                   setSelectedState(state || {});
                 }}
               >
-                {State.getStatesOfCountry(selectedCountry.isoCode).map(s => (
+                {State.getStatesOfCountry(selectedCountry.isoCode).map((s:any) => (
                   <MenuItem key={s.isoCode} value={s.name}>{s.name}</MenuItem>
                 ))}
               </Select>
@@ -654,7 +654,7 @@ function AddAstrologerContent() {
             <FormControl fullWidth>
               <InputLabel>City *</InputLabel>
               <Select name="city" value={form.city} onChange={handleSelectChange}>
-                {City.getCitiesOfState(selectedState.countryCode, selectedState.isoCode)?.map(c => (
+                {City.getCitiesOfState(selectedState.countryCode, selectedState.isoCode)?.map((c:any) => (
                   <MenuItem key={c.name} value={c.name}>{c.name}</MenuItem>
                 ))}
               </Select>
