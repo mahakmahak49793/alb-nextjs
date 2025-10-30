@@ -88,16 +88,17 @@ export const RouteName: Route[] = [
         ],
     },
     {
+
         name: "Notification",
         // icon: <NotificationRouteSvg />,
         subRoutes: [
             {
-                path: "/customer-notification",
+                path: "/notification/customer-notification",
                 name: "Customer Notification",
                 // icon: <OtherRouteSvg />,
             },
             {
-                path: "/astrologer-notification",
+                path: "/notification/astrologer-notification",
                 name: "Astrologer Notification",
                 // icon: <OtherRouteSvg />,
             },

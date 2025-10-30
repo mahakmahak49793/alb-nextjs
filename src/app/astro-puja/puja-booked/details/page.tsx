@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import moment from 'moment';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowBack } from '@mui/icons-material';
@@ -107,7 +107,7 @@ const updateAstrologerPujaAssign = async (payload: any): Promise<boolean> => {
   }
 };
 
-const PujaBookedDetail: React.FC = () => {
+function PujaBookedDetailfunction(){
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
@@ -407,5 +407,11 @@ const PujaBookedDetail: React.FC = () => {
     </div>
   );
 };
-
-export default PujaBookedDetail;
+const PoojaBookedDetail = () => {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
+      <PujaBookedDetailfunction/>
+    </Suspense>
+  );
+};
+export default PoojaBookedDetail;

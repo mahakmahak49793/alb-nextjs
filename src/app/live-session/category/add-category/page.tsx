@@ -11,7 +11,7 @@ interface InputFieldError {
   title: string;
 }
 
-const AddCategory = () => {
+function AddCategoryContent(){
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -238,4 +238,11 @@ const AddCategory = () => {
   );
 };
 
+const AddCategory = () => {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
+      <AddCategoryContent />
+    </Suspense>
+  );
+};
 export default AddCategory;

@@ -17,7 +17,7 @@ interface ImageState {
   bytes: File | null;
 }
 
-const AddSkill = () => {
+function AddSkillReview(){
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -298,6 +298,13 @@ const AddSkill = () => {
     </div>
     </Suspense>
     </>
+  );
+};
+const AddSkill = () => {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
+      <AddSkillReview/>
+    </Suspense>
   );
 };
 

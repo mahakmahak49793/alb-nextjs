@@ -48,17 +48,20 @@ function transformData(originalData: RechargeReportData): TransformedData | null
   return { year, month: monthName, data };
 }
 
-const RechargeReport: React.FC<RechargeReportProps> = ({ rechargeReportData }) => {
-  const transformed = rechargeReportData ? transformData(rechargeReportData) : null;
-  const data = transformed?.data || [];
+const RechargeReport = (): React.JSX.Element => {
+  const { rechargeReportData } = useAppSelector((state: any) => state?.dashboardReducer);
 
-  if (!rechargeReportData || data.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-80 text-gray-500">
-        No recharge data available
-      </div>
-    );
-  }
+  const rechargeReportDataa = rechargeReportData && transformData(rechargeReportData);
+  const data = rechargeReportDataa?.data || [];
+
+  const maxQuantity = data.length > 0 ? Math.max(...data.map((item: { quantity: any; }) => item?.quantity)) : 0;
+  const minQuantity = data.length > 0 ? Math.min(...data.map((item: { quantity: any; }) => item?.quantity)) : 0;
+
+  const colorMap = { 
+    type: 'piecewise' as const, 
+    thresholds: [minQuantity + 1, maxQuantity], 
+    colors: ['red', Color?.primary, 'green'] 
+  };  //! Set thresholds and colors for lowest, middle, and highest data values
 
   return (
     <div className="w-full">
@@ -71,15 +74,21 @@ const RechargeReport: React.FC<RechargeReportProps> = ({ rechargeReportData }) =
         <BarChart
           xAxis={[
             {
-              label: 'Date of Month',
-              data: data.map(d => d.name),
+              label: 'Date Of Month',
+              data: rechargeReportDataa?.data?.map((item: { name: any; }) => item?.name),
               scaleType: 'band',
             },
           ]}
           series={[
             {
-              data: data.map(d => d.quantity),
-              color: Color?.primary || '#3b82f6',
+              label: rechargeReportDataa?.month,
+              data: rechargeReportDataa?.data?.map((item: { quantity: any; }) => item?.quantity),
+              color: Color?.primary
+            },
+          ]}
+          yAxis={[
+            {
+              colorMap: colorMap,
             },
           ]}
           width={750}

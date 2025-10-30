@@ -1,9 +1,10 @@
 'use client';
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Swal from "sweetalert2";
 
-interface RemediesDetail {
+interface InputFieldDetail {
   title: string;
   description: string;
 }
@@ -19,14 +20,15 @@ interface ImageState {
   bytes: File | null;
 }
 
-function AddRemediesContent(){
+function AddMainExpertiseContent(){
   const router = useRouter();
   const searchParams = useSearchParams();
   
   const editMode = searchParams.get('edit') === 'true';
-  const remedyId = searchParams.get('id');
+  const expertiseId = searchParams.get('id');
 
-  const [remediesDetail, setRemediesDetail] = useState<RemediesDetail>({ 
+  const [image, setImage] = useState<ImageState>({ file: '', bytes: null });
+  const [inputFieldDetail, setInputFieldDetail] = useState<InputFieldDetail>({ 
     title: '', 
     description: '' 
   });
@@ -35,37 +37,39 @@ function AddRemediesContent(){
     description: '', 
     image: '' 
   });
-  const [image, setImage] = useState<ImageState>({ 
-    file: '', 
-    bytes: null 
-  });
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(editMode && !!remedyId);
+  const [fetching, setFetching] = useState(editMode && !!expertiseId);
 
   // Regex pattern for validation
   const Regex_Accept_Alpha = /^[a-zA-Z\s]*$/;
 
-  // Fetch remedy data if in edit mode
+  // Fetch expertise data if in edit mode
   useEffect(() => {
-    const fetchRemedyData = async () => {
-      if (editMode && remedyId) {
+    const fetchExpertiseData = async () => {
+      if (editMode && expertiseId) {
         try {
           setFetching(true);
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/remedies/get_remedies/${remedyId}`);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expertise/get_main_expertise/${expertiseId}`);
           const data = await response.json();
           
           if (data.success && data.data) {
-            setRemediesDetail({
-              title: data.data.title || '',
+            setInputFieldDetail({
+              title: data.data.mainExpertise || '',
               description: data.data.description || ''
             });
+            if (data.data.image) {
+              setImage({
+                file: `${process.env.NEXT_PUBLIC_IMAGE_URL}${data.data.image}`,
+                bytes: null
+              });
+            }
           }
         } catch (error) {
-          console.error('Error fetching remedy:', error);
+          console.error('Error fetching expertise:', error);
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: 'Failed to load remedy data',
+            text: 'Failed to load expertise data',
             confirmButtonColor: '#d33',
           });
         } finally {
@@ -74,24 +78,24 @@ function AddRemediesContent(){
       }
     };
 
-    fetchRemedyData();
-  }, [editMode, remedyId]);
-
-  //* Handle Input Field : Error
-  const handleInputFieldError = (input: keyof InputFieldError, value: string) => {
-    setInputFieldError((prev) => ({ ...prev, [input]: value }));
-  };
+    fetchExpertiseData();
+  }, [editMode, expertiseId]);
 
   //* Handle Input Field : Data
-  const handleInputChange = (field: keyof RemediesDetail, value: string) => {
-    setRemediesDetail(prev => ({
+  const handleInputChange = (field: keyof InputFieldDetail, value: string) => {
+    setInputFieldDetail(prev => ({
       ...prev,
       [field]: value
     }));
     // Clear error when user starts typing
-    if (inputFieldError[field as keyof InputFieldError]) {
-      handleInputFieldError(field as keyof InputFieldError, '');
+    if (inputFieldError[field]) {
+      setInputFieldError(prev => ({ ...prev, [field]: '' }));
     }
+  };
+
+  //* Handle Input Field : Error
+  const handleInputFieldError = (input: keyof InputFieldError, value: string) => {
+    setInputFieldError((prev) => ({ ...prev, [input]: value }));
   };
 
   //! Handle Image : Normally
@@ -117,10 +121,10 @@ function AddRemediesContent(){
     handleInputFieldError("image", "");
   };
 
-  //! Handle Validation
+  //! Handle validation
   const handleValidation = () => {
     let isValid = true;
-    const { title, description } = remediesDetail;
+    const { title, description } = inputFieldDetail;
 
     if (!title.trim()) {
       handleInputFieldError("title", "Please Enter Title");
@@ -134,8 +138,8 @@ function AddRemediesContent(){
       handleInputFieldError("description", "Please Enter Description");
       isValid = false;
     }
-    if (!Regex_Accept_Alpha.test(description)) {
-      handleInputFieldError("description", "Please Enter Valid Description (Letters only)");
+    if (!image.bytes && !image.file && !editMode) {
+      handleInputFieldError("image", "Please Select Image");
       isValid = false;
     }
 
@@ -143,75 +147,72 @@ function AddRemediesContent(){
   };
 
   // API call functions
-  const createRemedies = async (formData: FormData) => {
+  const createMainExpertise = async (formData: FormData) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/add-remedy`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expertise/create_main_expertise`, {
         method: 'POST',
         body: formData,
       });
       return await response.json();
     } catch (error) {
-      console.error('Error creating remedy:', error);
+      console.error('Error creating expertise:', error);
       throw error;
     }
   };
 
-  const updateRemedies = async (formData: FormData) => {
+  const updateMainExpertise = async (formData: FormData) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/remedies/update_remedies`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expertise/update_main_expertise`, {
         method: 'PUT',
         body: formData,
       });
       return await response.json();
     } catch (error) {
-      console.error('Error updating remedy:', error);
+      console.error('Error updating expertise:', error);
       throw error;
     }
   };
 
-  //! Handle Submit - Creating/Updating Remedies
+  //! Handle Submit - Creating/Updating
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (handleValidation()) {
       setLoading(true);
-      const { title, description } = remediesDetail;
+      const { title, description } = inputFieldDetail;
 
       try {
         const formData = new FormData();
-        
-        if (editMode && remedyId) {
-          formData.append("remedyId", remedyId);
-        }
-        formData.append("title", title);
-        formData.append("description", description);
+        formData.append('mainExpertise', title);
+        formData.append('description', description);
         
         if (image.bytes) {
-          formData.append("remedyIcon", image.bytes);
+          formData.append('image', image.bytes);
         }
 
         let result;
-        if (editMode && remedyId) {
-          result = await updateRemedies(formData);
+        if (editMode && expertiseId) {
+          formData.append('mainExpertiseId', expertiseId);
+          result = await updateMainExpertise(formData);
         } else {
-          result = await createRemedies(formData);
+          result = await createMainExpertise(formData);
         }
         
         if (result.success) {
           Swal.fire({
             icon: 'success',
             title: editMode ? 'Updated!' : 'Created!',
-            text: `Remedy ${editMode ? 'updated' : 'created'} successfully`,
+            text: `Main expertise ${editMode ? 'updated' : 'created'} successfully`,
             timer: 1500,
             showConfirmButton: false
           });
           setTimeout(() => {
-            router.push("/remedies");
+            router.push("/main-expertise");
           }, 1600);
         } else {
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: result.message || `Failed to ${editMode ? 'update' : 'create'} remedy`,
+            text: result.message || `Failed to ${editMode ? 'update' : 'create'} main expertise`,
             confirmButtonColor: '#d33',
           });
         }
@@ -222,7 +223,7 @@ function AddRemediesContent(){
           text: 'Please check your connection and try again.',
           confirmButtonColor: '#d33',
         });
-        console.error('Error submitting remedy:', error);
+        console.error('Error submitting expertise:', error);
       } finally {
         setLoading(false);
       }
@@ -234,7 +235,7 @@ function AddRemediesContent(){
       <div className="flex justify-center items-center min-h-screen">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-lg text-gray-600">Loading...</div>
+          <div className="text-lg text-gray-600">Loading expertise data...</div>
         </div>
       </div>
     );
@@ -246,10 +247,10 @@ function AddRemediesContent(){
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="text-xl font-semibold text-gray-800">
-            {editMode ? 'Edit' : 'Add'} Remedies
+            {editMode ? 'Edit' : 'Add'} Main Expertise
           </div>
           <button 
-            onClick={() => router.push("/remedies")}
+            onClick={() => router.back()}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg cursor-pointer text-sm font-medium transition duration-200"
           >
             Display
@@ -258,50 +259,10 @@ function AddRemediesContent(){
 
         {/* Form */}
         <div className="space-y-6">
-          {/* Title Input */}
+          {/* Image Upload */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
-              Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={remediesDetail.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
-              onFocus={() => handleInputFieldError("title", "")}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                inputFieldError.title ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Enter remedy title"
-            />
-            {inputFieldError.title && (
-              <p className="text-red-500 text-sm mt-1">{inputFieldError.title}</p>
-            )}
-          </div>
-
-          {/* Description Input */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Description <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={remediesDetail.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              onFocus={() => handleInputFieldError("description", "")}
-              rows={4}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                inputFieldError.description ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Enter remedy description"
-            />
-            {inputFieldError.description && (
-              <p className="text-red-500 text-sm mt-1">{inputFieldError.description}</p>
-            )}
-          </div>
-
-          {/* Image Upload (Optional) */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Remedy Icon (Optional)
+              Image <span className="text-red-500">*</span>
             </label>
             <div 
               onDragOver={(e) => e.preventDefault()} 
@@ -310,20 +271,23 @@ function AddRemediesContent(){
             >
               {image.file ? (
                 <div className="flex flex-col items-center">
-                  <img 
-                    src={image.file} 
-                    alt="Remedy icon" 
-                    className="w-32 h-32 object-cover rounded-lg mb-2"
-                  />
+                  <div className="relative w-64 h-64 mb-4">
+                    <Image 
+                      src={image.file} 
+                      alt="Expertise" 
+                      fill
+                      className="object-contain rounded-lg"
+                    />
+                  </div>
                   <p className="text-sm text-gray-600">Click or drag to change image</p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-gray-500 text-2xl">+</span>
+                    <span className="text-gray-500 text-2xl">📷</span>
                   </div>
-                  <p className="text-sm text-gray-600">Click or drag to upload image</p>
-                  <p className="text-xs text-gray-500 mt-1">Optional remedy icon</p>
+                  <p className="text-sm text-gray-600">Choose Your Image to Upload</p>
+                  <p className="text-xs text-gray-500 mt-1">Or Drop Your Image Here</p>
                 </div>
               )}
               <input 
@@ -336,6 +300,46 @@ function AddRemediesContent(){
             </div>
             {inputFieldError.image && (
               <p className="text-red-500 text-sm mt-1">{inputFieldError.image}</p>
+            )}
+          </div>
+
+          {/* Title Input */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={inputFieldDetail.title}
+              onChange={(e) => handleInputChange('title', e.target.value)}
+              onFocus={() => handleInputFieldError("title", "")}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                inputFieldError.title ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Enter main expertise title"
+            />
+            {inputFieldError.title && (
+              <p className="text-red-500 text-sm mt-1">{inputFieldError.title}</p>
+            )}
+          </div>
+
+          {/* Description Input */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Description <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={inputFieldDetail.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              onFocus={() => handleInputFieldError("description", "")}
+              rows={4}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                inputFieldError.description ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Enter main expertise description"
+            />
+            {inputFieldError.description && (
+              <p className="text-red-500 text-sm mt-1">{inputFieldError.description}</p>
             )}
           </div>
 
@@ -361,11 +365,11 @@ function AddRemediesContent(){
     </div>
   );
 };
-const AddRemedies = () => {
+const AddReview = () => {
   return (
     <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
-      <AddRemediesContent />
+      <AddMainExpertiseContent />
     </Suspense>
   );
 };
-export default AddRemedies;
+export default AddReview;

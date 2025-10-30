@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 
@@ -24,7 +24,7 @@ interface InputFieldError {
   title: string;
 }
 
-const AddTopic = () => {
+function AddTopicContent(){
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -314,5 +314,11 @@ const AddTopic = () => {
     </div>
   );
 };
-
+const AddTopic = () => {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
+      <AddTopicContent />
+    </Suspense>
+  );
+};
 export default AddTopic;
