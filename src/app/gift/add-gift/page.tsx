@@ -22,7 +22,7 @@ interface ImageState {
   bytes: File | null;
 }
 
-const AddGift = ({ mode = "Add" }: { mode?: string }) => {
+const AddGift = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   

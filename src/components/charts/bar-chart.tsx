@@ -72,8 +72,8 @@ const RechargeReport = (): React.JSX.Element => {
   const rechargeReportDataa = rechargeReportData && transformData(rechargeReportData);
   const data = rechargeReportDataa?.data || [];
 
-  const maxQuantity = data.length > 0 ? Math.max(...data.map(item => item?.quantity)) : 0;
-  const minQuantity = data.length > 0 ? Math.min(...data.map(item => item?.quantity)) : 0;
+  const maxQuantity = data.length > 0 ? Math.max(...data.map((item: { quantity: any; }) => item?.quantity)) : 0;
+  const minQuantity = data.length > 0 ? Math.min(...data.map((item: { quantity: any; }) => item?.quantity)) : 0;
 
   const colorMap = { 
     type: 'piecewise' as const, 
@@ -92,14 +92,14 @@ const RechargeReport = (): React.JSX.Element => {
           xAxis={[
             {
               label: 'Date Of Month',
-              data: rechargeReportDataa?.data?.map(item => item?.name),
+              data: rechargeReportDataa?.data?.map((item: { name: any; }) => item?.name),
               scaleType: 'band',
             },
           ]}
           series={[
             {
               label: rechargeReportDataa?.month,
-              data: rechargeReportDataa?.data?.map(item => item?.quantity),
+              data: rechargeReportDataa?.data?.map((item: { quantity: any; }) => item?.quantity),
               color: Color?.primary
             },
           ]}

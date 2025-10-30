@@ -1,428 +1,339 @@
-// 'use client';
-// import React, { useEffect, useState } from 'react';
-// import moment from 'moment';
-// import DataTable from 'react-data-table-component';
-// import { DataTableCustomStyles } from '../../../public/assets/styles/datatable';
+// app/consultation/page.tsx
+'use client';
 
-// interface Astrologer {
-//   astrologerName: string;
-// }
+import moment from 'moment';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Dialog,
+  DialogContent,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from '@mui/material';
+import DatatableHeading from '@/components/common/dataTable';
+import MainDatatable from '@/components/common/MainDatatable';
 
-// interface Customer {
-//   email: string;
-// }
+// Define types for better TypeScript support
+interface PaymentDetails {
+  paymentAmount?: string;
+  paymentMethod?: string;
+}
 
-// interface PaymentDetails {
-//   paymentAmount: number;
-//   paymentMethod: string;
-// }
+interface Slot {
+  fromTime?: string;
+  toTime?: string;
+}
 
-// interface Slot {
-//   fromTime: string;
-//   toTime: string;
-// }
+interface Customer {
+  email?: string;
+}
 
-// interface Consultation {
-//   _id: string;
-//   astrologerId: Astrologer;
-//   fullName: string;
-//   customerId: Customer;
-//   mobileNumber: string;
-//   dateOfBirth: string;
-//   timeOfBirth: string;
-//   placeOfBirth: string;
-//   date: string;
-//   slotId: Slot;
-//   consultationType: string;
-//   consultationTopic: string;
-//   paymentDetails: PaymentDetails;
-//   status: string;
-//   createdAt: string;
-//   updatedAt: string;
-// }
+interface Astrologer {
+  astrologerName?: string;
+}
 
-// interface ApiResponse {
-//   success: boolean;
-//   bookings: Consultation[];
-//   totalPages: number;
-//   currentPage: number;
-//   totalCount: number;
-// }
+interface Consultation {
+  _id: string;
+  astrologerId?: Astrologer;
+  fullName?: string;
+  customerId?: Customer;
+  mobileNumber?: string;
+  dateOfBirth?: string;
+  timeOfBirth?: string;
+  placeOfBirth?: string;
+  date?: string;
+  slotId?: Slot;
+  consultationType?: string;
+  consultationTopic?: string;
+  paymentDetails?: PaymentDetails;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
-// interface Filters {
-//   status: string;
-//   customerName: string;
-//   astrologerName: string;
-//   startDate: string;
-//   endDate: string;
-// }
+interface ApiResponse {
+  success: boolean;
+  bookings?: Consultation[];
+  totalPages?: number;
+  currentPage?: number;
+}
 
-// interface Pagination {
-//   totalPages: number;
-//   currentPage: number;
-//   limit: number;
-// }
+interface Filters {
+  status: string;
+  customerName: string;
+  astrologerName: string;
+  startDate: string;
+  endDate: string;
+}
 
-// const Consultation = () => {
-//   const [consultationData, setConsultationData] = useState<Consultation[]>([]);
-//   const [filters, setFilters] = useState<Filters>({
-//     status: '',
-//     customerName: '',
-//     astrologerName: '',
-//     startDate: '',
-//     endDate: ''
-//   });
+export default function Consultation() {
+  const router = useRouter();
 
-//   const [pagination, setPagination] = useState<Pagination>({
-//     totalPages: 1,
-//     currentPage: 1,
-//     limit: 10
-//   });
+  // State
+  const [consultationData, setConsultationData] = useState<Consultation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<Filters>({
+    status: '',
+    customerName: '',
+    astrologerName: '',
+    startDate: '',
+    endDate: ''
+  });
 
-//   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    totalPages: 1,
+    currentPage: 1,
+    limit: 10
+  });
 
-//   const fetchData = async (page = 1) => {
-//     try {
-//       setLoading(true);
-//       const queryParams = new URLSearchParams();
-      
-//       // Add filters
-//       Object.entries(filters).forEach(([key, value]) => {
-//         if (value) queryParams.append(key, value);
-//       });
-      
-//       // Add pagination
-//       queryParams.append('page', page.toString());
-//       queryParams.append('limit', pagination.limit.toString());
+  // Fetch data on mount and when filters change
+  useEffect(() => {
+    const fetchConsultations = async () => {
+      try {
+        setLoading(true);
+        const query = new URLSearchParams({
+          ...filters,
+          page: pagination.currentPage.toString(),
+          limit: pagination.limit.toString()
+        });
 
-//       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/all_consultations_booking?${queryParams.toString()}`);
-//       const data: ApiResponse = await response.json();
-      
-//       if (data?.success) {
-//         setConsultationData(data?.bookings || []);
-//         setPagination(prev => ({
-//           ...prev,
-//           totalPages: data?.totalPages || 1,
-//           currentPage: data?.currentPage || 1
-//         }));
-//       }
-//     } catch (error) {
-//       console.error('Failed to fetch consultation data:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/all_consultations_booking?status=&customerName=&astrologerName=&startDate=&endDate=&page=1&limit=10`);
+        const data: ApiResponse = await res.json();
 
-//   useEffect(() => {
-//     fetchData();
-//   }, [filters]);
+        if (data.success && Array.isArray(data.bookings)) {
+          setConsultationData(data.bookings);
+          setPagination(prev => ({
+            ...prev,
+            totalPages: data?.totalPages || 1,
+            currentPage: data?.currentPage || 1
+          }));
+        } else {
+          console.error('Invalid API response structure');
+          setConsultationData([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch consultation data:', error);
+        setConsultationData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-//   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-//     const { name, value } = e.target;
-//     setFilters(prev => ({ ...prev, [name]: value }));
-//   };
+    fetchConsultations();
+  }, [filters, pagination.currentPage]);
 
-//   const handleDateRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const { name, value } = e.target;
-//     setFilters(prev => ({ ...prev, [name]: value }));
-//   };
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+    setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset to first page when filters change
+  };
 
-//   const handlePageChange = (page: number) => {
-//     fetchData(page);
-//   };
+  const handlePageChange = (page: number) => {
+    setPagination(prev => ({ ...prev, currentPage: page }));
+  };
 
-//   const clearFilters = () => {
-//     setFilters({
-//       status: '',
-//       customerName: '',
-//       astrologerName: '',
-//       startDate: '',
-//       endDate: ''
-//     });
-//   };
+  // Table Columns
+  const columns = [
+    { 
+  name: 'S.No.', 
+  selector: (row: Consultation) => consultationData.indexOf(row) + 1, 
+  width: '80px' 
+},
+    {
+      name: 'Astrologer',
+      selector: (row: Consultation) => row?.astrologerId?.astrologerName || 'N/A',
+      width: '200px'
+    },
+    {
+      name: 'Customer Name',
+      selector: (row: Consultation) => row?.fullName || 'N/A',
+      width: '200px'
+    },
+    {
+      name: 'Customer Email',
+      selector: (row: Consultation) => row?.customerId?.email || 'N/A',
+      width: '250px'
+    },
+    {
+      name: 'Mobile',
+      selector: (row: Consultation) => row?.mobileNumber || 'N/A',
+      width: '150px'
+    },
+    {
+      name: 'DOB / TOB',
+      selector: (row: Consultation) => `${row?.dateOfBirth || 'N/A'} / ${row?.timeOfBirth || 'N/A'}`,
+      width: '180px'
+    },
+    {
+      name: 'POB',
+      selector: (row: Consultation) => row?.placeOfBirth || 'N/A',
+      width: '150px'
+    },
+    {
+      name: 'Date',
+      selector: (row: Consultation) => moment(row?.date).format('DD-MM-YYYY'),
+      width: '130px'
+    },
+    {
+      name: 'Slot',
+      selector: (row: Consultation) => `${row?.slotId?.fromTime || ''} - ${row?.slotId?.toTime || ''}`,
+      width: '150px'
+    },
+    {
+      name: 'Type',
+      selector: (row: Consultation) => row?.consultationType || 'N/A',
+      width: '150px'
+    },
+    {
+      name: 'Topic',
+      selector: (row: Consultation) => row?.consultationTopic || 'N/A',
+      width: '150px'
+    },
+    {
+      name: 'Amount',
+      selector: (row: Consultation) => row?.paymentDetails?.paymentAmount || 'N/A',
+      width: '120px'
+    },
+    {
+      name: 'Mode',
+      selector: (row: Consultation) => row?.paymentDetails?.paymentMethod || 'N/A',
+      width: '120px'
+    },
+    {
+      name: 'Status',
+      selector: (row: Consultation) => (
+        <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${row?.status === 'completed'
+            ? 'bg-green-100 text-green-800'
+            : row?.status === 'cancelled'
+              ? 'bg-red-100 text-red-800'
+              : row?.status === 'booked'
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-gray-100 text-gray-800'
+          }`}>
+          <span className={`w-2 h-2 rounded-full mr-2 ${row?.status === 'completed'
+              ? 'bg-green-500'
+              : row?.status === 'cancelled'
+                ? 'bg-red-500'
+                : row?.status === 'booked'
+                  ? 'bg-blue-500'
+                  : 'bg-gray-500'
+            }`}></span>
+          {row?.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1) : 'N/A'}
+        </div>
+      ),
+      width: '120px'
+    },
+    {
+      name: 'Action',
+      cell: (row: Consultation) => (
+        <div className="flex gap-3 justify-center items-center">
+          <div
+            onClick={() => router.push(`/consultation/view-consultation?id=${row._id}`)}
+            className="cursor-pointer text-blue-600 hover:text-blue-800 transition-colors text-sm"
+          >
+            View
+          </div>
+          <div
+            onClick={() => router.push(`/consultation/edit-consultation?id=${row._id}`)}
+            className="cursor-pointer text-green-600 hover:text-green-800 transition-colors text-sm"
+          >
+            Edit
+          </div>
+        </div>
+      ),
+      width: "120px"
+    },
+  ];
 
-//   const columns = [
-//     { 
-//       name: 'S.No.', 
-//       selector: (row: Consultation, index: number) => (pagination.currentPage - 1) * pagination.limit + index + 1, 
-//       width: '80px' 
-//     },
-//     { 
-//       name: 'Astrologer', 
-//       selector: (row: Consultation) => row?.astrologerId?.astrologerName || 'N/A', 
-//       width: '200px' 
-//     },
-//     { 
-//       name: 'Customer Name', 
-//       selector: (row: Consultation) => row?.fullName || 'N/A', 
-//       width: '200px' 
-//     },
-//     { 
-//       name: 'Customer Email', 
-//       selector: (row: Consultation) => row?.customerId?.email || 'N/A', 
-//       width: '250px' 
-//     },
-//     { 
-//       name: 'Mobile', 
-//       selector: (row: Consultation) => row?.mobileNumber || 'N/A', 
-//       width: '150px' 
-//     },
-//     { 
-//       name: 'DOB / TOB', 
-//       selector: (row: Consultation) => `${row?.dateOfBirth || 'N/A'} / ${row?.timeOfBirth || 'N/A'}`, 
-//       width: '180px' 
-//     },
-//     { 
-//       name: 'POB', 
-//       selector: (row: Consultation) => row?.placeOfBirth || 'N/A', 
-//       width: '150px' 
-//     },
-//     { 
-//       name: 'Date', 
-//       selector: (row: Consultation) => moment(row?.date).format('DD-MM-YYYY'), 
-//       width: '130px' 
-//     },
-//     { 
-//       name: 'Slot', 
-//       selector: (row: Consultation) => `${row?.slotId?.fromTime || ''} - ${row?.slotId?.toTime || ''}`, 
-//       width: '150px' 
-//     },
-//     { 
-//       name: 'Type', 
-//       selector: (row: Consultation) => row?.consultationType || 'N/A', 
-//       width: '150px' 
-//     },
-//     { 
-//       name: 'Topic', 
-//       selector: (row: Consultation) => row?.consultationTopic || 'N/A', 
-//       width: '150px' 
-//     },
-//     { 
-//       name: 'Amount', 
-//       selector: (row: Consultation) => row?.paymentDetails?.paymentAmount || 'N/A', 
-//       width: '120px' 
-//     },
-//     { 
-//       name: 'Mode', 
-//       selector: (row: Consultation) => row?.paymentDetails?.paymentMethod || 'N/A', 
-//       width: '120px' 
-//     },
-//     { 
-//       name: 'Status', 
-//       selector: (row: Consultation) => row?.status || 'N/A', 
-//       width: '120px' 
-//     },
-//   ];
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 p-6">
-//       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-//         {/* Header */}
-//         <div className="flex justify-between items-center mb-6">
-//           <h1 className="text-2xl font-bold text-gray-800">Consultation Bookings</h1>
-//           <div className="text-sm text-gray-600">
-//             Total: {consultationData.length} bookings
-//           </div>
-//         </div>
-
-//         {/* Filter Section */}
-//         <div className="bg-gray-50 rounded-lg p-4 mb-6">
-//           <div className="flex justify-between items-center mb-4">
-//             <h3 className="text-lg font-semibold text-gray-700">Filters</h3>
-//             <button
-//               onClick={clearFilters}
-//               className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition duration-200"
-//             >
-//               Clear Filters
-//             </button>
-//           </div>
-          
-//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-//             {/* Status Filter */}
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-//               <select 
-//                 name="status" 
-//                 value={filters.status} 
-//                 onChange={handleFilterChange}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-//               >
-//                 <option value="">All Status</option>
-//                 <option value="booked">Upcoming</option>
-//                 <option value="completed">Completed</option>
-//                 <option value="cancelled">Cancelled</option>
-//                 <option value="expired">Expired</option>
-//               </select>
-//             </div>
-
-//             {/* Customer Name Filter */}
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-//               <input 
-//                 type="text" 
-//                 placeholder="Customer Name" 
-//                 name="customerName" 
-//                 value={filters.customerName} 
-//                 onChange={handleFilterChange}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-//               />
-//             </div>
-
-//             {/* Astrologer Name Filter */}
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-1">Astrologer Name</label>
-//               <input 
-//                 type="text" 
-//                 placeholder="Astrologer Name" 
-//                 name="astrologerName" 
-//                 value={filters.astrologerName} 
-//                 onChange={handleFilterChange}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-//               />
-//             </div>
-
-//             {/* Date Range Filters */}
-//             <div className="grid grid-cols-2 gap-2">
-//               <div>
-//                 <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-//                 <input 
-//                   type="date" 
-//                   name="startDate" 
-//                   value={filters.startDate} 
-//                   onChange={handleDateRangeChange}
-//                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-//                 />
-//               </div>
-//               <div>
-//                 <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-//                 <input 
-//                   type="date" 
-//                   name="endDate" 
-//                   value={filters.endDate} 
-//                   onChange={handleDateRangeChange}
-//                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-//                 />
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* DataTable */}
-//         <MainDatatable
-//           columns={columns}
-//           data={consultationData}
-//           pagination={{
-//             totalPages: pagination.totalPages,
-//             currentPage: pagination.currentPage,
-//             onPageChange: handlePageChange
-//           }}
-//           isLoading={loading}
-//         />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Consultation;
-
-// // MainDatatable Component
-// interface MainDatatableProps {
-//   columns: any[];
-//   data: Consultation[];
-//   pagination?: {
-//     totalPages: number;
-//     currentPage: number;
-//     onPageChange: (page: number) => void;
-//   };
-//   isLoading?: boolean;
-// }
-
-// const MainDatatable: React.FC<MainDatatableProps> = ({ 
-//   columns, 
-//   data, 
-//   pagination,
-//   isLoading = false 
-// }) => {
-//   const { currentPage = 1, totalPages = 1, onPageChange } = pagination || {};
-
-//   if (isLoading) {
-//     return (
-//       <div className="flex justify-center items-center min-h-64">
-//         <div className="flex flex-col items-center gap-3">
-//           <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-//           <div className="text-gray-600">Loading consultation data...</div>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div>
-//       <DataTable
-//         columns={columns}
-//         data={data}
-//         customStyles={DataTableCustomStyles}
-//         fixedHeader
-//         pagination={!pagination} // Use built-in pagination if no custom pagination
-//       />
-      
-//       {pagination && totalPages > 1 && (
-//         <div className="flex justify-center items-center mt-6 space-x-2">
-//           <button
-//             onClick={() => onPageChange(currentPage - 1)}
-//             disabled={currentPage === 1}
-//             className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition duration-200 text-sm"
-//           >
-//             Previous
-//           </button>
-          
-//           <div className="flex space-x-1">
-//             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-//               let pageNum;
-//               if (totalPages <= 5) {
-//                 pageNum = i + 1;
-//               } else if (currentPage <= 3) {
-//                 pageNum = i + 1;
-//               } else if (currentPage >= totalPages - 2) {
-//                 pageNum = totalPages - 4 + i;
-//               } else {
-//                 pageNum = currentPage - 2 + i;
-//               }
-
-//               return (
-//                 <button
-//                   key={pageNum}
-//                   onClick={() => onPageChange(pageNum)}
-//                   className={`px-3 py-1 border rounded-lg text-sm transition duration-200 ${
-//                     currentPage === pageNum
-//                       ? 'bg-blue-500 text-white border-blue-500'
-//                       : 'border-gray-300 hover:bg-gray-50'
-//                   }`}
-//                 >
-//                   {pageNum}
-//                 </button>
-//               );
-//             })}
-//           </div>
-
-//           <button
-//             onClick={() => onPageChange(currentPage + 1)}
-//             disabled={currentPage === totalPages}
-//             className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition duration-200 text-sm"
-//           >
-//             Next
-//           </button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-
-import React from 'react'
-
-export default function page() {
   return (
-    <div>page</div>
-  )
+    <>
+      <div className="p-5 bg-white mb-5 rounded-lg border border-gray-200">
+        <DatatableHeading
+          title="Consultation Bookings"
+          data={consultationData}
+        />
+
+        {/* Filter Section */}
+        <div className="flex flex-wrap gap-3 mb-5 bg-white">
+          <select
+            name="status"
+            value={filters.status}
+            onChange={handleFilterChange}
+            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+          >
+            <option value="">All Status</option>
+            <option value="booked">Upcoming</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="expired">Expired</option>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Customer Name"
+            name="customerName"
+            value={filters.customerName}
+            onChange={handleFilterChange}
+            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+          />
+
+          <input
+            type="text"
+            placeholder="Astrologer Name"
+            name="astrologerName"
+            value={filters.astrologerName}
+            onChange={handleFilterChange}
+            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+          />
+
+          <input
+            type="date"
+            name="startDate"
+            value={filters.startDate}
+            onChange={handleFilterChange}
+            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+          />
+          <input
+            type="date"
+            name="endDate"
+            value={filters.endDate}
+            onChange={handleFilterChange}
+            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+          />
+        </div>
+
+        <MainDatatable
+          columns={columns}
+          data={consultationData}
+          isLoading={loading}
+          // pagination={{
+          //   totalPages: pagination.totalPages,
+          //   currentPage: pagination.currentPage,
+          //   onPageChange: handlePageChange
+          // }}
+        />
+        {pagination.totalPages > 1 && (
+  <div className="flex justify-center mt-5 space-x-2">
+    {Array.from({ length: pagination.totalPages }, (_, i) => (
+      <button
+        key={i}
+        onClick={() => handlePageChange(i + 1)}
+        className={`px-3 py-1 border rounded-md text-sm font-medium ${
+          pagination.currentPage === i + 1
+            ? 'bg-blue-600 text-white border-blue-600'
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+        }`}
+      >
+        {i + 1}
+      </button>
+    ))}
+  </div>
+)}
+      </div>
+    </>
+  );
 }
