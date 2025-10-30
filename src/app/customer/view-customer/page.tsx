@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import moment from 'moment';
 import Image from 'next/image';
@@ -259,13 +259,14 @@ const ViewCustomer = () => {
   };
 
   return (
+     <Suspense fallback={<div>Loading...</div>}>
     <div className="p-5">
       {/* Customer Info Card */}
       <div className="bg-white rounded-lg shadow-md mb-5 p-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Profile Section */}
           <div className="flex items-center gap-5">
-            {/* <div className="relative w-24 h-24 flex-shrink-0">
+            <div className="relative w-24 h-24 flex-shrink-0">
               {image ? (
                 <Image
 src={`${baseURL}/uploads/${image}`}                  alt={customerName}
@@ -282,7 +283,7 @@ src={`${baseURL}/uploads/${image}`}                  alt={customerName}
                   {customerName?.charAt(0)?.toUpperCase()}
                 </div>
               )}
-            </div> */}
+            </div>
             <div className="flex flex-col gap-2">
               <div className="font-bold text-lg text-gray-800">{customerName}</div>
               <div className="text-gray-600">{phoneNumber}</div>
@@ -418,7 +419,9 @@ src={`${baseURL}/uploads/${image}`}                  alt={customerName}
 )}
       </div>
     </div>
+    </Suspense>
   );
+  
 };
 
 export default ViewCustomer;

@@ -22,7 +22,7 @@
 //   columns: Column[];
 //   url?: string;
 //   title?: string;
-//   addButonActive?: boolean;
+//   addButtonActive?: boolean;
 //   buttonMessage?: string;
 //   isLoading?: boolean;
 // }
@@ -60,7 +60,7 @@
 //   columns, 
 //   url, 
 //   title = 'Title', 
-//   addButonActive = true, 
+//   addButtonActive = true, 
 //   buttonMessage = '',
 //   isLoading = false
 // }) => {
@@ -71,7 +71,7 @@
 //   const filteredData = DeepSearchSpace(data, searchText);
 
 //   const onClickAdd = () => {
-//     if (addButonActive && url) {
+//     if (addButtonActive && url) {
 //       router.push(url);
 //     } else {
 //       Swal.fire({ 
@@ -250,7 +250,7 @@ interface MainDatatableProps {
   columns: Column[];
   url?: string;
   title?: string;
-  addButonActive?: boolean;
+  addButtonActive?: boolean;
   buttonMessage?: string;
   isLoading?: boolean;
 }
@@ -288,7 +288,7 @@ const MainDatatable: React.FC<MainDatatableProps> = ({
   columns, 
   url, 
   title = 'Title', 
-  addButonActive = true, 
+  addButtonActive = true, 
   buttonMessage = '',
   isLoading = false
 }) => {
@@ -299,7 +299,7 @@ const MainDatatable: React.FC<MainDatatableProps> = ({
   const filteredData = DeepSearchSpace(data, searchText);
 
   const onClickAdd = () => {
-    if (addButonActive && url) {
+    if (addButtonActive && url) {
       router.push(url);
     } else {
       Swal.fire({ 

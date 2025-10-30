@@ -5,8 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaAngleDown } from "react-icons/fa";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import * as CommonActions from "@/redux/actions/commonActions";
 
 const menuAnimation = {
   hidden: { 
@@ -50,18 +48,15 @@ interface SidebarMenuProps {
     hidden: { width: number; opacity: number; transition: { duration: number } };
     show: { opacity: number; width: string; transition: { duration: number } };
   };
+  isSidebarOpen: boolean;
 }
 
-const SidebarMenu = ({ route, showAnimation }: SidebarMenuProps) => {
-  const dispatch = useAppDispatch();
+const SidebarMenu = ({ route, showAnimation, isSidebarOpen }: SidebarMenuProps) => {
   const pathname = usePathname();
-  const isSidebarOpen = useAppSelector((state) => state?.commonReducer?.isSidebarOpen);
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-    dispatch(CommonActions.setIsSidebarOpen(true));
   };
 
   useEffect(() => {

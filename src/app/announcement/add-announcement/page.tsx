@@ -1,45 +1,50 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface InputFieldError {
     description?: string;
 }
 
-interface AnnouncementData {
-    _id: string;
-    description: string;
-}
-
 const AddAnnouncement = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const editorRef = useRef<HTMLDivElement>(null);
-    const [editData, setEditData] = useState<AnnouncementData | null>(null);
-    const [mode, setMode] = useState<string>("Add");
-    const [description, setDescription] = useState<string>("");
-    const [inputFieldError, setInputFieldError] = useState<InputFieldError>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [notification, setNotification] = useState({ show: false, type: '', message: '' });
-    const [isMounted, setIsMounted] = useState(false);
+    
+    // Get data from URL parameters
+    const editMode = searchParams.get('edit') === 'true';
+    const announcementId = searchParams.get('id');
+    const announcementDescriptionFromUrl = searchParams.get('description');
 
-    // Initialize component
+    const [description, setDescription] = useState<string>(announcementDescriptionFromUrl ? decodeURIComponent(announcementDescriptionFromUrl) : '');
+    const [inputFieldError, setInputFieldError] = useState<InputFieldError>({});
+    const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(editMode && !announcementDescriptionFromUrl);
+    const [notification, setNotification] = useState({ show: false, type: '', message: '' });
+
+    // Fetch announcement data if in edit mode and description is not in URL
     useEffect(() => {
-        setIsMounted(true);
-        
-        const editDataParam = searchParams.get('editData');
-        if (editDataParam) {
-            try {
-                const parsedData = JSON.parse(editDataParam);
-                setEditData(parsedData);
-                setMode("Edit");
-                setDescription(parsedData.description || "");
-            } catch (err) {
-                console.error("Error parsing edit data:", err);
+        const fetchAnnouncementData = async () => {
+            if (editMode && announcementId && !announcementDescriptionFromUrl) {
+                try {
+                    setFetching(true);
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/get-announcement/${announcementId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.data) {
+                        setDescription(data.data.description || '');
+                    }
+                } catch (error) {
+                    console.error('Error fetching announcement:', error);
+                } finally {
+                    setFetching(false);
+                }
             }
-        }
-    }, [searchParams]);
+        };
+
+        fetchAnnouncementData();
+    }, [editMode, announcementId, announcementDescriptionFromUrl]);
 
     // Update editor content when description changes
     useEffect(() => {
@@ -88,89 +93,95 @@ const AddAnnouncement = () => {
         return isValid;
     };
 
-    // Handle Submit
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!handleValidation()) {
-            return;
-        }
-
-        setIsSubmitting(true);
-
+    // API call functions
+    const createAnnouncement = async (announcementData: { description: string }) => {
         try {
-            if (editData) {
-                const response = await fetch('/api/admin/update-announcement', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        announcementId: editData._id,
-                        description: description
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update announcement');
-                }
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showNotificationMessage('success', 'Announcement updated successfully');
-                    setTimeout(() => {
-                        router.push("/announcement");
-                    }, 1000);
-                } else {
-                    throw new Error(data.message || 'Failed to update announcement');
-                }
-            } else {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/add-announcement`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        description: description
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to add announcement');
-                }
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showNotificationMessage('success', 'Announcement added successfully');
-                    setTimeout(() => {
-                        router.push("/announcement");
-                    }, 1000);
-                } else {
-                    throw new Error(data.message || 'Failed to add announcement');
-                }
-            }
-        } catch (err) {
-            console.error('Error submitting announcement:', err);
-            showNotificationMessage('error', err instanceof Error ? err.message : 'Failed to submit announcement');
-        } finally {
-            setIsSubmitting(false);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/add-announcement`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(announcementData),
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error creating announcement:', error);
+            throw error;
         }
     };
 
-    if (!isMounted) {
+    const updateAnnouncement = async (announcementData: { announcementId: string; description: string }) => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/update-announcement`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(announcementData),
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error updating announcement:', error);
+            throw error;
+        }
+    };
+
+    // Handle Submit - Creating/Updating Announcement
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (handleValidation()) {
+            setLoading(true);
+
+            try {
+                if (editMode && announcementId) {
+                    // Update existing announcement
+                    const result = await updateAnnouncement({
+                        announcementId: announcementId,
+                        description: description
+                    });
+                    
+                    if (result.success) {
+                        showNotificationMessage('success', 'Announcement updated successfully');
+                        setTimeout(() => {
+                            router.push("/announcement");
+                        }, 1000);
+                    } else {
+                        console.error('Failed to update announcement:', result.message);
+                        showNotificationMessage('error', result.message || 'Failed to update announcement');
+                    }
+                } else {
+                    // Create new announcement
+                    const result = await createAnnouncement({
+                        description: description
+                    });
+                    
+                    if (result.success) {
+                        showNotificationMessage('success', 'Announcement added successfully');
+                        setTimeout(() => {
+                            router.push("/announcement");
+                        }, 1000);
+                    } else {
+                        console.error('Failed to create announcement:', result.message);
+                        showNotificationMessage('error', result.message || 'Failed to create announcement');
+                    }
+                }
+            } catch (error) {
+                console.error('Error submitting announcement:', error);
+                showNotificationMessage('error', 'Failed to submit announcement');
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
+    if (fetching) {
         return (
-            <div className="p-5 bg-white mb-5 shadow-md rounded-lg">
-                <div className="flex justify-between items-center mb-8">
-                    <div className="text-2xl font-medium text-black">Loading...</div>
-                </div>
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="text-xl text-gray-600">Loading announcement data...</div>
             </div>
         );
     }
 
     return (
+        
         <>
+         <Suspense fallback={<div>Loading...</div>}>
             {notification.show && (
                 <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
                     notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
@@ -182,7 +193,7 @@ const AddAnnouncement = () => {
             <div className="p-5 bg-white mb-5 shadow-md rounded-lg">
                 <div className="flex justify-between items-center mb-8">
                     <div className="text-2xl font-medium text-black">
-                        {mode} Announcement
+                        {editMode ? 'Edit' : 'Add'} Announcement
                     </div>
                     <button
                         onClick={() => router.push("/announcement")}
@@ -301,19 +312,28 @@ const AddAnnouncement = () => {
                         )}
                     </div>
 
-                    <div className="flex justify-between">
+                    <div className="flex justify-start">
                         <button
                             onClick={handleSubmit}
-                            disabled={isSubmitting}
-                            className={`font-medium bg-[#EF4444] text-white py-2.5 px-5 rounded cursor-pointer text-base hover:bg-[#DC2626] transition-colors ${
-                                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                            disabled={loading}
+                            className={`font-medium bg-[#EF4444] text-white py-2.5 px-6 rounded cursor-pointer text-base hover:bg-[#DC2626] transition-colors flex items-center gap-2 ${
+                                loading ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            {isSubmitting ? 'Submitting...' : 'Submit'}
+                            {loading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    {editMode ? 'Updating...' : 'Submitting...'}
+                                </>
+                            ) : (
+                                editMode ? 'Update' : 'Submit'
+                            )}
                         </button>
                     </div>
                 </div>
             </div>
+       
+        </Suspense>
         </>
     );
 };

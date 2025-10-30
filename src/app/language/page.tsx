@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Edit, Trash2 } from "lucide-react";
 import MainDatatable from "@/components/common/MainDatatable";
+import { DeleteSvg, EditSvg } from "@/components/svgs/page";
+import Swal from "sweetalert2";
 
 interface LanguageData {
     _id: string;
@@ -21,7 +22,7 @@ const Language = () => {
     const categoryColumns = [
         { 
             name: 'S.No.', 
-            selector: (row: LanguageData) => languageData.indexOf(row) + 1, 
+            selector: (row: LanguageData, index?: number) => (index || 0) + 1, 
             width: '80px'
         },
         { 
@@ -34,15 +35,15 @@ const Language = () => {
                 <div className="flex gap-5 items-center">
                     <div 
                         onClick={() => handleEdit(row)} 
-                        className="cursor-pointer hover:text-blue-600 transition-colors"
+                        className="cursor-pointer hover:opacity-70 transition-opacity"
                     >
-                        <Edit size={18} />
+                        <EditSvg />
                     </div>
                     <div 
                         onClick={() => handleDelete(row._id, row.languageName)} 
-                        className="cursor-pointer hover:text-red-600 transition-colors"
+                        className="cursor-pointer hover:opacity-70 transition-opacity"
                     >
-                        <Trash2 size={18} />
+                        <DeleteSvg />
                     </div>
                 </div>
             ),
@@ -67,7 +68,6 @@ const Language = () => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    // 'Authorization': `Bearer ${token}`
                 },
             });
 
@@ -76,10 +76,9 @@ const Language = () => {
             }
 
             const data = await response.json();
-            console.log("API Response:", data); // Debug log
+            console.log("API Response:", data);
             
             if (data.success) {
-                // FIXED: Changed from data.announcement to data.languageData
                 setLanguageData(data.languageData || []);
             } else {
                 throw new Error(data.message || 'Failed to fetch languages');
@@ -92,45 +91,72 @@ const Language = () => {
         }
     };
 
-    const handleEdit = (row: LanguageData) => {
-        // Using URLSearchParams to pass data
-        const params = new URLSearchParams();
-        params.set('editData', JSON.stringify(row));
-        router.push(`/language/edit-language?${params.toString()}`);
-    };
+    // Updated edit function to pass data via URL params
+   const handleEdit = (language: LanguageData) => {
+    // Create URLSearchParams to pass data
+    const params = new URLSearchParams();
+    params.set('edit', 'true');
+    params.set('id', language._id);
+    params.set('name', encodeURIComponent(language.languageName));
+    
+    router.push(`/language/add-language?${params.toString()}`);
+};
 
+    // Delete function
     const handleDelete = async (langId: string, languageName: string) => {
-        if (!confirm(`Are you sure you want to delete "${languageName}"?`)) {
-            return;
-        }
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: `You want to delete "${languageName}"!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#d1d5db',
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
+        });
 
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete-language/${langId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // 'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ language: languageName }),
-            });
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete_language`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ langId: langId }),
+                });
 
-            if (!response.ok) {
-                throw new Error('Failed to delete language');
+                // Handle 204 No Content and other success statuses
+                if (response.status === 204 || response.ok) {
+                    await fetchLanguages();
+                    Swal.fire(
+                        'Deleted!',
+                        `"${languageName}" has been deleted successfully.`,
+                        'success'
+                    );
+                } else {
+                    // Handle error responses
+                    const errorText = await response.text();
+                    let errorMessage = `Server error: ${response.status}`;
+                    
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        errorMessage = errorData.message || errorMessage;
+                    } catch {
+                        if (errorText) errorMessage = errorText;
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+
+            } catch (err) {
+                console.error('Error deleting language:', err);
+                Swal.fire(
+                    'Error!',
+                    err instanceof Error ? err.message : 'Failed to delete language',
+                    'error'
+                );
             }
-
-            const data = await response.json();
-            
-            if (data.success) {
-                // Refresh the languages list
-                fetchLanguages();
-                // Show success message
-                showNotificationMessage('success', 'Language deleted successfully');
-            } else {
-                throw new Error(data.message || 'Failed to delete language');
-            }
-        } catch (err) {
-            console.error('Error deleting language:', err);
-            showNotificationMessage('error', err instanceof Error ? err.message : 'Failed to delete language');
         }
     };
 
@@ -179,9 +205,10 @@ const Language = () => {
                 columns={categoryColumns} 
                 title={'Language'} 
                 url={'/language/add-language'} 
+                isLoading={loading}
             />
         </>
     );
-}
+};
 
 export default Language;

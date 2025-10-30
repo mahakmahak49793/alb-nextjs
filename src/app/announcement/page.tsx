@@ -3,13 +3,15 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import MainDatatable from "@/components/common/MainDatatable";
-import { EditSvg, DeleteSvg } from "@/assets/svg";
+import { DeleteSvg, EditSvg } from "@/components/svgs/page";
 import { Eye } from "lucide-react";
+import Swal from "sweetalert2";
 
 interface Announcement {
   _id: string;
   description: string;
-  // Add other properties as needed
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const Announcement = () => {
@@ -43,7 +45,7 @@ const Announcement = () => {
             }
             
             const data = await response.json();
-            console.log("asdfddddddddddddddddd",data.announcement)
+            console.log("Announcements data:", data.announcement);
             if (data.success) {
                 setAnnouncementData(data.announcement);
             } else {
@@ -57,42 +59,77 @@ const Announcement = () => {
         }
     };
 
-    // Function to delete announcement
-    const deleteAnnouncement = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this announcement?')) {
-            return;
-        }
+    // Delete announcement using POST method with SweetAlert confirmation
+    const deleteAnnouncement = async (announcementId: string) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You want to delete this announcement!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#d1d5db',
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
+        });
 
-        try {
-            const response = await fetch(`/api/admin/delete-announcement/${id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete announcement');
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete-announcement`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ announcementId }),
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Refresh the announcements list after deletion
+                    await getAllAnnouncements();
+                    Swal.fire(
+                        'Deleted!',
+                        'Announcement has been deleted successfully.',
+                        'success'
+                    );
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        data.message || 'Failed to delete announcement',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                console.error('Error deleting announcement:', error);
+                Swal.fire(
+                    'Error!',
+                    'Failed to delete announcement',
+                    'error'
+                );
             }
-
-            const data = await response.json();
-            
-            if (data.success) {
-                // Refresh the announcements list
-                await getAllAnnouncements();
-                // You can add a toast notification here
-                alert('Announcement deleted successfully');
-            } else {
-                throw new Error(data.message || 'Failed to delete announcement');
-            }
-        } catch (err) {
-            console.error('Error deleting announcement:', err);
-            alert(err instanceof Error ? err.message : 'Failed to delete announcement');
         }
+    };
+
+    // Function to edit announcement - pass data via URL params
+    const handleEditAnnouncement = (announcement: Announcement) => {
+        // Create URLSearchParams to pass data
+        const params = new URLSearchParams();
+        params.set('edit', 'true');
+        params.set('id', announcement._id);
+        if (announcement.description) {
+            // Encode the description for URL safety
+            params.set('description', encodeURIComponent(announcement.description));
+        }
+        
+        router.push(`/announcement/add-announcement?${params.toString()}`);
     };
 
     //* DataTable Columns
     const columns = [
         { 
             name: 'S.No.', 
-            selector: (row: Announcement) => announcementData.indexOf(row) + 1, 
+            selector: (row: Announcement, index?: number) => (index || 0) + 1, 
             width: '80px' 
         },
         { 
@@ -111,7 +148,7 @@ const Announcement = () => {
                             }} 
                             className="cursor-pointer hover:text-blue-600 transition-colors flex-1" 
                         />
-                        <Eye 
+                        {/* <Eye 
                             size={16} 
                             className="text-gray-500 hover:text-blue-600 cursor-pointer transition-colors"
                             onClick={() => openTextModal({ 
@@ -119,32 +156,29 @@ const Announcement = () => {
                                 text: row?.description, 
                                 type: 'editor' 
                             })}
-                        />
+                        /> */}
                     </div>
                 ) : 'N/A' 
         },
         {
             name: 'Action',
             cell: (row: Announcement) => (
-                <div className="flex gap-4 items-center">
-                    <button 
-                        onClick={() => router.push(`/announcement/edit-announcement?id=${row._id}`)} 
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                        title="Edit Announcement"
+                <div className="flex gap-5 items-center">
+                    <div 
+                        onClick={() => handleEditAnnouncement(row)} 
+                        className="cursor-pointer hover:opacity-70 transition-opacity"
                     >
                         <EditSvg />
-                    </button>
-                    <button 
+                    </div>
+                    <div 
                         onClick={() => deleteAnnouncement(row._id)} 
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                        title="Delete Announcement"
+                        className="cursor-pointer hover:opacity-70 transition-opacity"
                     >
                         <DeleteSvg />
-                    </button>
+                    </div>
                 </div>
             ),
-            width: "120px", 
-            center: true
+            width: "180px"
         },
     ];
 
@@ -219,6 +253,7 @@ const Announcement = () => {
                     columns={columns} 
                     title={'Announcement'} 
                     url={'/announcement/add-announcement'} 
+                    isLoading={loading}
                 />
             </div>
         </>

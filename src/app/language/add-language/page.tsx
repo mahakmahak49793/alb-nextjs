@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface LanguageDetail {
@@ -11,41 +11,24 @@ interface InputFieldError {
     title?: string;
 }
 
-interface LanguageData {
-    _id: string;
-    languageName: string;
-}
-
 // Regex pattern for alphabetic characters
 const Regex_Accept_Alpha = /^[A-Za-z\s]+$/;
 
 const AddLanguage = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [editData, setEditData] = useState<LanguageData | null>(null);
-    const [mode, setMode] = useState<string>("Add");
-    const [languageDetail, setLanguageDetail] = useState<LanguageDetail>({ title: '' });
-    const [inputFieldError, setInputFieldError] = useState<InputFieldError>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [notification, setNotification] = useState({ show: false, type: '', message: '' });
-    const [isMounted, setIsMounted] = useState(false);
+    
+    // Get data from URL parameters
+    const editMode = searchParams.get('edit') === 'true';
+    const languageId = searchParams.get('id');
+    const languageName = searchParams.get('name');
 
-    // Initialize component
-    useEffect(() => {
-        setIsMounted(true);
-        
-        const editDataParam = searchParams.get('editData');
-        if (editDataParam) {
-            try {
-                const parsedData = JSON.parse(editDataParam);
-                setEditData(parsedData);
-                setMode("Edit");
-                setLanguageDetail({ title: parsedData.languageName || '' });
-            } catch (err) {
-                console.error("Error parsing edit data:", err);
-            }
-        }
-    }, [searchParams]);
+    const [languageDetail, setLanguageDetail] = useState<LanguageDetail>({ 
+        title: languageName ? decodeURIComponent(languageName) : '' 
+    });
+    const [inputFieldError, setInputFieldError] = useState<InputFieldError>({});
+    const [loading, setLoading] = useState(false);
+    const [notification, setNotification] = useState({ show: false, type: '', message: '' });
 
     // Show notification
     const showNotificationMessage = (type: string, message: string) => {
@@ -56,7 +39,7 @@ const AddLanguage = () => {
     };
 
     // Handle Input Field Error
-    const handleInputFieldError = (input: string, value: string | null) => {
+    const handleInputFieldError = (input: keyof InputFieldError, value: string) => {
         setInputFieldError((prev) => ({ ...prev, [input]: value }));
     };
 
@@ -82,92 +65,89 @@ const AddLanguage = () => {
         return isValid;
     };
 
-    // Handle Submit
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!handleValidation()) {
-            return;
-        }
-
-        setIsSubmitting(true);
-        const { title } = languageDetail;
-
+    // API call functions
+    const createLanguage = async (languageData: { languageName: string }) => {
         try {
-            if (editData) {
-                // Update existing language
-                const response = await fetch('/api/admin/update-language', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        langId: editData._id,
-                        languageName: title
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update language');
-                }
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showNotificationMessage('success', 'Language updated successfully');
-                    setTimeout(() => {
-                        router.push("/language");
-                    }, 1000);
-                } else {
-                    throw new Error(data.message || 'Failed to update language');
-                }
-            } else {
-                // Create new language
-                const response = await fetch('/api/admin/create-language', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        languageName: title
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to create language');
-                }
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showNotificationMessage('success', 'Language created successfully');
-                    setTimeout(() => {
-                        router.push("/language");
-                    }, 1000);
-                } else {
-                    throw new Error(data.message || 'Failed to create language');
-                }
-            }
-        } catch (err) {
-            console.error('Error submitting language:', err);
-            showNotificationMessage('error', err instanceof Error ? err.message : 'Failed to submit language');
-        } finally {
-            setIsSubmitting(false);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/create_language`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(languageData),
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error creating language:', error);
+            throw error;
         }
     };
 
-    if (!isMounted) {
-        return (
-            <div style={{ padding: "20px", backgroundColor: "#fff", marginBottom: "20px", boxShadow: '0px 0px 5px lightgrey', borderRadius: "10px" }}>
-                <div style={{ fontSize: "22px", fontWeight: "500" }}>Loading...</div>
-            </div>
-        );
-    }
+    // Updated updateLanguage function to match API expected fields
+    const updateLanguage = async (languageData: { langId: string; languageName: string }) => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/update_language`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(languageData),
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error updating language:', error);
+            throw error;
+        }
+    };
+
+    // Handle Submit - Creating/Updating Language
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (handleValidation()) {
+            setLoading(true);
+            const { title } = languageDetail;
+
+            try {
+                if (editMode && languageId) {
+                    // Update existing language - using correct field names
+                    const result = await updateLanguage({
+                        langId: languageId,  // Changed from languageId to langId
+                        languageName: title
+                    });
+                    
+                    if (result.success) {
+                        showNotificationMessage('success', 'Language updated successfully');
+                        setTimeout(() => {
+                            router.push("/language");
+                        }, 1000);
+                    } else {
+                        console.error('Failed to update language:', result.message);
+                        showNotificationMessage('error', result.message || 'Failed to update language');
+                    }
+                } else {
+                    // Create new language
+                    const result = await createLanguage({
+                        languageName: title
+                    });
+                    
+                    if (result.success) {
+                        showNotificationMessage('success', 'Language created successfully');
+                        setTimeout(() => {
+                            router.push("/language");
+                        }, 1000);
+                    } else {
+                        console.error('Failed to create language:', result.message);
+                        showNotificationMessage('error', result.message || 'Failed to create language');
+                    }
+                }
+            } catch (error) {
+                console.error('Error submitting language:', error);
+                showNotificationMessage('error', 'Failed to submit language');
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
 
     return (
+         
         <>
+        <Suspense fallback={<div>Loading...</div>}>
             {/* Notification */}
             {notification.show && (
                 <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -177,82 +157,63 @@ const AddLanguage = () => {
                 </div>
             )}
 
-            <div style={{ padding: "20px", backgroundColor: "#fff", marginBottom: "20px", boxShadow: '0px 0px 5px lightgrey', borderRadius: "10px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px", backgroundColor: "#fff" }}>
-                    <div style={{ fontSize: "22px", fontWeight: "500", color: "#000" }}>
-                        {mode} Language
+            <div className="min-h-screen bg-gray-50 p-6">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="text-xl font-semibold text-gray-800">
+                            {editMode ? 'Edit' : 'Add'} Language
+                        </div>
+                        <button 
+                            onClick={() => router.push("/language")}
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg cursor-pointer text-sm font-medium transition duration-200"
+                        >
+                            Display
+                        </button>
                     </div>
-                    <div 
-                        onClick={() => router.push("/language")} 
-                        style={{ fontWeight: "500", backgroundColor: "#EF4444", color: "#fff", padding: "5px 10px", borderRadius: "5px", cursor: "pointer", fontSize: "14px" }}
-                    >
-                        Display
-                    </div>
-                </div>
 
-                <div style={{ display: "grid", gap: "24px" }}>
-                    <div style={{ width: "100%" }}>
-                        <div style={{ marginBottom: "8px" }}>
-                            <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: "500", color: "#374151" }}>
-                                Title <span style={{ color: "red" }}>*</span>
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Language Name <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 name="title"
                                 value={languageDetail.title}
                                 onChange={handleInputField}
-                                onFocus={() => handleInputFieldError("title", null)}
-                                style={{
-                                    width: "100%",
-                                    padding: "16.5px 14px",
-                                    fontSize: "16px",
-                                    border: inputFieldError.title ? "1px solid #D32F2F" : "1px solid #d1d5db",
-                                    borderRadius: "4px",
-                                    outline: "none",
-                                    backgroundColor: "#fff",
-                                    transition: "border-color 0.2s"
-                                }}
-                                onFocusCapture={(e) => {
-                                    if (!inputFieldError.title) {
-                                        e.currentTarget.style.borderColor = "#1976d2";
-                                    }
-                                }}
-                                onBlurCapture={(e) => {
-                                    if (!inputFieldError.title) {
-                                        e.currentTarget.style.borderColor = "#d1d5db";
-                                    }
-                                }}
+                                onFocus={() => handleInputFieldError("title", "")}
+                                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    inputFieldError.title ? 'border-red-500' : 'border-gray-300'
+                                }`}
+                                placeholder="Enter language name"
                             />
                             {inputFieldError.title && (
-                                <div style={{ color: "#D32F2F", fontSize: "12px", marginTop: "4px", marginLeft: "14px", fontWeight: "400" }}>
-                                    {inputFieldError.title}
-                                </div>
+                                <p className="text-red-500 text-sm mt-1">{inputFieldError.title}</p>
                             )}
                         </div>
-                    </div>
 
-                    <div style={{ width: "100%" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                            <div 
-                                onClick={handleSubmit} 
-                                style={{ 
-                                    fontWeight: "500", 
-                                    backgroundColor: isSubmitting ? "#9CA3AF" : "#EF4444", 
-                                    color: "#fff", 
-                                    padding: "10px 20px", 
-                                    borderRadius: "5px", 
-                                    cursor: isSubmitting ? "not-allowed" : "pointer", 
-                                    fontSize: "15px",
-                                    opacity: isSubmitting ? 0.5 : 1
-                                }}
+                        <div className="flex justify-start">
+                            <button 
+                                onClick={handleSubmit}
+                                disabled={loading}
+                                className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg cursor-pointer font-medium transition duration-200 flex items-center gap-2"
                             >
-                                {isSubmitting ? 'Submitting...' : 'Submit'}
-                            </div>
+                                {loading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        {editMode ? 'Updating...' : 'Submitting...'}
+                                    </>
+                                ) : (
+                                    editMode ? 'Update' : 'Submit'
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-        </>
+       
+        </Suspense>
+         </>
     );
 };
 
