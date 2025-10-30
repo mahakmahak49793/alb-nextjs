@@ -6,10 +6,10 @@ import moment from 'moment';
 import { Avatar, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { TableColumn } from 'react-data-table-component';
-import MainDatatable from '@/components/datatable/MainDatatable';
+import MainDatatable from "@/components/common/MainDatatable";
 import DatatableHeading from '@/components/datatable/DatatableHeading';
-import { EditSvg, DeleteSvg } from '@/assets/svg';
 import { base_url } from '@/lib/api-routes';
+import { EditSvg, DeleteSvg } from '@/components/svgs/page';
 // import logo from '@/assets/images/logo.png';
 
 // ---------------------------------------------------------------------
@@ -221,20 +221,12 @@ const AstroblogPage: React.FC = () => {
   // ✅ Render
   return (
     <>
-      <div
-        style={{
-          padding: '20px',
-          backgroundColor: '#fff',
-          marginBottom: '20px',
-          boxShadow: '0px 0px 5px lightgrey',
-          borderRadius: '10px',
-        }}
-      >
-        <DatatableHeading
+     
+        {/* <DatatableHeading
           title="Astroblog"
           url="/astro-blog/blog/add-blog"
           data={csvData}
-        />
+        /> */}
 
         <div
           style={{
@@ -246,7 +238,7 @@ const AstroblogPage: React.FC = () => {
             backgroundColor: '#fff',
           }}
         >
-          <input
+          {/* <input
             type="search"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -261,13 +253,13 @@ const AstroblogPage: React.FC = () => {
               fontSize: '15px',
               outline: 'none',
             }}
-          />
+          /> */}
         </div>
 
-        <MainDatatable columns={columns} data={filteredData} isLoading={loading} />
-      </div>
+        {/* <MainDatatable  title={'Review'}  columns={columns} data={filteredData} isLoading={loading}   url={'/astro-blog/blog/add-blog'}/> */}
+            <MainDatatable  title={'Review'}  columns={columns as any} data={filteredData} isLoading={loading}   url={'/astro-blog/blog/add-blog'}/>
 
-      {/* Description Modal */}
+      {/* Description Modal */} 
       <Dialog
         open={textModal.open}
         onClose={closeTextModal}

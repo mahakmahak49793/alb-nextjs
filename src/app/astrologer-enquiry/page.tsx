@@ -19,16 +19,11 @@ import {
 import DownloadIcon from '@mui/icons-material/Download';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { DeepSearchSpace } from '@/utils/common-function';
-import {
-  CrossSvg,
-  EditSvg,
-  SwitchOffSvg,
-  SwitchOnSvg,
-  WalletSvg,
-} from '@/assets/svg';
+
 import { Color } from '@/assets/colors';
 import MainDatatable from '@/components/datatable/MainDatatable';
 import { api_url, base_url, get_enquiry_astrologer } from '@/lib/api-routes';
+import { EditSvg, CrossSvg } from "@/components/svgs/page";
 
 // ---------------------------------------------------------------------
 // Types

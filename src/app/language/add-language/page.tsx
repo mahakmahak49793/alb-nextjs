@@ -14,7 +14,7 @@ interface InputFieldError {
 // Regex pattern for alphabetic characters
 const Regex_Accept_Alpha = /^[A-Za-z\s]+$/;
 
-const AddLanguage = () => {
+const AddLanguageContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     
@@ -215,6 +215,20 @@ const AddLanguage = () => {
         </Suspense>
          </>
     );
+};
+
+const AddLanguage = () => {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-gray-600 text-lg">Loading...</div>
+        </div>
+      </div>
+    }>
+      <AddLanguageContent />
+    </Suspense>
+  );
 };
 
 export default AddLanguage;

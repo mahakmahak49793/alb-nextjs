@@ -13,9 +13,9 @@ import {
   MenuItem,
   SelectChangeEvent,
 } from '@mui/material';
-import { UploadImageSvg } from '@/assets/svg';
 import { Color } from '@/assets/colors';
 import { base_url } from '@/lib/api-routes';
+import { UploadImageSvg } from '@/components/svgs/page';
 
 // Dynamically import MDEditor with proper TypeScript typing
 const MDEditor = dynamic(

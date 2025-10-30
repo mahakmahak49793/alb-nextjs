@@ -6,8 +6,9 @@ import moment from 'moment';
 import { TableColumn } from 'react-data-table-component';
 import MainDatatable from '@/components/datatable/MainDatatable';
 import DatatableHeading from '@/components/datatable/DatatableHeading';
-import { SwitchOffSvg, SwitchOnSvg } from '@/assets/svg';
+// import { SwitchOffSvg, SwitchOnSvg } from '@/assets/svg';
 import { base_url } from '@/lib/api-routes';
+import { SwitchOnSvg, SwitchOffSvg } from '@/components/svgs/page';
 
 // ---------------------------------------------------------------------
 // Types

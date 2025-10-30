@@ -20,18 +20,12 @@ import {
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { DeepSearchSpace } from '@/utils/common-function';
-import {
-  CrossSvg,
-  EditSvg,
-  SwitchOffSvg,
-  SwitchOnSvg,
-  ViewSvg,
-  WalletSvg,
-} from '@/assets/svg';
+
 import { Color } from '@/assets/colors';
 import MainDatatable from '@/components/datatable/MainDatatable';
 import { api_url, base_url, get_astrologer } from '@/lib/api-routes';
 import DatatableHeading from '@/components/datatable/DatatableHeading';
+import { SwitchOnSvg, SwitchOffSvg, ViewSvg, EditSvg, WalletSvg, CrossSvg } from '@/components/svgs/page';
 
 // ---------------------------------------------------------------------
 // Types

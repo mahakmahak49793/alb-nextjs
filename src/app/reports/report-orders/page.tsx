@@ -6,14 +6,8 @@ import moment from "moment";
 import "moment-timezone";
 import Swal from "sweetalert2";
 import MainDatatable from "@/components/common/MainDatatable";
-import {
-  CrossSvg,
-  EditSvg,
-  SwitchOffSvg,
-  SwitchOnSvg,
-  ViewSvg,
-  WalletSvg,
-} from '@/assets/svg';
+import { ViewSvg, EditSvg } from "@/components/svgs/page";
+
 
 // Types
 interface Order {
@@ -812,7 +806,6 @@ const ReportOrders: React.FC = () => {
         data={rows}
         columns={columns}
         title="Life Journey Orders"
-        addButonActive={false}
         isLoading={loading}
       />
 

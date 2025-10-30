@@ -31,11 +31,11 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Country, State, City } from 'country-state-city';
 
-import { CrossSvg, DeleteSvg, UploadImageSvg } from '@/assets/svg';
 import { Color } from '@/assets/colors';
 import { calculateAge, get_date_value } from '@/utils/common-function';
 import { base_url } from '@/lib/api-routes';
 import Swal from 'sweetalert2';
+import { CrossSvg, UploadImageSvg, DeleteSvg } from '@/components/svgs/page';
 
 interface Skill { _id: string; skill: string }
 interface Expertise { _id: string; mainExpertise: string }
