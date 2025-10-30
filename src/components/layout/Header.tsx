@@ -2,11 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { FaBars } from "react-icons/fa";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useRouter } from "next/navigation";
-import { Color } from "@/assets/colors";
 import Swal from "sweetalert2";
-import * as CommonActions from "@/redux/actions/commonActions";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -22,12 +19,14 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-const Header: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { isSidebarOpen } = useAppSelector((state: any) => state?.commonReducer);
+interface HeaderProps {
+  isSidebarOpen: boolean;
+  onToggleSidebar: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
   const router = useRouter();
 
-  const [userToggle, setUserToggle] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,6 +39,7 @@ const Header: React.FC = () => {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
+  
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -48,6 +48,7 @@ const Header: React.FC = () => {
   const handleModalOpen = () => {
     setModalOpen(true);
   };
+  
   const handleModalClose = () => {
     setModalOpen(false);
   };
@@ -59,7 +60,7 @@ const Header: React.FC = () => {
       text: "You want to logout",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: Color?.primary,
+      confirmButtonColor: "#EF4444",
       cancelButtonColor: "grey",
       confirmButtonText: "Logout",
     });
@@ -68,7 +69,7 @@ const Header: React.FC = () => {
       try {
         setData(null);
         localStorage.clear();
-        router.push("");
+        router.push("/");
       } catch (e) {
         console.error(e);
       }
@@ -81,42 +82,41 @@ const Header: React.FC = () => {
       const userData = localStorage.getItem("userDetails");
       setData(userData);
       if (!userData) {
-        router.push("");
+        router.push("/");
       }
     } catch (e) {
       console.error(e);
     }
-  }, [data, userToggle, router]);
+  }, [data, router]);
 
   // Handle sidebar toggle on window resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 900) {
-        dispatch(CommonActions.setIsSidebarOpen(true));
-      } else if (window.innerWidth < 900) {
-        dispatch(CommonActions.setIsSidebarOpen(false));
-      }
-    };
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     if (window.innerWidth > 900 && !isSidebarOpen) {
+  //       onToggleSidebar();
+  //     } else if (window.innerWidth < 900 && isSidebarOpen) {
+  //       onToggleSidebar();
+  //     }
+  //   };
 
-    window.addEventListener("resize", handleResize);
-    handleResize();
+  //   window.addEventListener("resize", handleResize);
+  //   handleResize();
 
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [dispatch]);
+  //   return () => {
+  //     window.removeEventListener("resize", handleResize);
+  //   };
+  // }, [isSidebarOpen, onToggleSidebar]);
 
   return (
     <>
       {/* Header with Tailwind CSS */}
-      <header className="bg-white w-full text-gray-500 py-1 px-4 border-b border-gray-300">
+      <header className="bg-white w-full text-gray-500 py-1 px-4 border-b border-gray-300 shadow-sm">
         <div className="h-12 flex justify-between items-center relative">
           <div>
-           <div 
-  onClick={() => dispatch(CommonActions.setIsSidebarOpen(!isSidebarOpen))}
-  className="flex justify-center items-center bg-[#EF4444] text-white rounded-lg w-8 h-8 cursor-pointer hover:bg-red-800 transition-colors"
->
-
+            <div 
+              onClick={onToggleSidebar}
+              className="flex justify-center items-center bg-[#EF4444] text-white rounded-lg w-8 h-8 cursor-pointer hover:bg-red-800 transition-colors duration-200"
+            >
               <FaBars className="text-base" />
             </div>
           </div>
@@ -128,8 +128,8 @@ const Header: React.FC = () => {
               aria-haspopup="true"
               aria-expanded={open ? "true" : undefined}
               onClick={handleClick}
-              className="border border-gray-100 flex items-center"
-              style={{ color: Color.primary, textTransform: "none" }}
+              className="border border-gray-100 flex items-center shadow-sm hover:shadow-md transition-shadow"
+              style={{ color: "#EF4444", textTransform: "none" }}
             >
               <GroupIcon className="mr-1 text-lg" />
               Admin
@@ -142,16 +142,22 @@ const Header: React.FC = () => {
               onClose={handleClose}
               MenuListProps={{ "aria-labelledby": "basic-button" }}
               className="mt-1"
+              PaperProps={{
+                className: "shadow-lg rounded-lg"
+              }}
             >
-              <div className="flex flex-col gap-2 p-1">
+              <div className="flex flex-col gap-1 p-1">
                 {/* Uncomment if change password functionality is needed */}
-                {/* <MenuItem onClick={handleModalOpen} className="text-sm">
+                {/* <MenuItem 
+                  onClick={handleModalOpen} 
+                  className="text-sm hover:bg-gray-100 rounded-md transition-colors"
+                >
                   Change Password
                 </MenuItem> */}
 
                 <div 
                   onClick={handleLogout}
-                  className="flex justify-center items-center bg-red-700 text-white rounded cursor-pointer hover:bg-red-800 transition-colors"
+                  className="flex justify-center items-center bg-red-700 text-white rounded cursor-pointer hover:bg-red-800 transition-colors duration-200"
                 >
                   <MenuItem className="flex items-center text-white text-sm py-1">
                     <VpnKeyIcon className="h-4 w-4 mr-2" />
@@ -169,9 +175,9 @@ const Header: React.FC = () => {
         <DialogContent className="p-6">
           <Grid container spacing={3}>
             <Grid item xs={12} className="flex justify-between items-center">
-              <div className="text-xl font-medium">Change Password</div>
+              <div className="text-xl font-medium text-gray-800">Change Password</div>
               <div
-                className="bg-red-700 text-white px-3 py-1 rounded cursor-pointer hover:bg-red-800 transition-colors text-sm"
+                className="bg-red-700 text-white px-3 py-1 rounded cursor-pointer hover:bg-red-800 transition-colors duration-200 text-sm font-medium"
                 onClick={handleModalClose}
               >
                 Close
@@ -217,7 +223,7 @@ const Header: React.FC = () => {
 
             <Grid item xs={12}>
               <div
-                className="bg-red-700 text-white py-3 px-4 rounded text-center text-xl cursor-pointer hover:bg-red-800 transition-colors"
+                className="bg-red-700 text-white py-3 px-4 rounded text-center text-lg font-medium cursor-pointer hover:bg-red-800 transition-colors duration-200 shadow-md hover:shadow-lg"
                 onClick={() => {
                   // Add password change logic here
                   handleModalClose();
