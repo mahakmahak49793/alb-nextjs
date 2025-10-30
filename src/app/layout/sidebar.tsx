@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import Logo from "@/assets/images/logo/logo.png";
 import LogoSmall from "@/assets/images/logo/logo-small.png";
+import { motion, AnimatePresence } from "framer-motion";
 import { RouteName } from "@/lib/route";
 import SidebarMenu from "@/components/features/SidebarMenu";
 
@@ -16,25 +15,12 @@ const showAnimation = {
   show: { opacity: 1, width: "auto", transition: { duration: 0.5 } },
 };
 
-const Sidebar = () => {
-  const dispatch = useAppDispatch();
-  const pathname = usePathname();
-  const isSidebarOpen = useAppSelector((state) => state?.commonReducer?.isSidebarOpen);
-  const [hiddenSidebarWidth, setHiddenSidebarWidth] = useState(0);
+interface SidebarProps {
+  isSidebarOpen: boolean;
+}
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 991) setHiddenSidebarWidth(68.5);
-      else setHiddenSidebarWidth(0);
-    };
-    
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
+  const pathname = usePathname();
 
   return (
     <>
@@ -46,21 +32,27 @@ const Sidebar = () => {
           background-color: transparent;
         }
       `}</style>
-      
-      <motion.div
-        animate={{
-          width: isSidebarOpen ? "250px" : `${hiddenSidebarWidth}px`,
-          transition: {},
-        }}
-        className="bg-white text-black h-screen overflow-y-auto scroll-smooth pb-5 sidebar-scrollbar"
-      >
+
+      <div className="bg-white text-black h-screen overflow-y-auto scroll-smooth pb-5 sidebar-scrollbar">
         {isSidebarOpen ? (
-          <div className="flex items-center text-center justify-center pt-5 px-1.5 font-extrabold text-lg bg-white">
-            <Image src={Logo} alt="Logo" style={{ height: 40, width: "auto" }} />
+          <div className="flex items-center justify-center pt-5 px-4 bg-white">
+            <Image 
+              src={Logo}
+              alt="Logo" 
+              width={120} 
+              height={40} 
+              style={{ height: 40, width: "auto" }} 
+            />
           </div>
         ) : (
           <div className="flex justify-center items-center pt-5">
-            <Image src={LogoSmall} alt="Logo" style={{ height: 15, width: "auto" }} />
+            <Image 
+              src={LogoSmall}
+              alt="Logo" 
+              width={30} 
+              height={15} 
+              style={{ height: 15, width: "auto" }} 
+            />
           </div>
         )}
         
@@ -72,6 +64,7 @@ const Sidebar = () => {
                   route={route}
                   key={index}
                   showAnimation={showAnimation}
+                  isSidebarOpen={isSidebarOpen}
                 />
               );
             }
@@ -110,7 +103,7 @@ const Sidebar = () => {
             );
           })}
         </section>
-      </motion.div>
+      </div>
     </>
   );
 };
