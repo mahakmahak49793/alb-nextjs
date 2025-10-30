@@ -15,7 +15,7 @@ export default function RootLayout({
         <ReduxProvider>
           <div className="flex h-screen bg-[rgb(241,242,247)] text-gray-800">
             {/* Sidebar */}
-            <aside className="w-64 bg-white shadow-md border-r border-gray-200 fixed left-0 top-0 h-screen">
+            <aside className="w-64 bg-white shadow-md  fixed left-0 top-0 h-screen">
               <Sidebar />
             </aside>
 
@@ -27,7 +27,7 @@ export default function RootLayout({
               </header>
 
               {/* Page Content */}
-              <main className="flex-1 overflow-y-auto px-6 py-6 bg-[rgb(241,242,247)]">
+              <main className="flex-1 overflow-y-auto p-6 bg-[rgb(241,242,247)]">
                 <div className="max-w-7xl mx-auto">
                   {children}
                 </div>
