@@ -13,16 +13,16 @@ interface InputFieldError {
 function AddCategoryReview() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const editMode = searchParams.get('edit') === 'true';
   const categoryId = searchParams.get('id');
   const categoryNameFromUrl = searchParams.get('name');
 
-  const [inputFieldDetail, setInputFieldDetail] = useState<InputFieldDetail>({ 
-    title: categoryNameFromUrl ? decodeURIComponent(categoryNameFromUrl) : '' 
+  const [inputFieldDetail, setInputFieldDetail] = useState<InputFieldDetail>({
+    title: categoryNameFromUrl ? decodeURIComponent(categoryNameFromUrl) : ''
   });
-  const [inputFieldError, setInputFieldError] = useState<InputFieldError>({ 
-    title: '' 
+  const [inputFieldError, setInputFieldError] = useState<InputFieldError>({
+    title: ''
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(editMode && !categoryNameFromUrl);
@@ -35,7 +35,7 @@ function AddCategoryReview() {
           setFetching(true);
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/puja/get_puja_category/${categoryId}`);
           const data = await response.json();
-          
+
           if (data.success && data.data) {
             setInputFieldDetail({ title: data.data.categoryName });
           }
@@ -51,11 +51,11 @@ function AddCategoryReview() {
   }, [editMode, categoryId, categoryNameFromUrl]);
 
   //* Handle Input Field : Error
-  const handleInputFieldError = (input: keyof InputFieldError, value: string) => 
+  const handleInputFieldError = (input: keyof InputFieldError, value: string) =>
     setInputFieldError((prev) => ({ ...prev, [input]: value }));
 
   //* Handle Input Field : Data
-  const handleInputField = (event: React.ChangeEvent<HTMLInputElement>) => 
+  const handleInputField = (event: React.ChangeEvent<HTMLInputElement>) =>
     setInputFieldDetail({ ...inputFieldDetail, [event.target.name]: event.target.value });
 
   // Regex pattern for validation
@@ -67,16 +67,16 @@ function AddCategoryReview() {
     const { title } = inputFieldDetail;
 
     if (!title) {
-      handleInputFieldError("title", "Please Enter Title")
+      handleInputFieldError("title", "Please Enter Title");
       isValid = false;
-    }
-    if (!Regex_Accept_Alpha_Dot_Comma_Space.test(title)) {
-      handleInputFieldError("title", "Please Enter Valid Title")
+    } else if (!Regex_Accept_Alpha_Dot_Comma_Space.test(title)) {
+      handleInputFieldError("title", "Please Enter Valid Title");
       isValid = false;
-    }
-    if (title.toString().length > 70) {
-      handleInputFieldError("title", "Please Enter Title Less Than 70 Letter")
+    } else if (title.length > 70) {
+      handleInputFieldError("title", "Please Enter Title Less Than 70 Letters");
       isValid = false;
+    } else {
+      handleInputFieldError("title", "");
     }
 
     return isValid;
@@ -122,10 +122,10 @@ function AddCategoryReview() {
         if (editMode && categoryId) {
           // Update existing category
           const result = await updateCategory({
-            categoryId: categoryId,
-            categoryName: title
+            categoryId,
+            categoryName: title,
           });
-          
+
           if (result.success) {
             router.push("/astro-puja/category");
           } else {
@@ -133,10 +133,8 @@ function AddCategoryReview() {
           }
         } else {
           // Create new category
-          const result = await createCategory({
-            categoryName: title
-          });
-          
+          const result = await createCategory({ categoryName: title });
+
           if (result.success) {
             router.push("/astro-puja/category");
           } else {
@@ -151,24 +149,58 @@ function AddCategoryReview() {
     }
   };
 
-  if (fetching) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-lg text-gray-600">Loading category form...</div>
-        </div>
-      </div>
-    }>
-      <AddCategoryContent />
-    </Suspense>
+  // ✅ Return JSX here
+  return (
+    <div className="max-w-xl mx-auto bg-white shadow-md rounded-lg p-6 mt-10">
+      <h2 className="text-lg font-semibold mb-4">
+        {editMode ? 'Edit Category' : 'Add Category'}
+      </h2>
+
+      {fetching ? (
+        <div className="text-gray-500 text-center py-10">Fetching category...</div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <input
+              type="text"
+              name="title"
+              value={inputFieldDetail.title}
+              onChange={handleInputField}
+              placeholder="Enter category name"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-red-500 focus:outline-none"
+            />
+            {inputFieldError.title && (
+              <p className="text-sm text-red-500 mt-1">{inputFieldError.title}</p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-md transition"
+          >
+            {loading ? 'Saving...' : editMode ? 'Update Category' : 'Create Category'}
+          </button>
+        </form>
+      )}
+    </div>
   );
-};
+}
+
+// ✅ Wrap with Suspense for loading fallback
 const AddCategory = () => {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-xl text-gray-600">Loading...</div>
+        </div>
+      }
+    >
       <AddCategoryReview />
     </Suspense>
   );
 };
+
 export default AddCategory;
