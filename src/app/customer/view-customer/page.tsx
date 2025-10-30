@@ -63,7 +63,7 @@ const IndianRupee = (amount: number) => {
   }).format(amount || 0);
 };
 
-// API Function - Updated to match your API response structure
+// API Function
 const fetchCustomerById = async (customerId: string): Promise<{ success: boolean; customer?: Customer; error?: string }> => {
   try {
     console.log('🔍 Fetching customer with ID:', customerId);
@@ -101,7 +101,7 @@ const fetchCustomerById = async (customerId: string): Promise<{ success: boolean
   }
 };
 
-const ViewCustomer = () => {
+function ViewCustomerReview() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const customerId = searchParams.get('id');
@@ -155,7 +155,10 @@ const ViewCustomer = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-gray-600 text-lg mb-4">Loading customer data...</div>
+          <div className="flex items-center gap-2 text-gray-600 mb-4">
+            <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+            Loading customer data...
+          </div>
           <div className="text-gray-400 text-sm">Customer ID: {customerId}</div>
         </div>
       </div>
@@ -179,9 +182,12 @@ const ViewCustomer = () => {
             </button>
             <button 
               onClick={loadCustomerData} 
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-2"
             >
-              🔄 Try Again
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Try Again
             </button>
           </div>
         </div>
@@ -224,8 +230,8 @@ const ViewCustomer = () => {
     banned_status,
     createdAt
   } = customerData;
-    const baseURL = process.env.NEXT_PUBLIC_API_URL;
-
+  
+  const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
   const formatAddress = () => {
     if (!address) return 'N/A';
@@ -259,7 +265,6 @@ const ViewCustomer = () => {
   };
 
   return (
-     <Suspense fallback={<div>Loading...</div>}>
     <div className="p-5">
       {/* Customer Info Card */}
       <div className="bg-white rounded-lg shadow-md mb-5 p-8">
@@ -269,7 +274,8 @@ const ViewCustomer = () => {
             <div className="relative w-24 h-24 flex-shrink-0">
               {image ? (
                 <Image
-src={`${baseURL}/uploads/${image}`}                  alt={customerName}
+                  src={`${baseURL}/uploads/${image}`}
+                  alt={customerName}
                   fill
                   className="rounded-full border-2 border-gray-300 object-cover"
                   onError={(e) => {
@@ -390,38 +396,56 @@ src={`${baseURL}/uploads/${image}`}                  alt={customerName}
           </div>
         )}
 
-         {activeTab === 1 && (
+        {activeTab === 1 && (
           <div>
             <ChatHistory customerId={customerData._id} />
           </div>
         )}
 
         {activeTab === 2 && (
-  <div>
-    <CallHistory customerId={customerData._id} />
-  </div>
-)}
+          <div>
+            <CallHistory customerId={customerData._id} />
+          </div>
+        )}
 
-{activeTab === 3 && (
-  <div>
-    <VideoCallHistory customerId={customerData._id} />
-  </div>
-)}
-{activeTab === 4 && (
-  <div>
-    <LiveHistory customerId={customerData._id} />
-  </div>
-)}
-{activeTab === 5 && (
-  <div>
-    <ReviewHistory customerId={customerData._id} />
-  </div>
-)}
+        {activeTab === 3 && (
+          <div>
+            <VideoCallHistory customerId={customerData._id} />
+          </div>
+        )}
+        
+        {activeTab === 4 && (
+          <div>
+            <LiveHistory customerId={customerData._id} />
+          </div>
+        )}
+        
+        {activeTab === 5 && (
+          <div>
+            <ReviewHistory customerId={customerData._id} />
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+// ✅ Wrap with Suspense for loading fallback
+const ViewCustomer = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="flex items-center gap-2 text-gray-600">
+            <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+            Loading customer information...
+          </div>
+        </div>
+      }
+    >
+      <ViewCustomerReview />
     </Suspense>
   );
-  
 };
 
 export default ViewCustomer;
