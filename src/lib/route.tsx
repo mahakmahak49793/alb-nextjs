@@ -223,7 +223,7 @@ export const RouteName = [
   },
   {
     path: "/reports/report-orders",
-    name: "Reports",
+    name: "Report Order",
   },
   {
     path: "/language",

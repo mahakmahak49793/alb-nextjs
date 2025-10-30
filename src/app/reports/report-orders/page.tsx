@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import DataTable from "react-data-table-component";
 import { Dialog, DialogContent, Grid, TextField, Button } from "@mui/material";
 import moment from "moment";
 import "moment-timezone";
 import Swal from "sweetalert2";
-import { Color } from "@/assets/colors";
+import MainDatatable from "@/components/common/MainDatatable";
+import {EditSvg, ViewSvg} from "../../../../public/assets/svg/index.js"
 
 // Types
 interface Order {
@@ -109,8 +109,8 @@ interface EditPayload {
   status?: "pending" | "paid" | "processing" | "delivered";
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
-// const API_BASE_URL = "https://api.acharyalavbhushan.com" 
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE_URL = "https://api.acharyalavbhushan.com" 
 
 
 const ReportOrders: React.FC = () => {
@@ -180,12 +180,12 @@ const ReportOrders: React.FC = () => {
         `${API_BASE_URL}/api/admin/life-journey-orders?${qs.toString()}`,
         { headers: getAuthHeaders() }
       );
-      
+
       if (!response.ok) throw new Error("Failed to fetch");
-      
+
       const result = await response.json();
       const data: ApiResponse = result.data || result;
-      
+
       setRows(data?.items || []);
       setTotal(data?.total || 0);
       setPages(data?.pages || 1);
@@ -211,9 +211,9 @@ const ReportOrders: React.FC = () => {
         `${API_BASE_URL}/api/admin/life-journey-orders/stats?${qs.toString()}`,
         { headers: getAuthHeaders() }
       );
-      
+
       if (!response.ok) return;
-      
+
       const result = await response.json();
       const data: Stats = result.data || result;
       setStats(data || null);
@@ -251,10 +251,6 @@ const ReportOrders: React.FC = () => {
     const v =
       type === "checkbox" ? checked : name === "limit" ? Number(value) : value;
     setFilters((f) => ({ ...f, [name]: v }));
-  };
-
-  const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((f) => ({ ...f, q: e.target.value }));
   };
 
   const onPageChange = (dirOrNum: number | "prev" | "next") => {
@@ -317,9 +313,9 @@ const ReportOrders: React.FC = () => {
           body: JSON.stringify(editPayload),
         }
       );
-      
+
       if (!response.ok) throw new Error("Update failed");
-      
+
       Swal.fire({
         icon: "success",
         title: "Order updated",
@@ -356,9 +352,9 @@ const ReportOrders: React.FC = () => {
           headers: getAuthHeaders(),
         }
       );
-      
+
       if (!response.ok) throw new Error("Delete failed");
-      
+
       Swal.fire({
         icon: "success",
         title: "Order deleted",
@@ -387,9 +383,9 @@ const ReportOrders: React.FC = () => {
           body: JSON.stringify({}),
         }
       );
-      
+
       if (!response.ok) throw new Error("Restore failed");
-      
+
       Swal.fire({
         icon: "success",
         title: "Order restored",
@@ -407,7 +403,7 @@ const ReportOrders: React.FC = () => {
     }
   };
 
-  // ---------- Export CSV ----------
+  // ---------- Export (server CSV) ----------
   const downloadCSV = () => {
     const headers = [
       "_id",
@@ -518,7 +514,6 @@ const ReportOrders: React.FC = () => {
       });
     }
   };
-
   // ---------- columns ----------
   const columns = useMemo(
     () => [
@@ -547,9 +542,7 @@ const ReportOrders: React.FC = () => {
         name: "Status",
         selector: (row: Order) => row?.status || "—",
         cell: (row: Order) => (
-          <span style={{ textTransform: "capitalize" }}>
-            {row?.status || "—"}
-          </span>
+          <span className="capitalize">{row?.status || "—"}</span>
         ),
         width: "120px",
       },
@@ -606,93 +599,64 @@ const ReportOrders: React.FC = () => {
       {
         name: "Action",
         cell: (row: Order) => (
-          <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-            <div style={{ cursor: "pointer" }} onClick={() => onView(row)}>
-              {/* <ViewSvg /> */}
+          <div className="flex gap-3 items-center">
+            <div className="cursor-pointer" onClick={() => onView(row)}>
+              <ViewSvg />
             </div>
-            <div style={{ cursor: "pointer" }} onClick={() => onEdit(row)}>
-              {/* <EditSvg /> */}
+            <div className="cursor-pointer" onClick={() => onEdit(row)}>
+              <EditSvg />
             </div>
           </div>
         ),
         width: "200px",
-        center: true,
       },
     ],
     [page, filters.limit]
   );
 
   return (
-    <div
-      style={{
-        padding: 20,
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        boxShadow: "0 0 5px lightgrey",
-      }}
-    >
-      {/* Header + CSV */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 20,
-        }}
-      >
-        <div style={{ fontSize: 22, fontWeight: 500, color: Color.black }}>
+    <div className="p-5 bg-white rounded-lg shadow-sm">
+      {/* Header + Stats */}
+      <div className="flex justify-between mb-5">
+        <div className="text-xl font-semibold text-black">
           {stats && (
             <>
               <div>
                 Total Order: {stats.totalOrders} • Total Revenue: ₹
                 {Number(stats.totalRevenue || 0).toFixed(2)}
               </div>
-              <div>
+              <div className="text-bold text-black">
                 Today: {stats.todayOrders} • Revenue: ₹
                 {Number(stats.todayRevenue || 0).toFixed(2)}
               </div>
             </>
           )}
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        <div className="flex gap-3 items-center">
           <Button variant="outlined" size="small" onClick={downloadCSV}>
-            CSV (current page)
+            CSV(Current Page)
           </Button>
           <Button variant="outlined" size="small" onClick={downloadServerCSV}>
-            CSV (server all)
+            CSV(Server All)
           </Button>
         </div>
       </div>
 
       {/* Filters */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 10,
-          marginBottom: 14,
-        }}
-      >
-        <input
-          name="q"
-          value={filters.q}
-          onChange={onSearch}
-          placeholder="Search name/email/orderID…"
-          style={box()}
-        />
-
+      <div className="flex flex-wrap gap-2 mb-4">
         <input
           type="date"
           name="from"
           value={filters.from}
           onChange={onChangeFilter}
-          style={box()}
+          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
         />
         <input
           type="date"
           name="to"
           value={filters.to}
           onChange={onChangeFilter}
-          style={box()}
+          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
         />
 
         <TextField
@@ -703,7 +667,7 @@ const ReportOrders: React.FC = () => {
           onChange={onChangeFilter}
           label="Language"
           size="small"
-          style={box(200)}
+          className="w-48"
         >
           <option value="">All</option>
           <option value="English">English</option>
@@ -718,7 +682,7 @@ const ReportOrders: React.FC = () => {
           onChange={onChangeFilter}
           label="Status"
           size="small"
-          style={box(160)}
+          className="w-40"
         >
           <option value="all">All</option>
           <option value="pending">Pending</option>
@@ -733,7 +697,7 @@ const ReportOrders: React.FC = () => {
           value={filters.planName}
           onChange={onChangeFilter}
           size="small"
-          style={box(200)}
+          className="w-48"
         />
 
         <TextField
@@ -744,7 +708,7 @@ const ReportOrders: React.FC = () => {
           onChange={onChangeFilter}
           label="Astro"
           size="small"
-          style={box(120)}
+          className="w-32"
         >
           <option value="">All</option>
           <option value="true">Yes</option>
@@ -759,7 +723,7 @@ const ReportOrders: React.FC = () => {
           onChange={onChangeFilter}
           label="Express"
           size="small"
-          style={box(120)}
+          className="w-32"
         >
           <option value="">All</option>
           <option value="true">Yes</option>
@@ -774,7 +738,7 @@ const ReportOrders: React.FC = () => {
           onChange={onChangeFilter}
           label="Sort By"
           size="small"
-          style={box(160)}
+          className="w-40"
         >
           <option value="createdAt">createdAt</option>
           <option value="paymentAt">paymentAt</option>
@@ -790,7 +754,7 @@ const ReportOrders: React.FC = () => {
           onChange={onChangeFilter}
           label="Order"
           size="small"
-          style={box(120)}
+          className="w-32"
         >
           <option value="desc">desc</option>
           <option value="asc">asc</option>
@@ -804,7 +768,7 @@ const ReportOrders: React.FC = () => {
           onChange={onChangeFilter}
           label="Rows"
           size="small"
-          style={box(110)}
+          className="w-28"
         >
           <option value={10}>10</option>
           <option value={25}>25</option>
@@ -837,28 +801,16 @@ const ReportOrders: React.FC = () => {
       </div>
 
       {/* Table */}
-      <DataTable
-        key={filters.limit}
-        columns={columns}
+      <MainDatatable
         data={rows}
-        progressPending={loading}
-        // customStyles={DataTableCustomStyles}
-        pagination
-        paginationPerPage={filters.limit}
-        paginationRowsPerPageOptions={[filters.limit]}
-        fixedHeader
+        columns={columns}
+        title="Life Journey Orders"
+        addButonActive={false}
+        isLoading={loading}
       />
 
-      {/* Simple server pagination controls */}
-      <div
-        style={{
-          marginTop: 12,
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          justifyContent: "flex-end",
-        }}
-      >
+      {/* Pagination */}
+      <div className="mt-3 flex gap-2 items-center justify-end">
         <Button
           size="small"
           onClick={() => onPageChange("prev")}
@@ -866,16 +818,20 @@ const ReportOrders: React.FC = () => {
         >
           Prev
         </Button>
-        {Array.from({ length: pages }).map((_, i) => (
-          <Button
-            key={i}
-            size="small"
-            variant={page === i + 1 ? "contained" : "outlined"}
-            onClick={() => onPageChange(i + 1)}
-          >
-            {i + 1}
-          </Button>
-        ))}
+        {Array.from({ length: Math.min(pages, 10) }).map((_, i) => {
+          const pageNum = i + 1;
+          return (
+            <Button
+              key={i}
+              size="small"
+              variant={page === pageNum ? "contained" : "outlined"}
+              onClick={() => onPageChange(pageNum)}
+            >
+              {pageNum}
+            </Button>
+          );
+        })}
+        {pages > 10 && <span>...</span>}
         <Button
           size="small"
           onClick={() => onPageChange("next")}
@@ -883,7 +839,7 @@ const ReportOrders: React.FC = () => {
         >
           Next
         </Button>
-        <div style={{ marginLeft: 8, opacity: 0.7 }}>Total: {total}</div>
+        <div className="ml-2 opacity-70">Total: {total}</div>
       </div>
 
       {/* VIEW modal */}
@@ -897,18 +853,12 @@ const ReportOrders: React.FC = () => {
           <Grid container spacing={2}>
             {Object.entries(activeRow || {}).map(([k, v]) => (
               <Grid item xs={12} sm={6} key={k}>
-                <div style={{ fontSize: 12, opacity: 0.7 }}>{k}</div>
-                <div style={{ fontWeight: 600 }}>{String(v ?? "")}</div>
+                <div className="text-xs opacity-70">{k}</div>
+                <div className="font-semibold">{String(v ?? "")}</div>
               </Grid>
             ))}
           </Grid>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginTop: 16,
-            }}
-          >
+          <div className="flex justify-end mt-4">
             <Button variant="outlined" onClick={() => setViewOpen(false)}>
               Close
             </Button>
@@ -980,16 +930,8 @@ const ReportOrders: React.FC = () => {
                 <option value="delivered">Delivered</option>
               </TextField>
             </Grid>
-            {/* booleans */}
             <Grid item xs={12} sm={6}>
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  marginTop: 8,
-                }}
-              >
+              <label className="flex items-center gap-2 mt-2">
                 <input
                   type="checkbox"
                   checked={!!editPayload.astroConsultation}
@@ -1004,14 +946,7 @@ const ReportOrders: React.FC = () => {
               </label>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  marginTop: 8,
-                }}
-              >
+              <label className="flex items-center gap-2 mt-2">
                 <input
                   type="checkbox"
                   checked={!!editPayload.expressDelivery}
@@ -1027,14 +962,7 @@ const ReportOrders: React.FC = () => {
             </Grid>
           </Grid>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 8,
-              marginTop: 16,
-            }}
-          >
+          <div className="flex justify-end gap-2 mt-4">
             <Button variant="outlined" onClick={() => setEditOpen(false)}>
               Cancel
             </Button>
@@ -1047,14 +975,5 @@ const ReportOrders: React.FC = () => {
     </div>
   );
 };
-
-const box = (w: number = 180): React.CSSProperties => ({
-  padding: "6px 10px",
-  borderRadius: 6,
-  border: "1px solid #ccc",
-  width: w,
-  fontSize: 14,
-  outline: "none",
-});
 
 export default ReportOrders;
