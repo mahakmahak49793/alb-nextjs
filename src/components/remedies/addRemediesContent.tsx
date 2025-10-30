@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 
@@ -19,7 +19,7 @@ interface ImageState {
   bytes: File | null;
 }
 
-function AddRemediesContent(){
+const AddRemediesContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -234,7 +234,7 @@ function AddRemediesContent(){
       <div className="flex justify-center items-center min-h-screen">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-lg text-gray-600">Loading...</div>
+          <div className="text-lg text-gray-600">Loading remedy data...</div>
         </div>
       </div>
     );
@@ -361,11 +361,5 @@ function AddRemediesContent(){
     </div>
   );
 };
-const AddRemedies = () => {
-  return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
-      <AddRemediesContent />
-    </Suspense>
-  );
-};
-export default AddRemedies;
+
+export default AddRemediesContent;

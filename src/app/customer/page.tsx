@@ -4,15 +4,21 @@
 import moment from 'moment';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Eye, Edit, Wallet, AlertTriangle } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
+  DialogActions,
   FormControl,
   Grid,
   InputLabel,
   MenuItem,
   Select,
   TextField,
+  Button,
+  Box,
+  Typography,
 } from '@mui/material';
 import { Color } from '@/assets/colors/index';
 import { DeepSearchSpace, IndianRupee } from '@/utils/common-function/index';
@@ -29,12 +35,29 @@ interface Customer {
   timeOfBirth: string;
   banned_status: boolean;
   email?: string;
+  gender?: string;
+  image?: string;
 }
 
 interface ApiResponse {
   success: boolean;
   customers: Customer[];
 }
+
+// SVG Components for toggle switches
+const SwitchOnSvg = () => (
+  <svg width="44" height="24" viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="44" height="24" rx="12" fill="#22C55E"/>
+    <circle cx="30" cy="12" r="8" fill="white"/>
+  </svg>
+);
+
+const SwitchOffSvg = () => (
+  <svg width="44" height="24" viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="44" height="24" rx="12" fill="#EF4444"/>
+    <circle cx="14" cy="12" r="8" fill="white"/>
+  </svg>
+);
 
 export default function Customer() {
   const router = useRouter();
@@ -47,6 +70,8 @@ export default function Customer() {
   const filteredData = DeepSearchSpace(customerData, searchText);
 
   const [walletModal, setWalletModal] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [userId, setUserId] = useState('');
   const [inputFieldDetail, setInputFieldDetail] = useState({ amount: '', type: '' });
   const [inputFieldError, setInputFieldError] = useState({ amount: '', type: '' });
@@ -56,7 +81,7 @@ export default function Customer() {
     const fetchCustomers = async () => {
       try {
         setLoading(true);
-        const res = await fetch('http://localhost:3003/api/customers/get-all-customers');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/get-all-customers`);
         const data: ApiResponse = await res.json();
         
         if (data.success && Array.isArray(data.customers)) {
@@ -89,6 +114,17 @@ export default function Customer() {
     setInputFieldError({ amount: '', type: '' });
   };
 
+  // Confirmation modal handlers
+  const handleConfirmationModalOpen = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setConfirmationModal(true);
+  };
+
+  const handleConfirmationModalClose = () => {
+    setConfirmationModal(false);
+    setSelectedCustomer(null);
+  };
+
   // Handle Input Field : Error
   const handleInputFieldError = (input: string, value: string) => {
     setInputFieldError((prev) => ({ ...prev, [input]: value }));
@@ -114,7 +150,7 @@ export default function Customer() {
       handleInputFieldError("amount", "Please Enter Amount");
       isValid = false;
     }
-    if (Number(amount) < 0) {
+    if (Number(amount) <= 0) {
       handleInputFieldError("amount", "Please Enter Amount Greater Than Zero");
       isValid = false;
     }
@@ -131,67 +167,155 @@ export default function Customer() {
       console.log({ ...inputFieldDetail, userId });
 
       const payload = {
-        customerId: userId,
-        amount: Number(inputFieldDetail.amount),
-        type: inputFieldDetail.type,
+        transactions: [
+          {
+            customerId: userId,
+            amount: Number(inputFieldDetail.amount)
+          }
+        ],
+        type: inputFieldDetail.type
       };
 
-      // API call
-      fetch('/api/wallet/update', {
+      console.log('Sending wallet payload:', payload);
+
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/add_deduct_customer_wallet`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      .then(res => {
-        if (res.ok) {
+      .then(async (res) => {
+        const responseText = await res.text();
+        console.log('Wallet API Response:', responseText);
+
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('Failed to parse JSON:', parseError);
+          throw new Error('Invalid JSON response from server');
+        }
+
+        if (!res.ok) {
+          throw new Error(data.message || `HTTP error! status: ${res.status}`);
+        }
+
+        return data;
+      })
+      .then(data => {
+        if (data.success) {
           alert('Wallet updated successfully!');
           handleWalletModalClose();
-          // Refetch data
-          fetch('http://localhost:3003/api/customers/get-all-customers')
+          
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/get-all-customers`)
             .then(res => res.json())
             .then(data => {
               if (data.success && Array.isArray(data.customers)) {
                 setCustomerData(data.customers);
               }
+            })
+            .catch(error => {
+              console.error('Error refetching customers:', error);
             });
         } else {
-          alert('Failed to update wallet');
+          alert(data.message || 'Failed to update wallet');
         }
       })
       .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred');
+        console.error('Error updating wallet:', error);
+        alert(`Error: ${error.message}`);
       });
     }
   };
 
-  // Status toggle handler
-  const handleStatusToggle = (customerId: string, customerName: string, status: boolean) => {
-    fetch('/api/admin/change-banned-status', {
+  // Status toggle handler with confirmation
+  const handleStatusToggle = (customer: Customer) => {
+    if (!customer.banned_status) {
+      handleConfirmationModalOpen(customer);
+    } else {
+      updateCustomerStatus(customer._id, customer.customerName, false);
+    }
+  };
+
+  // Actual status update function
+  const updateCustomerStatus = (customerId: string, customerName: string, status: boolean) => {
+    const payload = {
+      customerId: customerId,
+      customerName: customerName,
+      status: status
+    };
+
+    console.log('Sending status payload:', payload);
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/change-banned-status`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customerId }),
+      body: JSON.stringify(payload),
     })
-    .then(res => {
-      if (res.ok) {
+    .then(async (res) => {
+      console.log('Response status:', res.status);
+      
+      const responseText = await res.text();
+      console.log('Response text:', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse JSON:', parseError);
+        throw new Error(`Server returned HTML instead of JSON. Status: ${res.status}`);
+      }
+
+      if (!res.ok) {
+        throw new Error(data.message || `HTTP error! status: ${res.status}`);
+      }
+
+      return data;
+    })
+    .then(data => {
+      if (data.success) {
         setCustomerData(prev => 
           prev.map(customer => 
             customer._id === customerId 
-              ? { ...customer, banned_status: !status }
+              ? { ...customer, banned_status: data.data.banned_status }
               : customer
           )
         );
+        console.log('Status updated successfully:', data.data.banned_status);
+        handleConfirmationModalClose();
       } else {
-        alert('Failed to update status');
+        alert(data.message || 'Failed to update status');
       }
     })
     .catch(error => {
       console.error('Error toggling status:', error);
-      alert('An error occurred');
+      alert(`Error: ${error.message}`);
     });
   };
 
-  // Table Columns matching React data structure
+  // Handle confirm ban
+  const handleConfirmBan = () => {
+    if (selectedCustomer) {
+      updateCustomerStatus(selectedCustomer._id, selectedCustomer.customerName, true);
+    }
+  };
+
+  // Navigate to edit with URL params
+  const handleEditCustomer = (customer: Customer) => {
+    const params = new URLSearchParams({
+      id: customer._id,
+      customerName: customer.customerName,
+      phoneNumber: customer.phoneNumber,
+      gender: customer.gender || '',
+      wallet_balance: customer.wallet_balance.toString(),
+      dateOfBirth: customer.dateOfBirth,
+      timeOfBirth: customer.timeOfBirth,
+      image: customer.image || '',
+    });
+    
+    router.push(`/customer/add-customer?${params.toString()}`);
+  };
+
+  // Table Columns
   const columns = [
     { 
       name: "S.No.", 
@@ -233,20 +357,14 @@ export default function Customer() {
       selector: (row: Customer) => (
         <div 
           className="cursor-pointer text-center"
-          onClick={() => handleStatusToggle(row._id, row.customerName, row.banned_status)}
+          onClick={() => handleStatusToggle(row)}
+          style={{ display: 'flex', justifyContent: 'center' }}
         >
-          {/* Toggle switch - you can replace with SVG components */}
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-            row.banned_status 
-              ? 'bg-red-100 text-red-800' 
-              : 'bg-green-100 text-green-800'
-          }`}>
-            <span className={`w-2 h-2 rounded-full mr-2 ${row.banned_status ? 'bg-red-500' : 'bg-green-500'}`}></span>
-            {row.banned_status ? 'Off' : 'On'}
-          </div>
+          {!row?.banned_status ? <SwitchOnSvg /> : <SwitchOffSvg />}
         </div>
       ), 
-      width: "140px" 
+      width: "140px",
+      center: true
     },
     {
       name: 'Action',
@@ -254,53 +372,41 @@ export default function Customer() {
         <div className="flex gap-5 justify-center items-center">
           <div 
             onClick={() => router.push(`/customer/view-customer?id=${row._id}`)} 
-            className="cursor-pointer text-blue-600 hover:text-blue-800 transition-colors"
+            className="cursor-pointer text-red-600 hover:text-red-800 transition-colors"
           >
-            View
+            <Eye size={20} />
           </div>
           <div 
-            onClick={() => router.push(`/customer/edit-customer?id=${row._id}`)} 
+            onClick={() => handleEditCustomer(row)} 
             className="cursor-pointer text-green-600 hover:text-green-800 transition-colors"
           >
-            Edit
+            <Edit size={20} />
           </div>
           <div 
             onClick={() => handleWalletModalOpen(row._id)} 
             className="cursor-pointer text-purple-600 hover:text-purple-800 transition-colors"
           >
-            Wallet
+            <Wallet size={20} />
           </div>
         </div>
       ),
-      width: "150px"
+      width: "150px",
+      center: true
     },
   ];
 
   return (
     <>
-      <div className="p-5 bg-white mb-5 rounded-lg border border-gray-200">
-        <DatatableHeading 
-          title="Customer" 
-          data={customerData} 
-          url="/customer/add-customer" 
-        />
-
-        <div className="flex justify-end gap-5 items-center mb-5 bg-white">
-          <input 
-            type='search' 
-            value={searchText} 
-            onChange={(e) => setSearchText(e.target.value)} 
-            placeholder='Search your data...' 
-            className="px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 w-full max-w-[250px] text-sm"
-          />
-        </div>
+      
 
         <MainDatatable
           columns={columns}
           data={filteredData}
+          title="Customer"
           isLoading={loading}
+          url="/customer/add-customer" 
         />
-      </div>
+      
 
       {/* Wallet Modal */}
       <Dialog 
@@ -321,7 +427,7 @@ export default function Customer() {
                   <div>Wallet</div>
                   <div 
                     onClick={handleWalletModalClose} 
-                    className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors"
+                    className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors text-2xl"
                   >
                     ×
                   </div>
@@ -377,7 +483,7 @@ export default function Customer() {
               <div className="flex justify-end">
                 <div 
                   onClick={handleSubmit} 
-                  className="font-medium bg-blue-600 text-white px-5 py-2.5 rounded cursor-pointer text-sm hover:bg-blue-700 transition-colors"
+                  className="font-medium bg-red-600 text-white px-5 py-2.5 rounded cursor-pointer text-sm hover:bg-red-700 transition-colors"
                 >
                   Submit
                 </div>
@@ -385,6 +491,63 @@ export default function Customer() {
             </Grid>
           </Grid>
         </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Modal for Banning Customer */}
+      <Dialog 
+        open={confirmationModal} 
+        onClose={handleConfirmationModalClose}
+        PaperProps={{ 
+          sx: { 
+            maxWidth: { xs: '90vw', sm: '400px' }, 
+            minWidth: { xs: '90vw', sm: '400px' },
+            borderRadius: '12px',
+            padding: '20px'
+          } 
+        }}
+      >
+        <DialogContent className="p-4 text-center">
+          <Box className="flex justify-center mb-4">
+            <AlertTriangle size={48} className="text-yellow-500" />
+          </Box>
+          
+          <Typography variant="h6" className="font-semibold mb-2">
+            Are you sure?
+          </Typography>
+          
+          <Typography variant="body1" className="text-gray-600 mb-4">
+            You want to ban this customer{" "}
+            <strong>{selectedCustomer?.customerName}</strong>!!!
+          </Typography>
+        </DialogContent>
+
+        <DialogActions className="flex justify-center gap-4 p-4">
+          <Button 
+            onClick={handleConfirmationModalClose}
+            variant="outlined"
+            sx={{
+              px: 2,
+              py: 1,
+            }}
+          >
+            No
+          </Button>
+          <Button 
+            onClick={handleConfirmBan}
+            variant="contained"
+            sx={{
+              backgroundColor: '#dc2626',
+              '&:hover': {
+                backgroundColor: '#b91c1c',
+              },
+              px: 2,
+              py: 1,
+              color: 'white'
+            }}
+          >
+            Yes
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   );

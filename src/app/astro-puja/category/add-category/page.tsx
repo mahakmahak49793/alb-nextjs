@@ -154,66 +154,14 @@ function AddCategoryReview() {
   if (fetching) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-gray-600">Loading...</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div className="text-xl font-semibold text-gray-800">
-            {editMode ? 'Edit' : 'Add'} Puja Category
-          </div>
-          <button 
-            onClick={() => router.push("/astro-puja/category")}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg cursor-pointer text-sm font-medium transition duration-200"
-          >
-            Display
-          </button>
-        </div>
-
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={inputFieldDetail.title}
-              onChange={handleInputField}
-              onFocus={() => handleInputFieldError("title", "")}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                inputFieldError.title ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Enter category title"
-            />
-            {inputFieldError.title && (
-              <p className="text-red-500 text-sm mt-1">{inputFieldError.title}</p>
-            )}
-          </div>
-
-          <div className="flex justify-start">
-            <button 
-              onClick={handleSubmit}
-              disabled={loading}
-              className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg cursor-pointer font-medium transition duration-200 flex items-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  {editMode ? 'Updating...' : 'Submitting...'}
-                </>
-              ) : (
-                editMode ? 'Update' : 'Submit'
-              )}
-            </button>
-          </div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-lg text-gray-600">Loading category form...</div>
         </div>
       </div>
-    </div>
+    }>
+      <AddCategoryContent />
+    </Suspense>
   );
 };
 const AddCategory = () => {

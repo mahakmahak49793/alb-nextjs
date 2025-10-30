@@ -177,6 +177,7 @@ function AddCategoryContent(){
   }
 
   return (
+     <Suspense fallback={<div>Loading...</div>}>
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* Header */}
@@ -233,6 +234,7 @@ function AddCategoryContent(){
         </div>
       </div>
     </div>
+    </Suspense>
   );
 };
 

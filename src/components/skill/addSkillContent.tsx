@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 
@@ -17,7 +17,7 @@ interface ImageState {
   bytes: File | null;
 }
 
-function AddSkillReview(){
+const AddSkillContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -232,8 +232,6 @@ function AddSkillReview(){
   }
 
   return (
-    <>
-    <Suspense fallback={<div>Loading...</div>}>
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* Header */}
@@ -296,16 +294,7 @@ function AddSkillReview(){
         </div>
       </div>
     </div>
-    </Suspense>
-    </>
-  );
-};
-const AddSkill = () => {
-  return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
-      <AddSkillReview/>
-    </Suspense>
   );
 };
 
-export default AddSkill;
+export default AddSkillContent;
