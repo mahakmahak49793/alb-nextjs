@@ -4,7 +4,6 @@
 import moment from 'moment';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, Edit, Wallet, AlertTriangle } from "lucide-react";
 
 import {
   Dialog,
@@ -24,6 +23,8 @@ import { Color } from '@/assets/colors/index';
 import { DeepSearchSpace, IndianRupee } from '@/utils/common-function/index';
 import DatatableHeading from '@/components/common/dataTable';
 import MainDatatable from '@/components/common/MainDatatable';
+import { EditSvg, ViewSvg, WalletSvg } from '@/components/svgs/page';
+import { AlertTriangle } from 'lucide-react';
 
 // Define types for better TypeScript support
 interface Customer {
@@ -374,19 +375,19 @@ export default function Customer() {
             onClick={() => router.push(`/customer/view-customer?id=${row._id}`)} 
             className="cursor-pointer text-red-600 hover:text-red-800 transition-colors"
           >
-            <Eye size={20} />
+            <ViewSvg/>
           </div>
           <div 
             onClick={() => handleEditCustomer(row)} 
             className="cursor-pointer text-green-600 hover:text-green-800 transition-colors"
           >
-            <Edit size={20} />
+            <EditSvg/>
           </div>
           <div 
             onClick={() => handleWalletModalOpen(row._id)} 
             className="cursor-pointer text-purple-600 hover:text-purple-800 transition-colors"
           >
-            <Wallet size={20} />
+            <WalletSvg/>
           </div>
         </div>
       ),
