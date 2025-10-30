@@ -6,7 +6,14 @@ import moment from "moment";
 import "moment-timezone";
 import Swal from "sweetalert2";
 import MainDatatable from "@/components/common/MainDatatable";
-import {EditSvg, ViewSvg} from "../../../../public/assets/svg/index.js"
+import {
+  CrossSvg,
+  EditSvg,
+  SwitchOffSvg,
+  SwitchOnSvg,
+  ViewSvg,
+  WalletSvg,
+} from '@/assets/svg';
 
 // Types
 interface Order {
