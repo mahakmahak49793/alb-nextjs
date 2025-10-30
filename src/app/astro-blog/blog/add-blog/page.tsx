@@ -1,8 +1,7 @@
 'use client';
 
 import React, { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import {
   Grid,
   TextField,
@@ -15,28 +14,9 @@ import {
 } from '@mui/material';
 import { Color } from '@/assets/colors';
 import { base_url } from '@/lib/api-routes';
+import StaticPageEditor from '@/components/common/Addblogeditor';
 import { UploadImageSvg } from '@/components/svgs/page';
 
-// Dynamically import MDEditor with proper TypeScript typing
-const MDEditor = dynamic(
-  () => import('@uiw/react-md-editor'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div style={{ 
-        minHeight: '400px', 
-        border: '1px solid #ccc', 
-        padding: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#666'
-      }}>
-        Loading editor...
-      </div>
-    )
-  }
-);
 
 // ---------------------------------------------------------------------
 // Types
@@ -50,10 +30,7 @@ interface Blog {
   _id: string;
   title: string;
   created_by: string;
-  blogCategoryId: {
-    _id: string;
-    blog_category: string;
-  };
+  blogCategoryId: { _id: string; blog_category: string };
   description: string;
   image: string;
 }
@@ -68,7 +45,6 @@ interface InputFieldError {
   title?: string;
   created_by?: string;
   categoryId?: string;
-  description?: string;
   image?: string;
 }
 
@@ -84,13 +60,10 @@ const IMG_URL = process.env.NEXT_PUBLIC_IMG_URL || '/uploads/';
 const Regex_Accept_Alpha = /^[a-zA-Z\s]+$/;
 
 // ---------------------------------------------------------------------
-// Component
+// Main Component
 // ---------------------------------------------------------------------
 const AddEditBlogContent = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const blogId = searchParams.get('id');
-  const isEditMode = Boolean(blogId);
 
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [inputFieldDetail, setInputFieldDetail] = useState<InputFieldDetail>({
@@ -105,91 +78,77 @@ const AddEditBlogContent = () => {
     bytes: '',
   });
   const [loading, setLoading] = useState<boolean>(false);
-  const [editorLoaded, setEditorLoaded] = useState<boolean>(false);
+  const [editBlog, setEditBlog] = useState<Blog | null>(null);
 
-  // ✅ Fetch Categories
+  // Load edit data from sessionStorage
+  useEffect(() => {
+    const stored = sessionStorage.getItem('editBlogData');
+    if (stored) {
+      try {
+        const blog: Blog = JSON.parse(stored);
+        setEditBlog(blog);
+        setInputFieldDetail({
+          title: blog.title || '',
+          created_by: blog.created_by || '',
+          categoryId: blog.blogCategoryId?._id || '',
+        });
+        setDescription(blog.description || '');
+        if (blog.image) {
+          setImage({
+            file: `${IMG_URL}${blog.image}`,
+            bytes: '',
+          });
+        }
+      } catch (error) {
+        console.error('Failed to parse edit blog data:', error);
+      } finally {
+        sessionStorage.removeItem('editBlogData');
+      }
+    }
+  }, []);
+
+  // Fetch Categories
   const fetchCategories = async (): Promise<void> => {
     try {
       const res = await fetch(`${base_url}api/admin/blog-category-list`);
       if (!res.ok) throw new Error('Failed to fetch categories');
       const data = await res.json();
-      setCategories(data.categoryBlog
- || []);
+      setCategories(data.categoryBlog || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
   };
 
-  // ✅ Fetch Blog Data (for Edit Mode)
-  const fetchBlogData = async (): Promise<void> => {
-    if (!blogId) return;
-
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/astro-blog/blog/${blogId}`);
-      if (!res.ok) throw new Error('Failed to fetch blog');
-      const data = await res.json();
-      const blog: Blog = data.blog;
-
-      setInputFieldDetail({
-        title: blog.title || '',
-        created_by: blog.created_by || '',
-        categoryId: blog.blogCategoryId?._id || '',
-      });
-
-      // Set description
-      if (blog.description) {
-        setDescription(blog.description);
-      }
-
-      // Set image
-      if (blog.image) {
-        setImage({
-          file: `${IMG_URL}${blog.image}`,
-          bytes: '',
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching blog:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchCategories();
-    setEditorLoaded(true);
   }, []);
 
-  useEffect(() => {
-    if (isEditMode) {
-      fetchBlogData();
-    }
-  }, [blogId, isEditMode]);
-
-  // ✅ Handle Input Field Error
-  const handleInputFieldError = (
-    input: keyof InputFieldError,
-    value: string | null
-  ): void => {
+  // Handle Input Field Error
+  const handleInputFieldError = (input: keyof InputFieldError, value: string | null): void => {
     setInputFieldError((prev) => ({ ...prev, [input]: value ?? undefined }));
   };
 
-  // ✅ Handle Input Field Data
+  // Handle Input Field Data
   const handleInputField = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ): void => {
     const { name, value } = event.target;
     setInputFieldDetail((prev) => ({ ...prev, [name]: value }));
+    if (inputFieldError[name as keyof InputFieldError]) {
+      handleInputFieldError(name as keyof InputFieldError, null);
+    }
   };
 
-  // ✅ Handle Select Change
+  // Handle Select Change
   const handleSelectChange = (event: SelectChangeEvent<string>): void => {
     const { name, value } = event.target;
     setInputFieldDetail((prev) => ({ ...prev, [name as string]: value }));
+    if (inputFieldError.categoryId) {
+      handleInputFieldError('categoryId', null);
+    }
   };
 
-  // ✅ Handle Image Upload
+  // Handle Image Upload
   const handleImage = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -205,7 +164,7 @@ const AddEditBlogContent = () => {
     handleInputFieldError('image', null);
   };
 
-  // ✅ Handle Drag and Drop
+  // Handle Drag and Drop
   const handleDrop = (e: React.DragEvent<HTMLLabelElement>): void => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -222,13 +181,12 @@ const AddEditBlogContent = () => {
     handleInputFieldError('image', null);
   };
 
-  // ✅ Handle Validation
+  // Handle Validation
   const handleValidation = (): boolean => {
     let isValid = true;
     const { title, created_by, categoryId } = inputFieldDetail;
     const { file } = image;
 
-    // Title validation
     if (!title.trim()) {
       handleInputFieldError('title', 'Please Enter Title');
       isValid = false;
@@ -239,7 +197,6 @@ const AddEditBlogContent = () => {
       handleInputFieldError('title', null);
     }
 
-    // Author validation
     if (!created_by.trim()) {
       handleInputFieldError('created_by', 'Please Enter Author Name');
       isValid = false;
@@ -250,7 +207,6 @@ const AddEditBlogContent = () => {
       handleInputFieldError('created_by', null);
     }
 
-    // Category validation
     if (!categoryId) {
       handleInputFieldError('categoryId', 'Please Select Category');
       isValid = false;
@@ -258,15 +214,6 @@ const AddEditBlogContent = () => {
       handleInputFieldError('categoryId', null);
     }
 
-    // Description validation
-    if (!description.trim()) {
-      handleInputFieldError('description', 'Please Enter Description');
-      isValid = false;
-    } else {
-      handleInputFieldError('description', null);
-    }
-
-    // Image validation
     if (!file) {
       handleInputFieldError('image', 'Please Upload Image');
       isValid = false;
@@ -274,10 +221,16 @@ const AddEditBlogContent = () => {
       handleInputFieldError('image', null);
     }
 
+    const stripped = description.replace(/<[^>]*>/g, '').trim();
+    if (!stripped || description === '<p><br></p>' || description === '') {
+      // Let StaticPageEditor handle its own error
+      isValid = false;
+    }
+
     return isValid;
   };
 
-  // ✅ Handle Submit
+  // Handle Submit
   const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>): Promise<void> => {
     e.preventDefault();
 
@@ -291,21 +244,21 @@ const AddEditBlogContent = () => {
     formData.append('blogCategoryId', categoryId);
     formData.append('description', description.trim());
 
-    // Only append image if it's a new file (not a URL string)
     if (image.bytes && typeof image.bytes !== 'string') {
       formData.append('image', image.bytes);
     }
 
-    // Add blogId for edit mode
-    if (isEditMode && blogId) {
-      formData.append('blogId', blogId);
+    if (editBlog?._id) {
+      formData.append('blogId', editBlog._id);
     }
 
     try {
       setLoading(true);
 
-      const url = isEditMode ? `/api/astro-blog/blog/${blogId}` : '/api/astro-blog/blog';
-      const method = isEditMode ? 'PUT' : 'POST';
+      const url = editBlog
+        ? `${base_url}api/admin/update_astro_blog`
+        : `${base_url}api/admin/add-astro-blog`;
+      const method = editBlog ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
         method,
@@ -314,10 +267,9 @@ const AddEditBlogContent = () => {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to ${isEditMode ? 'update' : 'create'} blog`);
+        throw new Error(errorData.message || `Failed to ${editBlog ? 'update' : 'create'} blog`);
       }
 
-      // Navigate back to blog list
       router.push('/astro-blog/blog');
     } catch (error) {
       console.error('Error submitting blog:', error);
@@ -347,7 +299,7 @@ const AddEditBlogContent = () => {
         }}
       >
         <div style={{ fontSize: '22px', fontWeight: '500', color: Color.black }}>
-          {isEditMode ? 'Edit' : 'Add'} Astroblog
+          {editBlog ? 'Edit' : 'Add'} Astroblog
         </div>
         <div
           onClick={() => router.push('/astro-blog/blog')}
@@ -390,11 +342,7 @@ const AddEditBlogContent = () => {
               >
                 <Avatar
                   src={image.file}
-                  style={{
-                    height: '300px',
-                    width: '300px',
-                    borderRadius: 'initial',
-                  }}
+                  sx={{ height: 300, width: 300, borderRadius: 0 }}
                 />
               </label>
             ) : (
@@ -429,13 +377,7 @@ const AddEditBlogContent = () => {
             />
           </div>
           {inputFieldError.image && (
-            <div
-              style={{
-                color: '#D32F2F',
-                fontSize: '12.5px',
-                padding: '10px 0 0 12px',
-              }}
-            >
+            <div style={{ color: '#D32F2F', fontSize: '12.5px', padding: '10px 0 0 12px' }}>
               {inputFieldError.image}
             </div>
           )}
@@ -444,11 +386,7 @@ const AddEditBlogContent = () => {
         {/* Title */}
         <Grid item lg={12} md={12} sm={12} xs={12}>
           <TextField
-            label={
-              <>
-                Title <span style={{ color: 'red' }}>*</span>
-              </>
-            }
+            label={<>Title <span style={{ color: 'red' }}>*</span></>}
             variant="outlined"
             fullWidth
             name="title"
@@ -487,13 +425,7 @@ const AddEditBlogContent = () => {
               ))}
             </Select>
             {inputFieldError.categoryId && (
-              <div
-                style={{
-                  color: '#D32F2F',
-                  fontSize: '12px',
-                  padding: '3px 14px 0',
-                }}
-              >
+              <div style={{ color: '#D32F2F', fontSize: '12px', padding: '3px 14px 0' }}>
                 {inputFieldError.categoryId}
               </div>
             )}
@@ -503,11 +435,7 @@ const AddEditBlogContent = () => {
         {/* Author */}
         <Grid item lg={6} md={6} sm={12} xs={12}>
           <TextField
-            label={
-              <>
-                Author <span style={{ color: 'red' }}>*</span>
-              </>
-            }
+            label={<>Author <span style={{ color: 'red' }}>*</span></>}
             variant="outlined"
             fullWidth
             name="created_by"
@@ -520,43 +448,19 @@ const AddEditBlogContent = () => {
           />
         </Grid>
 
-        {/* Rich Text Editor */}
+        {/* Static Page Editor */}
         <Grid item lg={12} md={12} sm={12} xs={12}>
-          <div data-color-mode="light">
-            {editorLoaded ? (
-              <MDEditor
-                value={description}
-                onChange={(value?: string) => setDescription(value || '')}
-                height={400}
-                preview="edit"
-                onFocus={() => handleInputFieldError('description', null)}
-              />
-            ) : (
-              <div style={{ 
-                minHeight: '400px', 
-                border: '1px solid #ccc', 
-                padding: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#666'
-              }}>
-                Loading editor...
-              </div>
-            )}
-          </div>
-          {inputFieldError.description && (
-            <div
-              style={{
-                color: '#D32F2F',
-                fontSize: '13px',
-                padding: '5px 15px 0 12px',
-                fontWeight: '400',
-              }}
-            >
-              {inputFieldError.description}
-            </div>
-          )}
+          <StaticPageEditor
+            title="Blog Description"
+            initialContent={description}
+            createEndpoint="" // Not used — we handle submit below
+            loading={loading}
+            // Custom props to control content
+            onDescriptionChange={(html: string) => setDescription(html)}
+            onValidationError={(hasError: boolean) => {
+              // Optional: handle error state
+            }}
+          />
         </Grid>
 
         {/* Submit Button */}
@@ -584,9 +488,12 @@ const AddEditBlogContent = () => {
   );
 };
 
+// ---------------------------------------------------------------------
+// Suspense Wrapper
+// ---------------------------------------------------------------------
 const AddEditBlogClient = () => {
   return (
-    <Suspense fallback={<div>Loading form...</div>}>
+    <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Loading form...</div>}>
       <AddEditBlogContent />
     </Suspense>
   );

@@ -137,12 +137,18 @@ const Remedies = () => {
         </div>
       )
     },
-  {
+
+{
   name: 'Action',
   cell: (row: Remedies) => (
     <div className="flex gap-5 items-center justify-center">
       <div 
-        onClick={() => router.push(`/remedies/add-remedies?edit=true&id=${row._id}`)} 
+       onClick={() => {
+  // Store remedy data in sessionStorage
+  sessionStorage.setItem('editRemedyData', JSON.stringify(row));
+  // Navigate to edit page
+  router.push('/remedies/edit-remedies');
+}}
         className="cursor-pointer hover:opacity-70 transition-opacity"
       >
         <EditSvg />
@@ -156,7 +162,7 @@ const Remedies = () => {
     </div>
   ),
   width: "180px"
-},
+}
   ];
 
   useEffect(() => {

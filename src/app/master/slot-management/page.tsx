@@ -100,25 +100,32 @@ const SlotManagement: React.FC = () => {
   };
 
   //* Fetch Slot Durations
-  const fetchSlotDurations = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${base_url}api/admin/get_slots_duration`);
-      if (!res.ok) throw new Error('Failed to fetch slot durations');
-      const data = await res.json();
-      setSlotDurations(data?.slots || []);
-      setFilteredData(data?.slots || []);
-    } catch (err) {
-      console.error('Error fetching slot durations:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchSlotDurations = async () => {
+  try {
+    setLoading(true);
+    const res = await fetch(`${base_url}api/admin/get_slots_duration`);
+    if (!res.ok) throw new Error('Failed to fetch slot durations');
+
+    const data = await res.json();
+    const slots = data?.slots || [];
+
+    // ✅ Sort in ascending order by slotDuration
+    const sortedSlots = slots.sort((a: SlotDuration, b: SlotDuration) => a.slotDuration - b.slotDuration);
+
+    setSlotDurations(sortedSlots);
+    setFilteredData(sortedSlots);
+  } catch (err) {
+    console.error('Error fetching slot durations:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   //* Update Slot Status
   const updateSlotStatus = async (slotId: string) => {
     try {
-      const res = await fetch(`${base_url}api/admin/update_slots_duration_status/${slotId}`, {
+      const res = await fetch(`${base_url}api/admin/update_slots_duration/${slotId}`, {
         method: 'PUT',
       });
       if (!res.ok) throw new Error('Failed to update status');

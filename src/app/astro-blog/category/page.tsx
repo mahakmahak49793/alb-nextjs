@@ -38,13 +38,13 @@ const deepSearch = <T,>(data: T[], searchText: string): T[] => {
 // ---------------------------------------------------------------------
 const CategoryPage: React.FC = () => {
   const router = useRouter();
-  
+
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [filteredData, setFilteredData] = useState<BlogCategory[]>([]);
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch Categories
+  // Fetch Categories
   const fetchCategories = async () => {
     try {
       setLoading(true);
@@ -60,24 +60,31 @@ const CategoryPage: React.FC = () => {
     }
   };
 
-  // ✅ Delete Category
+  // Delete Category
   const handleDelete = async (categoryId: string) => {
     if (!confirm('Are you sure you want to delete this category?')) return;
 
     try {
-      const res = await fetch(`/api/astro-blog/category/${categoryId}`, {
-        method: 'DELETE',
+      const res = await fetch(`${base_url}api/admin/delete_blog_category`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryId }),
       });
       if (!res.ok) throw new Error('Failed to delete category');
-      
-      // Refresh data after deletion
+
       await fetchCategories();
     } catch (error) {
       console.error('Error deleting category:', error);
     }
   };
 
-  // ✅ Search filtering
+  // Edit: Store category in sessionStorage and navigate
+  const handleEdit = (category: BlogCategory) => {
+    sessionStorage.setItem('editBlogCategory', JSON.stringify(category));
+    router.push('/astro-blog/category/add-category');
+  };
+
+  // Search filtering
   useEffect(() => {
     setFilteredData(deepSearch(categories, searchText));
   }, [searchText, categories]);
@@ -86,7 +93,7 @@ const CategoryPage: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // ✅ CSV Data (Transformed for Export)
+  // CSV Data
   const csvData: CSVRow[] = useMemo(() => {
     return filteredData.map((category, index) => ({
       'S.No.': index + 1,
@@ -95,7 +102,7 @@ const CategoryPage: React.FC = () => {
     }));
   }, [filteredData]);
 
-  // ✅ Datatable Columns
+  // Datatable Columns
   const columns: TableColumn<BlogCategory>[] = useMemo(
     () => [
       {
@@ -116,9 +123,7 @@ const CategoryPage: React.FC = () => {
         cell: (row) => (
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
             <div
-              onClick={() =>
-                router.push(`/astro-blog/category/add-category?id=${row._id}`)
-              }
+              onClick={() => handleEdit(row)}
               style={{ cursor: 'pointer' }}
             >
               <EditSvg />
@@ -137,7 +142,6 @@ const CategoryPage: React.FC = () => {
     [router]
   );
 
-  // ✅ Render
   return (
     <div
       style={{

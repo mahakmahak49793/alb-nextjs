@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Grid, TextField, CircularProgress, Box } from '@mui/material';
 import { Color } from '@/assets/colors';
+import { base_url } from '@/lib/api-routes';
 
 // ---------------------------------------------------------------------
 // Types
@@ -27,58 +28,46 @@ interface InputFieldError {
 const Regex_Accept_Everything = /^.+$/;
 
 // ---------------------------------------------------------------------
-// Content Component (uses useSearchParams)
+// Content Component
 // ---------------------------------------------------------------------
 const AddEditCategoryContent: React.FC = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const categoryId = searchParams.get('id');
-  const isEditMode = Boolean(categoryId);
 
   const [inputFieldDetail, setInputFieldDetail] = useState<InputFieldDetail>({
     title: '',
   });
   const [inputFieldError, setInputFieldError] = useState<InputFieldError>({});
   const [loading, setLoading] = useState(false);
+  const [editCategory, setEditCategory] = useState<BlogCategory | null>(null);
 
-  // ✅ Fetch Category Data (for Edit Mode)
-  const fetchCategoryData = async () => {
-    if (!categoryId) return;
-
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/astro-blog/category/${categoryId}`);
-      if (!res.ok) throw new Error('Failed to fetch category');
-      const data = await res.json();
-      
-      setInputFieldDetail({
-        title: data.category?.blog_category || '',
-      });
-    } catch (error) {
-      console.error('Error fetching category:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Load from sessionStorage on mount
   useEffect(() => {
-    if (isEditMode) {
-      fetchCategoryData();
+    const stored = sessionStorage.getItem('editBlogCategory');
+    if (stored) {
+      try {
+        const category: BlogCategory = JSON.parse(stored);
+        setEditCategory(category);
+        setInputFieldDetail({ title: category.blog_category });
+      } catch (error) {
+        console.error('Failed to parse edit category:', error);
+      } finally {
+        sessionStorage.removeItem('editBlogCategory'); // Clean up
+      }
     }
-  }, [categoryId]);
+  }, []);
 
-  // ✅ Handle Input Field Error
+  // Handle Input Field Error
   const handleInputFieldError = (input: keyof InputFieldError, value: string | null) => {
     setInputFieldError((prev) => ({ ...prev, [input]: value ?? undefined }));
   };
 
-  // ✅ Handle Input Field Data
+  // Handle Input Field Data
   const handleInputField = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setInputFieldDetail((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle Validation
+  // Handle Validation
   const handleValidation = (): boolean => {
     let isValid = true;
     const { title } = inputFieldDetail;
@@ -99,10 +88,10 @@ const AddEditCategoryContent: React.FC = () => {
     return isValid;
   };
 
-  // ✅ Handle Submit - Creating/Updating Category
+  // Handle Submit
   const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    
+
     if (!handleValidation()) return;
 
     const { title } = inputFieldDetail;
@@ -110,33 +99,39 @@ const AddEditCategoryContent: React.FC = () => {
     try {
       setLoading(true);
 
-      if (isEditMode) {
-        // Update existing category
-        const res = await fetch(`/api/astro-blog/category/${categoryId}`, {
-          method: 'PUT',
+      if (editCategory) {
+        // UPDATE
+        const res = await fetch(`${base_url}api/admin/update_blog_category`, {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            blogCategoryId: categoryId,
+            blogCategoryId: editCategory._id,
             blogCategoryName: title,
           }),
         });
 
-        if (!res.ok) throw new Error('Failed to update category');
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.message || 'Failed to update category');
+        }
       } else {
-        // Create new category
-        const res = await fetch('/api/astro-blog/category', {
+        // CREATE
+        const res = await fetch(`${base_url}api/admin/add-blog-category`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ blog_category: title }),
         });
 
-        if (!res.ok) throw new Error('Failed to create category');
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.message || 'Failed to create category');
+        }
       }
 
-      // Navigate back to category list
       router.push('/astro-blog/category');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting category:', error);
+      alert(error.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -162,7 +157,7 @@ const AddEditCategoryContent: React.FC = () => {
         }}
       >
         <div style={{ fontSize: '22px', fontWeight: '500', color: Color.black }}>
-          {isEditMode ? 'Edit' : 'Add'} Blog Category
+          {editCategory ? 'Edit' : 'Add'} Blog Category
         </div>
         <div
           onClick={() => router.push('/astro-blog/category')}
@@ -225,7 +220,7 @@ const AddEditCategoryContent: React.FC = () => {
 };
 
 // ---------------------------------------------------------------------
-// Main Component with Suspense Boundary
+// Main Component with Suspense
 // ---------------------------------------------------------------------
 const AddEditCategoryPage: React.FC = () => {
   return (

@@ -34,6 +34,10 @@
     "@react-google-maps/api": "^2.20.7",
     "@reduxjs/toolkit": "^2.9.0",
     "@uiw/react-md-editor": "^4.0.8",
+<<<<<<< HEAD
+=======
+    "@tanstack/react-table": "^8.21.3",
+>>>>>>> Rashi2.0
     "@uploadthing/react": "^7.3.3",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.12.2",

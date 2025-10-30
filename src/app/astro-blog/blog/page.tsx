@@ -9,8 +9,7 @@ import { TableColumn } from 'react-data-table-component';
 import MainDatatable from "@/components/common/MainDatatable";
 import DatatableHeading from '@/components/datatable/DatatableHeading';
 import { base_url } from '@/lib/api-routes';
-import { EditSvg, DeleteSvg } from '@/components/svgs/page';
-// import logo from '@/assets/images/logo.png';
+import { DeleteSvg, EditSvg } from '@/components/svgs/page';
 
 // ---------------------------------------------------------------------
 // Types
@@ -67,15 +66,13 @@ const AstroblogPage: React.FC = () => {
   const [filteredData, setFilteredData] = useState<Blog[]>([]);
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(true);
-  
-  // Text Modal State
   const [textModal, setTextModal] = useState<TextModalState>({
     open: false,
     title: '',
     text: '',
   });
 
-  // ✅ Fetch Blogs
+  // Fetch Blogs
   const fetchBlogs = async () => {
     try {
       setLoading(true);
@@ -91,34 +88,40 @@ const AstroblogPage: React.FC = () => {
     }
   };
 
-  // ✅ Delete Blog
+  // Delete Blog
   const handleDelete = async (blogId: string) => {
     if (!confirm('Are you sure you want to delete this blog?')) return;
 
     try {
-      const res = await fetch(`/api/astro-blog/blog/${blogId}`, {
-        method: 'DELETE',
+      const res = await fetch(`${base_url}api/admin/delete_astro_blogs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blogId }),
       });
       if (!res.ok) throw new Error('Failed to delete blog');
 
-      // Refresh data after deletion
       await fetchBlogs();
     } catch (error) {
       console.error('Error deleting blog:', error);
     }
   };
 
-  // ✅ Open Text Modal
+  // Edit: Store full blog in sessionStorage
+  const handleEdit = (blog: Blog) => {
+    sessionStorage.setItem('editBlogData', JSON.stringify(blog));
+    router.push('/astro-blog/blog/add-blog');
+  };
+
+  // Open Text Modal
   const openTextModal = (title: string, text: string) => {
     setTextModal({ open: true, title, text });
   };
 
-  // ✅ Close Text Modal
   const closeTextModal = () => {
     setTextModal({ open: false, title: '', text: '' });
   };
 
-  // ✅ Search filtering
+  // Search filtering
   useEffect(() => {
     setFilteredData(deepSearch(blogs, searchText));
   }, [searchText, blogs]);
@@ -127,7 +130,7 @@ const AstroblogPage: React.FC = () => {
     fetchBlogs();
   }, []);
 
-  // ✅ CSV Data (Transformed for Export)
+  // CSV Data
   const csvData: CSVRow[] = useMemo(() => {
     return filteredData.map((blog, index) => ({
       'S.No.': index + 1,
@@ -139,7 +142,7 @@ const AstroblogPage: React.FC = () => {
     }));
   }, [filteredData]);
 
-  // ✅ Datatable Columns
+  // Datatable Columns
   const columns: TableColumn<Blog>[] = useMemo(
     () => [
       {
@@ -150,6 +153,7 @@ const AstroblogPage: React.FC = () => {
       {
         name: 'Title',
         selector: (row) => row?.title || '-',
+        width: '150px',
       },
       {
         name: 'Category',
@@ -162,25 +166,27 @@ const AstroblogPage: React.FC = () => {
             <div
               onClick={() => openTextModal('Description', row.description)}
               dangerouslySetInnerHTML={{
-                __html: row.description.toString().slice(0, 50) + '...',
+                __html: row.description.slice(0, 25) + '...',
               }}
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: 'pointer', color: '#1976d2' }}
             />
           ) : (
             <span>N/A</span>
           ),
+        width: '200px',
       },
       {
         name: 'Created By',
         selector: (row) => row?.created_by || '-',
+        width: '150px',
       },
       {
         name: 'Image',
         cell: (row) => (
           <Avatar
-            src={row?.image ? `${IMG_URL}${row.image}` :""}
+            src={row?.image ? `${IMG_URL}${row.image}` : ''}
             alt="Blog"
-            style={{ width: '50px', height: '50px', borderRadius: '50%' }}
+            sx={{ width: 40, height: 40 }}
           />
         ),
         width: '100px',
@@ -200,25 +206,25 @@ const AstroblogPage: React.FC = () => {
         cell: (row) => (
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
             <div
-              onClick={() =>
-                router.push(`/astro-blog/blog/edit-blog?id=${row._id}`)
-              }
+              onClick={() => handleEdit(row)}
               style={{ cursor: 'pointer' }}
             >
               <EditSvg />
             </div>
-            <div onClick={() => handleDelete(row._id)} style={{ cursor: 'pointer' }}>
+            <div
+              onClick={() => handleDelete(row._id)}
+              style={{ cursor: 'pointer' }}
+            >
               <DeleteSvg />
             </div>
           </div>
         ),
-        width: '180px',
+        width: '150px',
       },
     ],
     [router]
   );
 
-  // ✅ Render
   return (
     <>
      
@@ -259,21 +265,10 @@ const AstroblogPage: React.FC = () => {
         {/* <MainDatatable  title={'Review'}  columns={columns} data={filteredData} isLoading={loading}   url={'/astro-blog/blog/add-blog'}/> */}
             <MainDatatable  title={'Review'}  columns={columns as any} data={filteredData} isLoading={loading}   url={'/astro-blog/blog/add-blog'}/>
 
-      {/* Description Modal */} 
-      <Dialog
-        open={textModal.open}
-        onClose={closeTextModal}
-        maxWidth="md"
-        fullWidth
-      >
+      {/* Description Modal */}
+      <Dialog open={textModal.open} onClose={closeTextModal} maxWidth="md" fullWidth>
         <DialogTitle>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>{textModal.title}</span>
             <IconButton onClick={closeTextModal} size="small">
               <CloseIcon />
@@ -283,11 +278,7 @@ const AstroblogPage: React.FC = () => {
         <DialogContent>
           <div
             dangerouslySetInnerHTML={{ __html: textModal.text }}
-            style={{
-              padding: '10px',
-              maxHeight: '500px',
-              overflowY: 'auto',
-            }}
+            style={{ padding: '10px', maxHeight: '500px', overflowY: 'auto' }}
           />
         </DialogContent>
       </Dialog>
