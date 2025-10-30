@@ -5,7 +5,7 @@ import moment from "moment";
 import { Color } from "@/assets/colors";
 import { IndianRupee } from "@/utils/common-function";
 import { ServicesChart, EarningChart } from "@/components/charts/pie-chart";
-// import { RechargeReport } from "@/components/charts/bar-chart";
+import { RechargeReport } from "@/components/charts/bar-chart";
 import { AstrologerSvg, BlogSvg, CustomerSvg, EarningSvg, RechargeSvg, ReviewSvg, TodayAstrologerSvg, TodayCustomerSvg } from "./svgs/page";
 
 
@@ -259,7 +259,7 @@ const Dashboard = () => {
 
   {/* Chart */}
   <div className="flex justify-center overflow-x-auto">
-    {/* <RechargeReport rechargeReportData={rechargeReportData} /> */}
+    <RechargeReport rechargeReportData={rechargeReportData} />
   </div>
 </div>
 
