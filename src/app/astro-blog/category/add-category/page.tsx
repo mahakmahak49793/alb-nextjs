@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Grid, TextField } from '@mui/material';
+import { Grid, TextField, CircularProgress, Box } from '@mui/material';
 import { Color } from '@/assets/colors';
 
 // ---------------------------------------------------------------------
@@ -27,9 +27,9 @@ interface InputFieldError {
 const Regex_Accept_Everything = /^.+$/;
 
 // ---------------------------------------------------------------------
-// Component
+// Content Component (uses useSearchParams)
 // ---------------------------------------------------------------------
-const AddEditCategoryPage: React.FC = () => {
+const AddEditCategoryContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const categoryId = searchParams.get('id');
@@ -221,6 +221,30 @@ const AddEditCategoryPage: React.FC = () => {
         </Grid>
       </Grid>
     </div>
+  );
+};
+
+// ---------------------------------------------------------------------
+// Main Component with Suspense Boundary
+// ---------------------------------------------------------------------
+const AddEditCategoryPage: React.FC = () => {
+  return (
+    <Suspense
+      fallback={
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '50vh',
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      }
+    >
+      <AddEditCategoryContent />
+    </Suspense>
   );
 };
 

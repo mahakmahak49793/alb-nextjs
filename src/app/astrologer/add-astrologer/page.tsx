@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import moment from 'moment';
 
@@ -26,6 +26,7 @@ import {
   Box,
   Typography,
   SelectChangeEvent,
+  CircularProgress,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Country, State, City } from 'country-state-city';
@@ -107,7 +108,8 @@ interface AstrologerForm {
   longBio: string;
 }
 
-export default function AddAstrologerPage() {
+// Separate component that uses useSearchParams
+function AddAstrologerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const mode = searchParams.get('mode') || 'Add';
@@ -291,8 +293,6 @@ export default function AddAstrologerPage() {
     if (file) {
       if (file.size < 500 * 1024) {
         setImage({ file: URL.createObjectURL(file), bytes: file });
-        // Simple image acceptance without cropping for now
-        // setIsCropping(true);
       } else {
         setSnack({ open: true, message: 'Image must be < 500KB' });
       }
@@ -1113,3 +1113,16 @@ const ConsultationPriceSection = ({ astrologerId }: { astrologerId: string }) =>
     </Box>
   );
 };
+
+// Main export with Suspense boundary
+export default function AddAstrologerPage() {
+  return (
+    <Suspense fallback={
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    }>
+      <AddAstrologerContent />
+    </Suspense>
+  );
+}
