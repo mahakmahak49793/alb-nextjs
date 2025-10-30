@@ -43,7 +43,7 @@ const typedCustomStyles: TableStyles = {
   rows: {
     style: {
       ...DataTableCustomStyles.rows?.style,
-      minHeight: '50px',
+      minHeight: '80px',
       backgroundColor: '#fff',
       borderBottom: '1px solid #f1f1f1',
       '&:hover': {
@@ -58,7 +58,7 @@ const typedCustomStyles: TableStyles = {
       color: '#555',
       whiteSpace: 'nowrap',
       width: 'auto',
-      fontSize: '13px',
+      fontSize: '14px',
     },
   },
   pagination: {
