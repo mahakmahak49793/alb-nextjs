@@ -27,7 +27,7 @@ export default function RootLayout({
               </header>
 
               {/* Page Content */}
-              <main className="flex-1 overflow-y-auto p-4 bg-[rgb(241,242,247)]">
+              <main className="flex-1 overflow-y-auto p-6 bg-[rgb(241,242,247)]">
                 <div className="max-w-7xl mx-auto">
                   {children}
                 </div>

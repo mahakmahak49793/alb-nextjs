@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import moment from 'moment';
 import { CSVLink } from 'react-csv';
@@ -16,8 +16,8 @@ import {
   Typography,
   Select,
   MenuItem,
+  SelectChangeEvent,
 } from '@mui/material';
-import DownloadIcon from '@mui/icons-material/Download';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { DeepSearchSpace } from '@/utils/common-function';
 import {
@@ -31,6 +31,7 @@ import {
 import { Color } from '@/assets/colors';
 import MainDatatable from '@/components/datatable/MainDatatable';
 import { api_url, base_url, get_astrologer } from '@/lib/api-routes';
+import DatatableHeading from '@/components/datatable/DatatableHeading';
 
 // ---------------------------------------------------------------------
 // Types
@@ -47,82 +48,13 @@ interface Astrologer {
   video_call_status?: 'online' | 'offline';
 }
 
-// Use react-data-table-component's TableColumn type
 type AstrologerColumn = TableColumn<Astrologer>;
 
-// ---------------------------------------------------------------------
-// Datatable Heading Component
-// ---------------------------------------------------------------------
-interface DatatableHeadingProps {
-  title: string;
-  url?: string;
-  data: Astrologer[];
+// CSV Row Type
+interface CSVRow {
+  [key: string]: string | number | boolean | undefined;
 }
 
-const DatatableHeading: React.FC<DatatableHeadingProps> = ({ title, url, data }) => {
-  const router = useRouter();
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginBottom: '20px',
-        backgroundColor: '#fff',
-      }}
-    >
-      <div style={{ fontSize: '22px', fontWeight: 500, color: Color.black }}>
-        {title}
-      </div>
-
-      <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
-        {data.length > 0 && (
-          <CSVLink
-            filename={`${title}.csv`}
-            data={data}
-            style={{
-              color: '#000',
-              fontSize: '1rem',
-              textDecoration: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ fontSize: '16px', fontWeight: 500, color: '#667284' }}>
-              <DownloadIcon />
-            </div>
-          </CSVLink>
-        )}
-
-        {url && (
-          <div
-            onClick={() => router.push(url)}
-            style={{
-              fontWeight: 500,
-              backgroundColor: Color.primary,
-              color: Color.white,
-              padding: '2px 5px',
-              borderRadius: '5px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ fontSize: '15px' }}>Add</div>
-            <div style={{ fontWeight: 'bold', fontSize: '18px' }}>+</div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------------
-// Main Page Component
-// ---------------------------------------------------------------------
 export default function AstrologerPage() {
   const router = useRouter();
 
@@ -159,8 +91,7 @@ export default function AstrologerPage() {
       const res = await fetch(`${base_url}${get_astrologer}`);
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
-      console.log(data.astrologers)
-      setAstrologers(data.astrologers);
+      setAstrologers(data.astrologers || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -171,6 +102,20 @@ export default function AstrologerPage() {
   useEffect(() => {
     fetchAstrologers();
   }, []);
+
+  // -----------------------------------------------------------------
+  // CSV Data (Transformed for Export)
+  // -----------------------------------------------------------------
+  const csvData: CSVRow[] = useMemo(() => {
+    return filteredData.map((astro, index) => ({
+      'S.No.': index + 1,
+      Name: astro.astrologerName,
+      Email: astro.email,
+      Mobile: astro.phoneNumber,
+      'Created Date': moment(astro.createdAt).format('Do MMM YYYY'),
+      Status: astro.isVerified ? 'Verified' : 'Unverified',
+    }));
+  }, [filteredData]);
 
   // -----------------------------------------------------------------
   // Wallet Handlers
@@ -195,6 +140,16 @@ export default function AstrologerPage() {
   ) => {
     const { name, value } = e.target;
     setInputFieldDetail((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (e: SelectChangeEvent<'credit' | 'deduct'>) => {
+    const { name, value } = e.target;
+    if (name === 'type') {
+      setInputFieldDetail((prev) => ({
+        ...prev,
+        type: value as 'credit' | 'deduct',
+      }));
+    }
   };
 
   const validateWallet = () => {
@@ -287,66 +242,65 @@ export default function AstrologerPage() {
   };
 
   // -----------------------------------------------------------------
-  // Table Columns (using TableColumn<Astrologer>)
+  // Table Columns
   // -----------------------------------------------------------------
-  const columns: AstrologerColumn[] = [
-    {
-      name: 'S.No.',
-      selector: (row, index) => (index !== undefined ? filteredData.indexOf(row) + 1 : 0),
-      width: '80px',
-    },
-    { name: 'Name', selector: (row) => row.astrologerName },
-    { name: 'Email', selector: (row) => row.email, width: '250px' },
-    { name: 'Mobile', selector: (row) => row.phoneNumber },
-    {
-      name: 'Created Date',
-      selector: (row) => moment(row.createdAt).format('Do MMM YYYY'),
-      width: '140px',
-    },
-    {
-      name: 'Status',
-      cell: (row) => (
-        <div style={{ cursor: 'pointer' }} onClick={() => toggleVerify(row)}>
-          {row.isVerified ? <SwitchOnSvg /> : <SwitchOffSvg />}
-        </div>
-      ),
-      width: '140px',
-      center: true,
-    },
-    {
-      name: 'Action',
-      cell: (row) => (
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <div
-            onClick={() =>
-              router.push(
-                `/astrologer/view-astrologer?state=${encodeURIComponent(JSON.stringify(row))}`
-              )
-            }
-            style={{ cursor: 'pointer' }}
-          >
-            <ViewSvg />
+  const columns: AstrologerColumn[] = useMemo(
+    () => [
+      {
+        name: 'S.No.',
+        selector: (_row, index) => (index !== undefined ? index + 1 : 0),
+        width: '80px',
+      },
+      { name: 'Name', selector: (row) => row.astrologerName },
+      { name: 'Email', selector: (row) => row.email, width: '250px' },
+      { name: 'Mobile', selector: (row) => row.phoneNumber },
+      {
+        name: 'Created Date',
+        selector: (row) => moment(row.createdAt).format('Do MMM YYYY'),
+        width: '140px',
+      },
+      {
+        name: 'Status',
+        cell: (row) => (
+          <div style={{ cursor: 'pointer' }} onClick={() => toggleVerify(row)}>
+            {row.isVerified ? <SwitchOnSvg /> : <SwitchOffSvg />}
           </div>
-          <div
-            onClick={() =>
-              router.push(
-                `/astrologer/edit-astrologer?state=${encodeURIComponent(JSON.stringify(row))}`
-              )
-            }
-            style={{ cursor: 'pointer' }}
-          >
-            <EditSvg />
+        ),
+        width: '140px',
+        center: true,
+      },
+      {
+        name: 'Action',
+        cell: (row) => (
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <div
+              onClick={() =>
+                router.push(`/astrologer/view-astrologer?id=${row._id}`)
+              }
+              style={{ cursor: 'pointer' }}
+            >
+              <ViewSvg />
+            </div>
+            <div
+              onClick={() =>
+                router.push(`/astrologer/edit-astrologer?id=${row._id}`)
+              }
+              style={{ cursor: 'pointer' }}
+            >
+              <EditSvg />
+            </div>
+            <div style={{ cursor: 'pointer' }} onClick={() => openWallet(row)}>
+              <WalletSvg />
+            </div>
+            <MoreVertIcon onClick={() => openEdit(row)} sx={{ cursor: 'pointer' }} />
           </div>
-          <div style={{ cursor: 'pointer' }} onClick={() => openWallet(row)}>
-            <WalletSvg />
-          </div>
-          <MoreVertIcon onClick={() => openEdit(row)} sx={{ cursor: 'pointer' }} />
-        </div>
-      ),
-      width: '200px',
-      center: true,
-    },
-  ];
+        ),
+        width: '200px',
+        center: true,
+      },
+    ],
+    [router]
+  );
 
   // -----------------------------------------------------------------
   // Render
@@ -364,8 +318,8 @@ export default function AstrologerPage() {
       >
         <DatatableHeading
           title="List Of Astrologers"
-          data={astrologers}
           url="/astrologer/add-astrologer"
+          data={csvData}
         />
 
         <div
@@ -384,7 +338,7 @@ export default function AstrologerPage() {
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="Search your data..."
             style={{
-              padding: '5px 10px',
+              padding: '8px 12px',
               borderRadius: '5px',
               border: '1px solid #ccc',
               boxShadow: '0px 0px 5px rgba(0,0,0,0.1)',
@@ -403,23 +357,22 @@ export default function AstrologerPage() {
       <Dialog
         open={walletModal}
         PaperProps={{
-          sx: { maxWidth: { xs: '90vw', sm: '50vw' }, minWidth: { xs: '90vw', sm: '50vw' } },
+          sx: { maxWidth: { xs: '90vw', sm: '50vw' }, width: '100%' },
         }}
       >
         <DialogContent>
-          <Grid container spacing={3} sx={{ alignItems: 'center' }}>
+          <Grid container spacing={3}>
             <Grid item xs={12}>
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: '10px',
                 }}
               >
-                <div style={{ fontSize: '22px', fontWeight: 500, color: Color.black }}>
+                <Typography variant="h6" sx={{ fontWeight: 500, color: Color.black }}>
                   Wallet
-                </div>
+                </Typography>
                 <div onClick={closeWallet} style={{ cursor: 'pointer' }}>
                   <CrossSvg />
                 </div>
@@ -445,45 +398,47 @@ export default function AstrologerPage() {
             </Grid>
 
             <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel id="type-label">Type</InputLabel>
+              <FormControl fullWidth error={!!inputFieldError.type}>
+                <InputLabel id="type-label">Type *</InputLabel>
                 <Select
                   labelId="type-label"
-                  label="Type"
+                  label="Type *"
                   name="type"
                   value={inputFieldDetail.type}
-                  onChange={handleInputField as any}
-                  error={!!inputFieldError.type}
+                  onChange={handleSelectChange}
                   onFocus={() => handleInputFieldError('type', null)}
                 >
-                  <MenuItem disabled>---Select Type---</MenuItem>
+                  <MenuItem value="" disabled>
+                    ---Select Type---
+                  </MenuItem>
                   <MenuItem value="credit">Add</MenuItem>
                   <MenuItem value="deduct">Deduct</MenuItem>
                 </Select>
+                {inputFieldError.type && (
+                  <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                    {inputFieldError.type}
+                  </Typography>
+                )}
               </FormControl>
-              {inputFieldError.type && (
-                <div style={{ color: '#F44C35', fontSize: '12.5px', padding: '3px 15px 0 15px' }}>
-                  {inputFieldError.type}
-                </div>
-              )}
             </Grid>
 
             <Grid item xs={12}>
-              <Grid container sx={{ justifyContent: 'space-between' }}>
-                <div
+              <Grid container justifyContent="flex-end">
+                <Button
                   onClick={submitWallet}
-                  style={{
-                    fontWeight: 500,
-                    backgroundColor: Color.primary,
+                  sx={{
+                    bgcolor: Color.primary,
                     color: Color.white,
-                    padding: '10px 20px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    fontSize: '15px',
+                    px: 3,
+                    py: 1,
+                    borderRadius: 1,
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    '&:hover': { bgcolor: Color.primary },
                   }}
                 >
                   Submit
-                </div>
+                </Button>
               </Grid>
             </Grid>
           </Grid>
@@ -491,96 +446,64 @@ export default function AstrologerPage() {
       </Dialog>
 
       {/* Edit Status Modal */}
-      <Dialog open={editState.open}>
-        <DialogContent sx={{ minWidth: '300px', maxWidth: '500px' }}>
+      <Dialog open={editState.open} onClose={closeEdit}>
+        <DialogContent sx={{ minWidth: 300, maxWidth: 500 }}>
           {editState.astro && (
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
                 <div
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginBottom: '20px',
-                    gap: '10px',
+                    marginBottom: '16px',
                   }}
                 >
                   <Typography variant="h6" sx={{ fontWeight: 600 }}>
                     {editState.astro.astrologerName}
                   </Typography>
-                  <div
+                  <Button
                     onClick={closeEdit}
-                    style={{
-                      backgroundColor: 'grey',
-                      color: '#fff',
-                      cursor: 'pointer',
-                      padding: '2px 10px 3px 10px',
-                      borderRadius: '30px',
+                    sx={{
+                      minWidth: 32,
+                      bgcolor: 'grey.500',
+                      color: 'white',
+                      borderRadius: '50%',
+                      p: 0.5,
+                      '&:hover': { bgcolor: 'grey.600' },
                     }}
                   >
-                    x
-                  </div>
+                    ×
+                  </Button>
                 </div>
               </Grid>
 
-              {/* Chat Status */}
-              <Grid item xs={5}>Change Chat Status</Grid>
-              <Grid item xs={7}>
-                <Button
-                  onClick={() =>
-                    changeStatus('chat_status', editState.astro!._id, editState.astro!.chat_status)
-                  }
-                  style={{
-                    backgroundColor:
-                      editState.astro.chat_status === 'online' ? 'green' : 'red',
-                    color: '#fff',
-                    width: '200px',
-                    textWrap: 'nowrap',
-                  }}
-                >
-                  Chat Status
-                </Button>
-              </Grid>
-
-              {/* Call Status */}
-              <Grid item xs={5}>Change Call Status</Grid>
-              <Grid item xs={7}>
-                <Button
-                  onClick={() =>
-                    changeStatus('call_status', editState.astro!._id, editState.astro!.call_status)
-                  }
-                  style={{
-                    backgroundColor:
-                      editState.astro.call_status === 'online' ? 'green' : 'red',
-                    color: '#fff',
-                    width: '200px',
-                  }}
-                >
-                  Call Status
-                </Button>
-              </Grid>
-
-              {/* Video Call Status */}
-              <Grid item xs={5}>Change Video Call Status</Grid>
-              <Grid item xs={7}>
-                <Button
-                  onClick={() =>
-                    changeStatus(
-                      'video_call_status',
-                      editState.astro!._id,
-                      editState.astro!.video_call_status
-                    )
-                  }
-                  style={{
-                    backgroundColor:
-                      editState.astro.video_call_status === 'online' ? 'green' : 'red',
-                    color: '#fff',
-                    width: '200px',
-                  }}
-                >
-                  Video Call Status
-                </Button>
-              </Grid>
+              {(['chat_status', 'call_status', 'video_call_status'] as const).map((field) => {
+                const status = editState.astro![field];
+                return (
+                  <React.Fragment key={field}>
+                    <Grid item xs={5}>
+                      {field === 'chat_status' && 'Change Chat Status'}
+                      {field === 'call_status' && 'Change Call Status'}
+                      {field === 'video_call_status' && 'Change Video Call Status'}
+                    </Grid>
+                    <Grid item xs={7}>
+                      <Button
+                        onClick={() => changeStatus(field, editState.astro!._id, status)}
+                        fullWidth
+                        sx={{
+                          bgcolor: status === 'online' ? 'success.main' : 'error.main',
+                          color: 'white',
+                          textTransform: 'none',
+                          fontWeight: 500,
+                        }}
+                      >
+                        {status === 'online' ? `Set ${field.replace('_status', '')} Offline` : `Set ${field.replace('_status', '')} Online`}
+                      </Button>
+                    </Grid>
+                  </React.Fragment>
+                );
+              })}
             </Grid>
           )}
         </DialogContent>

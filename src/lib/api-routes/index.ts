@@ -1,8 +1,8 @@
-export let base_url: string, img_url: string, api_url: string;
+// export let base_url: string, img_url: string, api_url: string;
 
-    base_url = "http://localhost:3003/";
-    img_url = "https://api.acharyalavbhushan.com/uploads/";
-    api_url = "http://localhost:3003/api/";
+   export const  base_url = "http://localhost:3003/";
+   export const  img_url = "https://api.acharyalavbhushan.com/uploads/";
+   export  const api_url = "http://localhost:3003/api/";
 
 
 //! Dashboard

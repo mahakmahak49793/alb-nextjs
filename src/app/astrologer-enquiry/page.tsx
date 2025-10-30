@@ -259,12 +259,13 @@ const AstrologerEnquiryClient = () => {
     },
     { 
       name: 'Name', 
-      selector: (row: Astrologer) => row.astrologerName 
+      selector: (row: Astrologer) => row.astrologerName ,
+       width: '150px' 
     },
     { 
       name: 'Email', 
       selector: (row: Astrologer) => row.email, 
-      width: '250px' 
+      width: '200px' 
     },
     { 
       name: 'Mobile', 
@@ -281,22 +282,12 @@ const AstrologerEnquiryClient = () => {
     {
       name: 'DOB',
       selector: (row: Astrologer) => moment(row.dateOfBirth).format('Do MMM YYYY'),
-      width: '140px',
+      width: '120px',
     },
     {
       name: 'Created Date',
       selector: (row: Astrologer) => moment(row.createdAt).format('Do MMM YYYY'),
       width: '140px',
-    },
-    {
-      name: 'Status',
-      cell: (row: Astrologer) => (
-        <div style={{ cursor: 'pointer' }} onClick={() => toggleVerify(row)}>
-          {(row.isVerified ?? false) ? <SwitchOnSvg /> : <SwitchOffSvg />}
-        </div>
-      ),
-      width: '100px',
-      center: true,
     },
     {
       name: 'Action',
@@ -311,9 +302,6 @@ const AstrologerEnquiryClient = () => {
             style={{ cursor: 'pointer' }}
           >
             <EditSvg />
-          </div>
-          <div style={{ cursor: 'pointer' }} onClick={() => openWallet(row)}>
-            <WalletSvg />
           </div>
         </div>
       ),
