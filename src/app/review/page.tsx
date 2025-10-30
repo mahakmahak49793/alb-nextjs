@@ -19,7 +19,7 @@ interface Review {
 }
 
 interface ApiResponse<T> {
-review: Review[];  success: boolean;
+reviews: Review[];  success: boolean;
   data: T;
   message?: string;
 }
@@ -38,7 +38,7 @@ const Review = () => {
       
       if (data.success) {
        
-        setAstrologersReviews(data.review || []);
+        setAstrologersReviews(data.reviews || []);
       } else {
         console.error('Failed to fetch reviews:', data.message);
       }

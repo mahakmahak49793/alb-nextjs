@@ -75,7 +75,7 @@ const SlotManagement: React.FC = () => {
     return isValid;
   };
 
-  //* Handle Submit
+  //* Handle Submit - UPDATED: Using create_slots_duration endpoint
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -84,7 +84,7 @@ const SlotManagement: React.FC = () => {
     const { slot_duration } = inputFieldDetail;
 
     try {
-      const res = await fetch(`${base_url}api/admin/get_slots_duration`, {
+      const res = await fetch(`${base_url}api/admin/create_slots_duration`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slotDuration: slot_duration }),
@@ -106,10 +106,8 @@ const SlotManagement: React.FC = () => {
       const res = await fetch(`${base_url}api/admin/get_slots_duration`);
       if (!res.ok) throw new Error('Failed to fetch slot durations');
       const data = await res.json();
-      setSlotDurations(data?.slots
- || []);
-      setFilteredData(data?.slots
- || []);
+      setSlotDurations(data?.slots || []);
+      setFilteredData(data?.slots || []);
     } catch (err) {
       console.error('Error fetching slot durations:', err);
     } finally {

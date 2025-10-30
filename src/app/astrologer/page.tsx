@@ -196,8 +196,8 @@ export default function AstrologerPage() {
   // -----------------------------------------------------------------
   const toggleVerify = async (astro: Astrologer) => {
     try {
-      await fetch('/api/astrologers/verify', {
-        method: 'PATCH',
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/astrologer/verify-astrologer-profile`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           astrologerId: astro._id,

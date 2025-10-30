@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect ,Suspense  } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 
@@ -28,7 +28,7 @@ interface Customer {
   customerName: string;
 }
 
-function AddReviewContent() {  // Change from: const AddReview = () => {
+function AddReviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -51,9 +51,6 @@ function AddReviewContent() {  // Change from: const AddReview = () => {
   const [fetching, setFetching] = useState(editMode);
   const [astrologerListData, setAstrologerListData] = useState<Astrologer[]>([]);
   const [customerListData, setCustomerListData] = useState<Customer[]>([]);
-
-  // Regex pattern for validation
-  const Regex_Accept_Alpha = /^[a-zA-Z\s]*$/;
 
   // Fetch review data if in edit mode
   useEffect(() => {
@@ -159,45 +156,73 @@ function AddReviewContent() {  // Change from: const AddReview = () => {
       handleInputFieldError("rating", "Rating must be 1 to 5");
       isValid = false;
     }
-    if (comment && !Regex_Accept_Alpha.test(comment)) {
-      handleInputFieldError("comment", "Please Enter Valid Comment");
-      isValid = false;
-    }
 
     return isValid;
   };
 
-  // API call functions
-  const createReview = async (reviewData: FormData) => {
+  // ✅ FIXED: Create Review API call
+  const createReview = async (reviewData: {
+    astrologerId: string;
+    customerId: string;
+    ratings: string;
+    comments: string;
+  }) => {
     try {
+      console.log("📤 Creating review with payload:", reviewData);
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/add-review`, {
         method: 'POST',
-        body: reviewData,
+        headers: {
+          'Content-Type': 'application/json', // ✅ Use JSON, not FormData
+        },
+        body: JSON.stringify({
+          astrologerId: reviewData.astrologerId,
+          customerId: reviewData.customerId,
+          ratings: reviewData.ratings, // ✅ Send as string to match expected payload
+          comments: reviewData.comments
+        }),
       });
-      return await response.json();
+
+      console.log("📥 Response status:", response.status);
+      
+      const result = await response.json();
+      console.log("📦 API Response:", result);
+      
+      return result;
     } catch (error) {
-      console.error('Error creating review:', error);
+      console.error('❌ Error creating review:', error);
       throw error;
     }
   };
 
+  // ✅ FIXED: Update Review API call
   const updateReview = async (reviewData: { 
     ratings: string; 
     comments: string; 
     reviewId: string;
   }) => {
     try {
+      console.log("📤 Updating review with payload:", reviewData);
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews/${reviewData.reviewId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify({
-          ratings: parseInt(reviewData.ratings),
+          ratings: reviewData.ratings, // ✅ Keep as string to match expected format
           comments: reviewData.comments
         }),
       });
-      return await response.json();
+
+      console.log("📥 Response status:", response.status);
+      
+      const result = await response.json();
+      console.log("📦 API Response:", result);
+      
+      return result;
     } catch (error) {
-      console.error('Error updating review:', error);
+      console.error('❌ Error updating review:', error);
       throw error;
     }
   };
@@ -205,6 +230,8 @@ function AddReviewContent() {  // Change from: const AddReview = () => {
   //! Handle Submit - Creating/Updating Review
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔄 Submit triggered, editMode:", editMode);
+    
     if (handleValidation()) {
       setLoading(true);
       const { astrologer, customer, rating, comment, reviewId } = reviewDetail;
@@ -235,14 +262,13 @@ function AddReviewContent() {  // Change from: const AddReview = () => {
             });
           }
         } else {
-          // Create new review
-          const formData = new FormData();
-          formData.append("astrologerId", astrologer);
-          formData.append("customerId", customer);
-          formData.append("ratings", rating);
-          formData.append("comments", comment);
-
-          const result = await createReview(formData);
+          // ✅ FIXED: Create new review with correct payload format
+          const result = await createReview({
+            astrologerId: astrologer,
+            customerId: customer,
+            ratings: rating,
+            comments: comment
+          });
           
           if (result.success) {
             await Swal.fire({
@@ -262,7 +288,7 @@ function AddReviewContent() {  // Change from: const AddReview = () => {
           }
         }
       } catch (error) {
-        console.error('Error submitting review:', error);
+        console.error('❌ Error submitting review:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error!',
@@ -271,6 +297,8 @@ function AddReviewContent() {  // Change from: const AddReview = () => {
       } finally {
         setLoading(false);
       }
+    } else {
+      console.log("❌ Validation failed");
     }
   };
 
@@ -419,8 +447,8 @@ function AddReviewContent() {  // Change from: const AddReview = () => {
       </div>
     </div>
   );
+}
 
-};
 const AddReview = () => {
   return (
     <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
@@ -428,4 +456,5 @@ const AddReview = () => {
     </Suspense>
   );
 };
+
 export default AddReview;
