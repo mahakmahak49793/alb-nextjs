@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 
@@ -19,7 +19,7 @@ interface ImageState {
   bytes: File | null;
 }
 
-const AddRemedies = () => {
+function AddRemediesContent(){
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -361,5 +361,11 @@ const AddRemedies = () => {
     </div>
   );
 };
-
+const AddRemedies = () => {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
+      <AddRemediesContent />
+    </Suspense>
+  );
+};
 export default AddRemedies;

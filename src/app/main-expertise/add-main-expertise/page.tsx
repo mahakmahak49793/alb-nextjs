@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Swal from "sweetalert2";
@@ -20,7 +20,7 @@ interface ImageState {
   bytes: File | null;
 }
 
-const AddMainExpertise = () => {
+function AddMainExpertiseContent(){
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -365,5 +365,11 @@ const AddMainExpertise = () => {
     </div>
   );
 };
-
-export default AddMainExpertise;
+const AddReview = () => {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
+      <AddMainExpertiseContent />
+    </Suspense>
+  );
+};
+export default AddReview;
