@@ -6,8 +6,6 @@ import Image from "next/image";
 import MainDatatable from "@/components/common/MainDatatable";
 import ViewModal from "@/components/modals/viewmodal";
 import { EditSvg, DeleteSvg } from "@/components/svgs/page";
-import DatatableHeading from "@/components/common/dataTable";
-import router from "next/router";
 import Swal from "sweetalert2";
 
 // Types
@@ -24,11 +22,12 @@ interface PujaItem {
     adminCommission?: number;
     description?: string;
     image?: string;
+    about?: any[];
 }
 
 // API Configuration
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || '';
 const IMG_URL = process.env.NEXT_PUBLIC_IMG_URL || '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // Utility Functions
 const deepSearchSpace = (data: PujaItem[], searchText: string): PujaItem[] => {
@@ -50,7 +49,7 @@ const formatIndianRupee = (amount: number): string => {
 // API Functions
 const getPujaList = async (): Promise<PujaItem[]> => {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/puja/get_puja`, {
+        const response = await fetch(`${API_URL}/api/puja/get_puja`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -70,9 +69,8 @@ const getPujaList = async (): Promise<PujaItem[]> => {
 };
 
 const deletePujaItem = async (pujaId: string): Promise<boolean> => {
-
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/puja/delete_puja`, {
+        const response = await fetch(`${API_URL}/api/puja/delete_puja`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -109,6 +107,13 @@ const Puja: React.FC = () => {
     };
 
     const closeModal = (): void => setModalIsOpen(false);
+
+    const handleEdit = (row: PujaItem): void => {
+        // Store the puja data in localStorage
+        localStorage.setItem('editPujaData', JSON.stringify(row));
+        // Navigate to edit page with ID
+        router.push(`/astro-puja/puja/add-puja?id=${row._id}`);
+    };
 
     const handleDelete = async (pujaId: string): Promise<void> => {
         const result = await Swal.fire({
@@ -190,7 +195,7 @@ const Puja: React.FC = () => {
             cell: (row: PujaItem) => (
                 <div className="flex gap-5 items-center">
                     <div
-                        onClick={() => router.push(`/astro-puja/puja/add-puja?id=${row._id}`)}
+                        onClick={() => handleEdit(row)}
                         className="cursor-pointer hover:opacity-70 transition-opacity"
                     >
                         <EditSvg />
@@ -221,16 +226,12 @@ const Puja: React.FC = () => {
 
     return (
         <>
-
-            {/* <DatatableHeading 
-          title="Puja" 
-          data={pujaData} 
-          url="/astro-puja/puja/add-puja" 
-        /> */}
-
-
-            <MainDatatable columns={columns} title='Puja'
-                data={filteredData} url="/astro-puja/puja/add-puja" />
+            <MainDatatable 
+                columns={columns} 
+                title='Puja'
+                data={filteredData} 
+                url="/astro-puja/puja/add-puja" 
+            />
 
             <ViewModal
                 openModal={modalIsOpen}
@@ -242,4 +243,4 @@ const Puja: React.FC = () => {
     );
 };
 
-export default Puja
+export default Puja;
