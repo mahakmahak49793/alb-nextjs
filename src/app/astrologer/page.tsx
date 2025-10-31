@@ -91,8 +91,13 @@ export default function AstrologerPage() {
       setIsLoading(true);
       const res = await fetch(`${base_url}${get_astrologer}`);
       if (!res.ok) throw new Error("Failed to fetch");
+
       const data = await res.json();
-      setAstrologers(data.astrologers || []);
+      const sorted = (data.astrologers || []).sort(
+        (a: any, b: any) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setAstrologers(sorted);
     } catch (e) {
       console.error(e);
     } finally {
@@ -295,10 +300,10 @@ export default function AstrologerPage() {
               <ViewSvg />
             </div>
             <div
-              onClick={() =>
-                router.push(`/astrologer/edit-astrologer?id=${row._id}`)
-              }
-              style={{ cursor: "pointer" }}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent row click if in a table
+                router.push(`/astrologer/edit-astrologer?id=${row._id}`);
+              }}
             >
               <EditSvg />
             </div>
