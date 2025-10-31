@@ -21,27 +21,38 @@ import {
   Undo,
   Redo,
 } from '@mui/icons-material';
-import Swal from 'sweetalert2';
 
-// Types
-interface StaticPageEditorProps {
-  title: string;
+// Types specific to Announcements
+interface AnnouncementPageEditorProps {
   initialContent: string;
   createEndpoint: string;
-  hasTypeSelector?: boolean;
-  selectedType?: string;
-  onTypeChange?: (type: string) => void;
+  announcementId?: string;
+  editMode?: boolean;
   loading?: boolean;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 interface InputFieldError {
-  type?: string;
   description?: string;
 }
 
 interface ApiPayload {
-  type?: string;
   description: string;
+  announcementId?: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  announcement?: {
+    _id: string;
+    description: string;
+    astrologerId: any[];
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
 }
 
 interface ActiveFormats {
@@ -51,14 +62,14 @@ interface ActiveFormats {
   strikethrough: boolean;
 }
 
-const StaticPageEditor: React.FC<StaticPageEditorProps> = ({
-  title,
+const AnnouncementPageEditor: React.FC<AnnouncementPageEditorProps> = ({
   initialContent,
   createEndpoint,
-  hasTypeSelector = false,
-  selectedType = 'Astrologer',
-  onTypeChange,
+  announcementId,
+  editMode = false,
   loading: externalLoading = false,
+  onSuccess,
+  onCancel,
 }) => {
   const [description, setDescription] = useState<string>('');
   const [inputFieldError, setInputFieldError] = useState<InputFieldError>({});
@@ -73,9 +84,10 @@ const StaticPageEditor: React.FC<StaticPageEditorProps> = ({
   const editorRef = useRef<HTMLDivElement>(null);
 
   // Handle Input Field Error
-  const handleInputFieldError = (input: keyof InputFieldError, value: string | null) => {
-    setInputFieldError((prev) => ({ ...prev, [input]: value }));
-  };
+ // Handle Input Field Error
+const handleInputFieldError = (input: keyof InputFieldError, value: string | undefined) => {
+  setInputFieldError((prev) => ({ ...prev, [input]: value }));
+};
 
   // Execute command
   const executeCommand = (command: string, value: string | undefined = undefined) => {
@@ -109,16 +121,13 @@ const StaticPageEditor: React.FC<StaticPageEditorProps> = ({
   const handleNumberList = () => executeCommand('insertOrderedList');
   
   const handleQuote = () => {
-    // Get selection
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
     
-    // Get the selected text
     const range = selection.getRangeAt(0);
     const selectedText = range.toString();
     
     if (selectedText) {
-      // Create blockquote element
       const blockquote = document.createElement('blockquote');
       blockquote.style.borderLeft = '4px solid #ccc';
       blockquote.style.marginLeft = '0';
@@ -127,7 +136,6 @@ const StaticPageEditor: React.FC<StaticPageEditorProps> = ({
       blockquote.style.fontStyle = 'italic';
       blockquote.textContent = selectedText;
       
-      // Replace selection with blockquote
       range.deleteContents();
       range.insertNode(blockquote);
       
@@ -137,16 +145,13 @@ const StaticPageEditor: React.FC<StaticPageEditorProps> = ({
   };
   
   const handleCode = () => {
-    // Get selection
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
     
-    // Get the selected text
     const range = selection.getRangeAt(0);
     const selectedText = range.toString();
     
     if (selectedText) {
-      // Create code block element
       const codeBlock = document.createElement('pre');
       const code = document.createElement('code');
       codeBlock.style.backgroundColor = '#f5f5f5';
@@ -158,7 +163,6 @@ const StaticPageEditor: React.FC<StaticPageEditorProps> = ({
       code.textContent = selectedText;
       codeBlock.appendChild(code);
       
-      // Replace selection with code block
       range.deleteContents();
       range.insertNode(codeBlock);
       
@@ -218,14 +222,9 @@ const StaticPageEditor: React.FC<StaticPageEditorProps> = ({
   const handleValidation = (): boolean => {
     let isValid = true;
 
-    if (hasTypeSelector && !selectedType) {
-      handleInputFieldError('type', 'Please Select type');
-      isValid = false;
-    }
-
     const strippedDescription = description.replace(/<[^>]*>/g, '').trim();
     if (!strippedDescription || description === '<p><br></p>' || description === '') {
-      handleInputFieldError('description', 'Please Enter Description');
+handleInputFieldError('description', 'Please Enter Announcement Description');
       isValid = false;
     }
 
@@ -233,58 +232,54 @@ const StaticPageEditor: React.FC<StaticPageEditorProps> = ({
   };
 
   // Handle Submit
-// Handle Submit
-const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
 
-  if (!handleValidation()) return;
+    if (!handleValidation()) return;
 
-  try {
-    setSubmitting(true);
-    const payload: ApiPayload = {
-      description: description,
-    };
+    try {
+      setSubmitting(true);
+      
+      const payload: ApiPayload = {
+        description: description,
+      };
 
-    if (hasTypeSelector && selectedType) {
-      payload.type = selectedType;
-    }
+      // Include ID for edit mode
+      if (editMode && announcementId) {
+        payload.announcementId = announcementId;
+      }
 
-    const response = await fetch(createEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+      const response = await fetch(createEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) throw new Error('Failed to update data');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save announcement');
+      }
 
-    const result = await response.json();
-    console.log('Success:', result);
-    
-    await Swal.fire({
-      icon: 'success',
-      title: 'Success!',
-      text: 'Updated successfully!',
-      confirmButtonColor: '#3085d6',
-    });
-  } catch (error) {
-    console.error('Error updating data:', error);
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error!',
-      text: 'Failed to update. Please try again.',
-      confirmButtonColor: '#d33',
-    });
-  } finally {
-    setSubmitting(false);
-  }
-};
-
-  // Handle Type Change
-  const handleTypeChange = (event: SelectChangeEvent<string>) => {
-    if (onTypeChange) {
-      onTypeChange(event.target.value);
+      const result: ApiResponse = await response.json();
+      
+      if (result.success) {
+        // Call success callback if provided
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          // Default success behavior
+          alert(result.message || (editMode ? 'Announcement updated successfully!' : 'Announcement created successfully!'));
+        }
+      } else {
+        throw new Error(result.message || 'Operation failed');
+      }
+    } catch (error) {
+      console.error('Error saving announcement:', error);
+      alert(error instanceof Error ? error.message : 'Failed to save announcement. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -294,14 +289,14 @@ const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
       const content = editorRef.current.innerHTML;
       setDescription(content);
       if (inputFieldError.description) {
-        handleInputFieldError('description', null);
+handleInputFieldError('description', undefined);
       }
     }
   };
 
   // Update editor when initialContent changes
   useEffect(() => {
-    if (initialContent !== description) {
+    if (initialContent && initialContent !== description) {
       setDescription(initialContent);
       if (editorRef.current) {
         editorRef.current.innerHTML = initialContent;
@@ -335,68 +330,14 @@ const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
   });
 
   return (
-    <div
-      style={{
-        padding: '20px',
-        backgroundColor: '#fff',
-        marginBottom: '20px',
-        boxShadow: '0px 0px 5px lightgrey',
-        borderRadius: '10px',
-      }}
-    >
-      <div
-        style={{
-          padding: '10px 0 30px 0',
-          fontSize: '22px',
-          fontWeight: '500',
-          color: Color.black,
-        }}
-      >
-        {title}
-      </div>
+   <>
 
       {externalLoading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-          Loading content...
+          Loading announcement editor...
         </div>
       ) : (
         <Grid container spacing={3}>
-          {hasTypeSelector && (
-            <Grid item lg={12} md={12} sm={12} xs={12}>
-              <FormControl fullWidth>
-                <InputLabel id="select-label">
-                  Select Type <span style={{ color: 'red' }}>*</span>
-                </InputLabel>
-                <Select
-                  label="Select Type *"
-                  variant="outlined"
-                  fullWidth
-                  name="type"
-                  value={selectedType}
-                  onChange={handleTypeChange}
-                  error={!!inputFieldError?.type}
-                  onFocus={() => handleInputFieldError('type', null)}
-                >
-                  <MenuItem disabled>---Select Type---</MenuItem>
-                  <MenuItem value="Customer">Customer</MenuItem>
-                  <MenuItem value="Astrologer">Astrologer</MenuItem>
-                </Select>
-              </FormControl>
-              {inputFieldError?.type && (
-                <div
-                  style={{
-                    color: '#D32F2F',
-                    fontSize: '13px',
-                    padding: '5px 15px 0 12px',
-                    fontWeight: '500',
-                  }}
-                >
-                  {inputFieldError?.type}
-                </div>
-              )}
-            </Grid>
-          )}
-
           <Grid item lg={12} md={12} sm={12} xs={12}>
             {/* Toolbar */}
             <Box
@@ -522,7 +463,7 @@ const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
               onInput={handleContentChange}
               onMouseUp={updateActiveFormats}
               onKeyUp={updateActiveFormats}
-              onFocus={() => handleInputFieldError('description', null)}
+              onFocus={() => handleInputFieldError('description', undefined)}
               style={{
                 minHeight: '400px',
                 padding: '15px',
@@ -551,28 +492,50 @@ const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
           </Grid>
 
           <Grid item lg={12} md={12} sm={12} xs={12}>
-            <Grid container sx={{ justifyContent: 'space-between' }}>
-              <div
-                onClick={handleSubmit}
-                style={{
-                  fontWeight: '500',
-                  backgroundColor: submitting ? '#ccc' : Color.primary,
-                  color: Color.white,
-                  padding: '10px 20px',
-                  borderRadius: '5px',
-                  cursor: submitting ? 'not-allowed' : 'pointer',
-                  fontSize: '15px',
-                  pointerEvents: submitting ? 'none' : 'auto',
-                }}
-              >
-                {submitting ? 'Submitting...' : 'Submit'}
-              </div>
+            <Grid container spacing={2} sx={{ justifyContent: 'flex-end' }}>
+              <Grid item>
+                <button
+                  onClick={onCancel}
+                  style={{
+                    fontWeight: '500',
+                    backgroundColor: '#6b7280',
+                    color: Color.white,
+                    padding: '10px 20px',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    fontSize: '15px',
+                    border: 'none',
+                    minWidth: '100px',
+                  }}
+                >
+                  Cancel
+                </button>
+              </Grid>
+              <Grid item>
+                <button
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  style={{
+                    fontWeight: '500',
+                    backgroundColor: submitting ? '#ccc' : Color.primary,
+                    color: Color.white,
+                    padding: '10px 20px',
+                    borderRadius: '5px',
+                    cursor: submitting ? 'not-allowed' : 'pointer',
+                    fontSize: '15px',
+                    border: 'none',
+                    minWidth: '100px',
+                  }}
+                >
+                  {submitting ? 'Saving...' : (editMode ? 'Update' : 'Create')}
+                </button>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>
       )}
-    </div>
+    </>
   );
 };
 
-export default StaticPageEditor;
+export default AnnouncementPageEditor;

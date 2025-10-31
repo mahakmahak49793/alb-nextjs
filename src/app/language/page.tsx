@@ -16,7 +16,6 @@ const Language = () => {
     const [languageData, setLanguageData] = useState<LanguageData[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [notification, setNotification] = useState({ show: false, type: '', message: '' });
 
     // DataTable Columns
     const categoryColumns = [
@@ -51,14 +50,6 @@ const Language = () => {
         },
     ];
 
-    // Show notification
-    const showNotificationMessage = (type: string, message: string) => {
-        setNotification({ show: true, type, message });
-        setTimeout(() => {
-            setNotification({ show: false, type: '', message: '' });
-        }, 3000);
-    };
-
     // Fetch languages from API
     const fetchLanguages = async () => {
         setLoading(true);
@@ -80,27 +71,45 @@ const Language = () => {
             
             if (data.success) {
                 setLanguageData(data.languageData || []);
+                // Show success message on first load
+                if (languageData.length === 0) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Languages loaded successfully',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
             } else {
                 throw new Error(data.message || 'Failed to fetch languages');
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'An error occurred');
+            const errorMessage = err instanceof Error ? err.message : 'An error occurred while fetching languages';
+            setError(errorMessage);
             console.error('Error fetching languages:', err);
+            
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: errorMessage,
+                confirmButtonColor: '#d33',
+            });
         } finally {
             setLoading(false);
         }
     };
 
     // Updated edit function to pass data via URL params
-   const handleEdit = (language: LanguageData) => {
-    // Create URLSearchParams to pass data
-    const params = new URLSearchParams();
-    params.set('edit', 'true');
-    params.set('id', language._id);
-    params.set('name', encodeURIComponent(language.languageName));
-    
-    router.push(`/language/add-language?${params.toString()}`);
-};
+    const handleEdit = (language: LanguageData) => {
+        // Create URLSearchParams to pass data
+        const params = new URLSearchParams();
+        params.set('edit', 'true');
+        params.set('id', language._id);
+        params.set('name', encodeURIComponent(language.languageName));
+        
+        router.push(`/language/add-language?${params.toString()}`);
+    };
 
     // Delete function
     const handleDelete = async (langId: string, languageName: string) => {
@@ -111,13 +120,25 @@ const Language = () => {
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#d1d5db',
-            confirmButtonText: 'Delete',
+            confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'Cancel',
-            reverseButtons: true
+            reverseButtons: true,
+            background: '#fff',
+            color: '#1f2937'
         });
 
         if (result.isConfirmed) {
             try {
+                // Show loading state
+                Swal.fire({
+                    title: 'Deleting...',
+                    text: `Deleting "${languageName}"`,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete_language`, {
                     method: 'POST',
                     headers: {
@@ -129,11 +150,13 @@ const Language = () => {
                 // Handle 204 No Content and other success statuses
                 if (response.status === 204 || response.ok) {
                     await fetchLanguages();
-                    Swal.fire(
-                        'Deleted!',
-                        `"${languageName}" has been deleted successfully.`,
-                        'success'
-                    );
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: `"${languageName}" has been deleted successfully.`,
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
                 } else {
                     // Handle error responses
                     const errorText = await response.text();
@@ -151,12 +174,31 @@ const Language = () => {
 
             } catch (err) {
                 console.error('Error deleting language:', err);
-                Swal.fire(
-                    'Error!',
-                    err instanceof Error ? err.message : 'Failed to delete language',
-                    'error'
-                );
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Delete Failed!',
+                    text: err instanceof Error ? err.message : 'Failed to delete language',
+                    confirmButtonColor: '#d33',
+                });
             }
+        }
+    };
+
+    // Handle retry with Swal confirmation
+    const handleRetry = async () => {
+        const result = await Swal.fire({
+            title: 'Retry?',
+            text: 'Do you want to try loading languages again?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, retry!',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            await fetchLanguages();
         }
     };
 
@@ -167,7 +209,10 @@ const Language = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="flex flex-col items-center gap-3">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <p className="text-gray-600">Loading languages...</p>
+                </div>
             </div>
         );
     }
@@ -175,15 +220,17 @@ const Language = () => {
     if (error) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="text-red-600 bg-red-50 p-4 rounded-lg border border-red-200">
-                    <p className="font-semibold">Error loading languages</p>
-                    <p>{error}</p>
-                    <button 
-                        onClick={fetchLanguages}
-                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                    >
-                        Retry
-                    </button>
+                <div className="text-center">
+                    <div className="text-red-600 bg-red-50 p-6 rounded-lg border border-red-200 max-w-md">
+                        <p className="font-semibold text-lg mb-2">Error loading languages</p>
+                        <p className="text-gray-700 mb-4">{error}</p>
+                        <button 
+                            onClick={handleRetry}
+                            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                        >
+                            Retry Loading
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -191,22 +238,30 @@ const Language = () => {
 
     return (
         <>
-            {/* Notification */}
-            {notification.show && (
-                <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
-                    notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-                } text-white`}>
-                    {notification.message}
+            {languageData.length === 0 && !loading ? (
+                <div className="flex justify-center items-center h-64">
+                    <div className="text-center">
+                        <div className="text-gray-600 bg-gray-50 p-6 rounded-lg border border-gray-200 max-w-md">
+                            <p className="font-semibold text-lg mb-2">No Languages Found</p>
+                            <p className="text-gray-700 mb-4">There are no languages available at the moment.</p>
+                            <button 
+                                onClick={fetchLanguages}
+                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            >
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
                 </div>
+            ) : (
+                <MainDatatable 
+                    data={languageData} 
+                    columns={categoryColumns} 
+                    title={'Language'} 
+                    url={'/language/add-language'} 
+                    isLoading={loading}
+                />
             )}
-
-            <MainDatatable 
-                data={languageData} 
-                columns={categoryColumns} 
-                title={'Language'} 
-                url={'/language/add-language'} 
-                isLoading={loading}
-            />
         </>
     );
 };

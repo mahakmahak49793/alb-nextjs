@@ -16,6 +16,7 @@ import { Color } from '@/assets/colors';
 import { base_url } from '@/lib/api-routes';
 import StaticPageEditor from '@/components/common/Addblogeditor';
 import { UploadImageSvg } from '@/components/svgs/page';
+import Swal from 'sweetalert2';
 
 
 // ---------------------------------------------------------------------
@@ -231,53 +232,66 @@ const AddEditBlogContent = () => {
   };
 
   // Handle Submit
-  const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>): Promise<void> => {
-    e.preventDefault();
+ // Handle Submit
+const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>): Promise<void> => {
+  e.preventDefault();
 
-    if (!handleValidation()) return;
+  if (!handleValidation()) return;
 
-    const { title, created_by, categoryId } = inputFieldDetail;
-    const formData = new FormData();
+  const { title, created_by, categoryId } = inputFieldDetail;
+  const formData = new FormData();
 
-    formData.append('title', title.trim());
-    formData.append('created_by', created_by.trim());
-    formData.append('blogCategoryId', categoryId);
-    formData.append('description', description.trim());
+  formData.append('title', title.trim());
+  formData.append('created_by', created_by.trim());
+  formData.append('blogCategoryId', categoryId);
+  formData.append('description', description.trim());
 
-    if (image.bytes && typeof image.bytes !== 'string') {
-      formData.append('image', image.bytes);
+  if (image.bytes && typeof image.bytes !== 'string') {
+    formData.append('image', image.bytes);
+  }
+
+  if (editBlog?._id) {
+    formData.append('blogId', editBlog._id);
+  }
+
+  try {
+    setLoading(true);
+
+    const url = editBlog
+      ? `${base_url}api/admin/update_astro_blog`
+      : `${base_url}api/admin/add-astro-blog`;
+    const method = editBlog ? 'PUT' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to ${editBlog ? 'update' : 'create'} blog`);
     }
 
-    if (editBlog?._id) {
-      formData.append('blogId', editBlog._id);
-    }
+    await Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: `Blog ${editBlog ? 'updated' : 'created'} successfully!`,
+      confirmButtonColor: '#3085d6',
+    });
 
-    try {
-      setLoading(true);
-
-      const url = editBlog
-        ? `${base_url}api/admin/update_astro_blog`
-        : `${base_url}api/admin/add-astro-blog`;
-      const method = editBlog ? 'PUT' : 'POST';
-
-      const res = await fetch(url, {
-        method,
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to ${editBlog ? 'update' : 'create'} blog`);
-      }
-
-      router.push('/astro-blog/blog');
-    } catch (error) {
-      console.error('Error submitting blog:', error);
-      alert(error instanceof Error ? error.message : 'Failed to submit blog. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    router.push('/astro-blog/blog');
+  } catch (error) {
+    console.error('Error submitting blog:', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error instanceof Error ? error.message : 'Failed to submit blog. Please try again.',
+      confirmButtonColor: '#d33',
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div
