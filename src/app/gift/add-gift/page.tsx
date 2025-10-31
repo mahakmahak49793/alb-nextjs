@@ -262,7 +262,7 @@ function AddGiftContent() {
         const formData = new FormData();
 
         if (editMode && giftId) {
-          formData.append("gift_Id", giftId);
+          formData.append("giftId", giftId);
         }
         formData.append("gift", title);
         formData.append("amount", amount);

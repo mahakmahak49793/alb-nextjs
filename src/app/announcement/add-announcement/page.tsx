@@ -6,7 +6,13 @@ interface InputFieldError {
     description?: string;
 }
 
-function AddAnnouncementContent(){
+interface NotificationState {
+    show: boolean;
+    type: 'success' | 'error' | '';
+    message: string;
+}
+
+function AddAnnouncementContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const editorRef = useRef<HTMLDivElement>(null);
@@ -22,7 +28,7 @@ function AddAnnouncementContent(){
     const [inputFieldError, setInputFieldError] = useState<InputFieldError>({});
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(editMode && !announcementDescriptionFromUrl);
-    const [notification, setNotification] = useState<Notification>({
+    const [notification, setNotification] = useState<NotificationState>({
         show: false,
         type: '',
         message: ''
@@ -417,31 +423,20 @@ function AddAnnouncementContent(){
     );
 }
 
-// ✅ Wrap with Suspense for loading fallback
+// Main component with Suspense
 const AddAnnouncement = () => {
     return (
-        <Suspense
-            fallback={
-                <div className="flex justify-center items-center min-h-screen">
-                    <div className="flex items-center gap-2 text-gray-600">
-                        <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                        Loading...
-                    </div>
+        <Suspense fallback={
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="flex items-center gap-2 text-gray-600">
+                    <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                    Loading...
                 </div>
-            }
-        >
-            <AddAnnouncementReview />
+            </div>
+        }>
+            <AddAnnouncementContent />
         </Suspense>
-        </>
     );
 };
-const AddAnnouncement = () => {
-  return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
-      <AddAnnouncementContent />
-    </Suspense>
-  );
-};
-
 
 export default AddAnnouncement;
