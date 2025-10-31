@@ -67,7 +67,7 @@ const Banner = () => {
       console.log("Banner ID:", bannerId); // Debug log
 
       const response = await fetch(apiUrl, {
-        method: "PATCH",
+        method: "POST",
         headers: { 
           "Content-Type": "application/json",
         },
