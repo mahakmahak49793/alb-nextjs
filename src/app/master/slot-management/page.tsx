@@ -9,6 +9,7 @@ import DatatableHeading from '@/components/datatable/DatatableHeading';
 // import { SwitchOffSvg, SwitchOnSvg } from '@/assets/svg';
 import { base_url } from '@/lib/api-routes';
 import { SwitchOnSvg, SwitchOffSvg } from '@/components/svgs/page';
+import Swal from 'sweetalert2';
 
 // ---------------------------------------------------------------------
 // Types
@@ -76,28 +77,44 @@ const SlotManagement: React.FC = () => {
   };
 
   //* Handle Submit - UPDATED: Using create_slots_duration endpoint
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+ //* Handle Submit - UPDATED: Using create_slots_duration endpoint
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!handleValidation()) return;
+  if (!handleValidation()) return;
 
-    const { slot_duration } = inputFieldDetail;
+  const { slot_duration } = inputFieldDetail;
 
-    try {
-      const res = await fetch(`${base_url}api/admin/create_slots_duration`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slotDuration: slot_duration }),
-      });
+  try {
+    const res = await fetch(`${base_url}api/admin/create_slots_duration`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slotDuration: slot_duration }),
+    });
 
-      if (!res.ok) throw new Error('Failed to create slot duration');
+    if (!res.ok) throw new Error('Failed to create slot duration');
 
-      setInputFieldDetail({ slot_duration: '' });
-      await fetchSlotDurations(); // Refresh list
-    } catch (error) {
-      console.error('Error creating slot duration:', error);
-    }
-  };
+    await Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: 'Slot duration created successfully!',
+      confirmButtonColor: '#3085d6',
+    });
+
+    setInputFieldDetail({ slot_duration: '' });
+    await fetchSlotDurations(); // Refresh list
+  } catch (error) {
+    console.error('Error creating slot duration:', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: 'Failed to create slot duration. Please try again.',
+      confirmButtonColor: '#d33',
+    });
+  }
+};
+
+
 
   //* Fetch Slot Durations
  const fetchSlotDurations = async () => {

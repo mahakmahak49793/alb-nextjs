@@ -228,12 +228,12 @@ function AddLanguageReview() {
                 </div>
             )}
 
-            <div className="max-w-2xl mx-auto">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="w-full mx-auto">
+                <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
+                    <div className="px-6 py-4">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-white">
+                            <h2 className="text-xl font-bold">
                                 {editMode ? 'Edit Language' : 'Add New Language'}
                             </h2>
                             <button
@@ -287,30 +287,23 @@ function AddLanguageReview() {
                                     </p>
                                 </div>
 
-                                <div className="flex gap-3 pt-4">
-                                    <button
-                                        type="button"
-                                        onClick={handleCancel}
-                                        disabled={loading}
-                                        className="flex-1 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={loading || fetching}
-                                        className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                {editMode ? 'Updating...' : 'Creating...'}
-                                            </>
-                                        ) : (
-                                            editMode ? 'Update Language' : 'Create Language'
-                                        )}
-                                    </button>
-                                </div>
+                         <div className="flex gap-3 w-20 rounded-md">
+  <button
+    type="submit"
+    disabled={loading || fetching}
+    className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white font-medium py-3 rounded-md transition-colors"
+  >
+    {loading ? (
+      <>
+        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        {editMode ? 'Updating...' : 'Creating...'}
+      </>
+    ) : (
+      editMode ? 'Submit' : 'Create Language'
+    )}
+  </button>
+</div>
+
                             </form>
                         )}
                     </div>

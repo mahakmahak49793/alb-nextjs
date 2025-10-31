@@ -110,7 +110,6 @@ interface EditPayload {
   status?: "pending" | "paid" | "processing" | "delivered";
 }
 
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const API_BASE_URL = "https://api.acharyalavbhushan.com" 
 
 
@@ -609,237 +608,262 @@ const ReportOrders: React.FC = () => {
             </div>
           </div>
         ),
-        width: "200px",
+        width: "100px",
       },
     ],
     [page, filters.limit]
   );
 
   return (
-    <div className="p-5 bg-white rounded-lg shadow-sm">
-      {/* Header + Stats */}
-      <div className="flex justify-between mb-5">
-        <div className="text-xl font-semibold text-black">
-          {stats && (
-            <>
-              <div>
-                Total Order: {stats.totalOrders} • Total Revenue: ₹
-                {Number(stats.totalRevenue || 0).toFixed(2)}
-              </div>
-              <div className="text-bold text-black">
-                Today: {stats.todayOrders} • Revenue: ₹
-                {Number(stats.todayRevenue || 0).toFixed(2)}
-              </div>
-            </>
-          )}
-        </div>
-        <div className="flex gap-3 items-center">
-          <Button variant="outlined" size="small" onClick={downloadCSV}>
-            CSV(Current Page)
-          </Button>
-          <Button variant="outlined" size="small" onClick={downloadServerCSV}>
-            CSV(Server All)
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        <input
-          type="date"
-          name="from"
-          value={filters.from}
-          onChange={onChangeFilter}
-          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-        />
-        <input
-          type="date"
-          name="to"
-          value={filters.to}
-          onChange={onChangeFilter}
-          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-        />
-
-        <TextField
-          select
-          SelectProps={{ native: true }}
-          name="language"
-          value={filters.language}
-          onChange={onChangeFilter}
-          label="Language"
-          size="small"
-          className="w-48"
-        >
-          <option value="">All</option>
-          <option value="English">English</option>
-          <option value="Hindi">Hindi</option>
-        </TextField>
-
-        <TextField
-          select
-          SelectProps={{ native: true }}
-          name="status"
-          value={filters.status}
-          onChange={onChangeFilter}
-          label="Status"
-          size="small"
-          className="w-40"
-        >
-          <option value="all">All</option>
-          <option value="pending">Pending</option>
-          <option value="paid">Paid</option>
-          <option value="processing">Processing</option>
-          <option value="delivered">Delivered</option>
-        </TextField>
-
-        <TextField
-          placeholder="Plan name"
-          name="planName"
-          value={filters.planName}
-          onChange={onChangeFilter}
-          size="small"
-          className="w-48"
-        />
-
-        <TextField
-          select
-          SelectProps={{ native: true }}
-          name="astroConsultation"
-          value={filters.astroConsultation}
-          onChange={onChangeFilter}
-          label="Astro"
-          size="small"
-          className="w-32"
-        >
-          <option value="">All</option>
-          <option value="true">Yes</option>
-          <option value="false">No</option>
-        </TextField>
-
-        <TextField
-          select
-          SelectProps={{ native: true }}
-          name="expressDelivery"
-          value={filters.expressDelivery}
-          onChange={onChangeFilter}
-          label="Express"
-          size="small"
-          className="w-32"
-        >
-          <option value="">All</option>
-          <option value="true">Yes</option>
-          <option value="false">No</option>
-        </TextField>
-
-        <TextField
-          select
-          SelectProps={{ native: true }}
-          name="sortBy"
-          value={filters.sortBy}
-          onChange={onChangeFilter}
-          label="Sort By"
-          size="small"
-          className="w-40"
-        >
-          <option value="createdAt">createdAt</option>
-          <option value="paymentAt">paymentAt</option>
-          <option value="planName">planName</option>
-          <option value="reportLanguage">reportLanguage</option>
-        </TextField>
-
-        <TextField
-          select
-          SelectProps={{ native: true }}
-          name="sortOrder"
-          value={filters.sortOrder}
-          onChange={onChangeFilter}
-          label="Order"
-          size="small"
-          className="w-32"
-        >
-          <option value="desc">desc</option>
-          <option value="asc">asc</option>
-        </TextField>
-
-        <TextField
-          select
-          SelectProps={{ native: true }}
-          name="limit"
-          value={filters.limit}
-          onChange={onChangeFilter}
-          label="Rows"
-          size="small"
-          className="w-28"
-        >
-          <option value={10}>10</option>
-          <option value={25}>25</option>
-          <option value={50}>50</option>
-          <option value={100}>100</option>
-        </TextField>
-
-        <Button variant="contained" size="small" onClick={() => fetchList(1)}>
-          Apply
-        </Button>
-        <Button
-          variant="text"
-          size="small"
-          onClick={() => {
-            setFilters({
-              ...filters,
-              q: "",
-              from: "",
-              to: "",
-              language: "",
-              planName: "",
-              status: "",
-              astroConsultation: "",
-              expressDelivery: "",
-            });
-          }}
-        >
-          Reset
-        </Button>
-      </div>
-
-      {/* Table */}
-      <MainDatatable
-        data={rows}
-        columns={columns}
-        title="Life Journey Orders"
-        isLoading={loading}
-      />
-
-      {/* Pagination */}
-      <div className="mt-3 flex gap-2 items-center justify-end">
-        <Button
-          size="small"
-          onClick={() => onPageChange("prev")}
-          disabled={page <= 1}
-        >
-          Prev
-        </Button>
-        {Array.from({ length: Math.min(pages, 10) }).map((_, i) => {
-          const pageNum = i + 1;
-          return (
-            <Button
-              key={i}
-              size="small"
-              variant={page === pageNum ? "contained" : "outlined"}
-              onClick={() => onPageChange(pageNum)}
-            >
-              {pageNum}
+    <>
+      <div
+        style={{
+          padding: '20px',
+          backgroundColor: '#fff',
+          marginBottom: '20px',
+          boxShadow: '0px 0px 5px lightgrey',
+          borderRadius: '10px',
+        }}
+      >
+        {/* Header + Stats */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+          <div style={{ fontSize: '18px', fontWeight: 600, color: '#000' }}>
+            {stats && (
+              <>
+                <div>
+                  Total Order: {stats.totalOrders} • Total Revenue: ₹
+                  {Number(stats.totalRevenue || 0).toFixed(2)}
+                </div>
+                <div style={{ fontWeight: 600, color: '#000', marginTop: '5px' }}>
+                  Today: {stats.todayOrders} • Revenue: ₹
+                  {Number(stats.todayRevenue || 0).toFixed(2)}
+                </div>
+              </>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <Button variant="outlined" size="small" onClick={downloadCSV}>
+              CSV(Current)
             </Button>
-          );
-        })}
-        {pages > 10 && <span>...</span>}
-        <Button
-          size="small"
-          onClick={() => onPageChange("next")}
-          disabled={page >= pages}
-        >
-          Next
-        </Button>
-        <div className="ml-2 opacity-70">Total: {total}</div>
+            <Button variant="outlined" size="small" onClick={downloadServerCSV}>
+              CSV(All)
+            </Button>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+          <input
+            type="date"
+            name="from"
+            value={filters.from}
+            onChange={onChangeFilter}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              fontSize: '14px',
+              outline: 'none',
+            }}
+          />
+          <input
+            type="date"
+            name="to"
+            value={filters.to}
+            onChange={onChangeFilter}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              fontSize: '14px',
+              outline: 'none',
+            }}
+          />
+
+          <TextField
+            select
+            SelectProps={{ native: true }}
+            name="language"
+            value={filters.language}
+            onChange={onChangeFilter}
+            label="Language"
+            size="small"
+            style={{ minWidth: '150px' }}
+          >
+            <option value="all">All</option>
+            <option value="English">English</option>
+            <option value="Hindi">Hindi</option>
+          </TextField>
+
+
+          <TextField
+            select
+            SelectProps={{ native: true }}
+            name="status"
+            value={filters.status}
+            onChange={onChangeFilter}
+            label="Status"
+            size="small"
+            style={{ minWidth: '130px' }}
+          >
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="processing">Processing</option>
+            <option value="delivered">Delivered</option>
+          </TextField>
+
+          <TextField
+            placeholder="Plan name"
+            name="planName"
+            value={filters.planName}
+            onChange={onChangeFilter}
+            size="small"
+            style={{ minWidth: '150px' }}
+          />
+
+          <TextField
+            select
+            SelectProps={{ native: true }}
+            name="astroConsultation"
+            value={filters.astroConsultation}
+            onChange={onChangeFilter}
+            label="Astro"
+            size="small"
+            style={{ minWidth: '110px' }}
+          >
+            <option value="all">All</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </TextField>
+
+          <TextField
+            select
+            SelectProps={{ native: true }}
+            name="expressDelivery"
+            value={filters.expressDelivery}
+            onChange={onChangeFilter}
+            label="Express"
+            size="small"
+            style={{ minWidth: '110px' }}
+          >
+            <option value="all">All</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </TextField>
+
+          <TextField
+            select
+            SelectProps={{ native: true }}
+            name="sortBy"
+            value={filters.sortBy}
+            onChange={onChangeFilter}
+            label="Sort By"
+            size="small"
+            style={{ minWidth: '150px' }}
+          >
+            <option value="createdAt">createdAt</option>
+            <option value="paymentAt">paymentAt</option>
+            <option value="planName">planName</option>
+            <option value="reportLanguage">reportLanguage</option>
+          </TextField>
+
+          <TextField
+            select
+            SelectProps={{ native: true }}
+            name="sortOrder"
+            value={filters.sortOrder}
+            onChange={onChangeFilter}
+            label="Order"
+            size="small"
+            style={{ minWidth: '100px' }}
+          >
+            <option value="desc">desc</option>
+            <option value="asc">asc</option>
+          </TextField>
+
+          <TextField
+            select
+            SelectProps={{ native: true }}
+            name="limit"
+            value={filters.limit}
+            onChange={onChangeFilter}
+            label="Rows"
+            size="small"
+            style={{ minWidth: '90px' }}
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </TextField>
+
+          <Button variant="contained" size="small" onClick={() => fetchList(1)}>
+            Apply
+          </Button>
+          <Button
+            variant="text"
+            size="small"
+            onClick={() => {
+              setFilters({
+                ...filters,
+                q: "",
+                from: "",
+                to: "",
+                language: "",
+                planName: "",
+                status: "",
+                astroConsultation: "",
+                expressDelivery: "",
+              });
+            }}
+          >
+            Reset
+          </Button>
+        </div>
+
+        {/* Table */}
+        <div style={{ overflowX: 'auto' }}>
+          <MainDatatable
+            data={rows}
+            columns={columns}
+            title="Life Journey Orders"
+            isLoading={loading}
+          />
+        </div>
+
+        {/* Pagination */}
+        <div style={{ marginTop: '15px', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <Button
+            size="small"
+            onClick={() => onPageChange("prev")}
+            disabled={page <= 1}
+          >
+            Prev
+          </Button>
+          {Array.from({ length: Math.min(pages, 10) }).map((_, i) => {
+            const pageNum = i + 1;
+            return (
+              <Button
+                key={i}
+                size="small"
+                variant={page === pageNum ? "contained" : "outlined"}
+                onClick={() => onPageChange(pageNum)}
+              >
+                {pageNum}
+              </Button>
+            );
+          })}
+          {pages > 10 && <span>...</span>}
+          <Button
+            size="small"
+            onClick={() => onPageChange("next")}
+            disabled={page >= pages}
+          >
+            Next
+          </Button>
+          <div style={{ marginLeft: '8px', opacity: 0.7, fontSize: '14px' }}>Total: {total}</div>
+        </div>
       </div>
 
       {/* VIEW modal */}
@@ -853,12 +877,12 @@ const ReportOrders: React.FC = () => {
           <Grid container spacing={2}>
             {Object.entries(activeRow || {}).map(([k, v]) => (
               <Grid item xs={12} sm={6} key={k}>
-                <div className="text-xs opacity-70">{k}</div>
-                <div className="font-semibold">{String(v ?? "")}</div>
+                <div style={{ fontSize: '12px', opacity: 0.7 }}>{k}</div>
+                <div style={{ fontWeight: 600 }}>{String(v ?? "")}</div>
               </Grid>
             ))}
           </Grid>
-          <div className="flex justify-end mt-4">
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
             <Button variant="outlined" onClick={() => setViewOpen(false)}>
               Close
             </Button>
@@ -931,7 +955,7 @@ const ReportOrders: React.FC = () => {
               </TextField>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <label className="flex items-center gap-2 mt-2">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                 <input
                   type="checkbox"
                   checked={!!editPayload.astroConsultation}
@@ -946,7 +970,7 @@ const ReportOrders: React.FC = () => {
               </label>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <label className="flex items-center gap-2 mt-2">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                 <input
                   type="checkbox"
                   checked={!!editPayload.expressDelivery}
@@ -962,7 +986,7 @@ const ReportOrders: React.FC = () => {
             </Grid>
           </Grid>
 
-          <div className="flex justify-end gap-2 mt-4">
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
             <Button variant="outlined" onClick={() => setEditOpen(false)}>
               Cancel
             </Button>
@@ -972,7 +996,7 @@ const ReportOrders: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };
 

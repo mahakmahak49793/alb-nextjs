@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Swal from "sweetalert2";
 
 interface InputFieldDetail {
   title: string;
@@ -38,9 +39,22 @@ function AddCategoryReview() {
 
           if (data.success && data.data) {
             setInputFieldDetail({ title: data.data.categoryName });
+          } else {
+            await Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: 'Failed to load category data',
+              confirmButtonColor: '#d33',
+            });
           }
         } catch (error) {
           console.error('Error fetching category:', error);
+          await Swal.fire({
+            icon: 'error',
+            title: 'Network Error!',
+            text: 'Failed to load category data. Please check your connection.',
+            confirmButtonColor: '#d33',
+          });
         } finally {
           setFetching(false);
         }
@@ -69,12 +83,30 @@ function AddCategoryReview() {
     if (!title) {
       handleInputFieldError("title", "Please Enter Title");
       isValid = false;
+      Swal.fire({
+        icon: 'warning',
+        title: 'Validation Error',
+        text: 'Please enter a title for the category',
+        confirmButtonColor: '#3085d6',
+      });
     } else if (!Regex_Accept_Alpha_Dot_Comma_Space.test(title)) {
       handleInputFieldError("title", "Please Enter Valid Title");
       isValid = false;
+      Swal.fire({
+        icon: 'warning',
+        title: 'Validation Error',
+        text: 'Please enter a valid title (only letters, dots, commas and spaces allowed)',
+        confirmButtonColor: '#3085d6',
+      });
     } else if (title.length > 70) {
       handleInputFieldError("title", "Please Enter Title Less Than 70 Letters");
       isValid = false;
+      Swal.fire({
+        icon: 'warning',
+        title: 'Validation Error',
+        text: 'Title must be less than 70 characters',
+        confirmButtonColor: '#3085d6',
+      });
     } else {
       handleInputFieldError("title", "");
     }
@@ -127,63 +159,126 @@ function AddCategoryReview() {
           });
 
           if (result.success) {
-            router.push("/astro-puja/category");
+            await Swal.fire({
+              icon: 'success',
+              title: 'Success!',
+              text: 'Category updated successfully!',
+              showConfirmButton: false,
+              timer: 1500
+            });
+            setTimeout(() => {
+              router.push("/astro-puja/category");
+            }, 1600);
           } else {
-            console.error('Failed to update category:', result.message);
+            await Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: result.message || 'Failed to update category',
+              confirmButtonColor: '#d33',
+            });
           }
         } else {
           // Create new category
           const result = await createCategory({ categoryName: title });
 
           if (result.success) {
-            router.push("/astro-puja/category");
+            await Swal.fire({
+              icon: 'success',
+              title: 'Success!',
+              text: 'Category created successfully!',
+              showConfirmButton: false,
+              timer: 1500
+            });
+            setTimeout(() => {
+              router.push("/astro-puja/category");
+            }, 1600);
           } else {
-            console.error('Failed to create category:', result.message);
+            await Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: result.message || 'Failed to create category',
+              confirmButtonColor: '#d33',
+            });
           }
         }
       } catch (error) {
         console.error('Error submitting category:', error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Network Error!',
+          text: 'Please check your connection and try again.',
+          confirmButtonColor: '#d33',
+        });
       } finally {
         setLoading(false);
       }
     }
   };
 
+  if (fetching) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-lg text-gray-600">Loading category data...</div>
+        </div>
+      </div>
+    );
+  }
+
   // ✅ Return JSX here
   return (
-    <div className="max-w-xl mx-auto bg-white shadow-md rounded-lg p-6 mt-10">
-      <h2 className="text-lg font-semibold mb-4">
-        {editMode ? 'Edit Category' : 'Add Category'}
-      </h2>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-xl mx-auto bg-white shadow-md rounded-lg p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-800">
+            {editMode ? 'Edit Category' : 'Add Category'}
+          </h2>
+          <button 
+            onClick={() => router.push("/astro-puja/category")}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg cursor-pointer text-sm font-medium transition duration-200"
+          >
+            Display
+          </button>
+        </div>
 
-      {fetching ? (
-        <div className="text-gray-500 text-center py-10">Fetching category...</div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Title <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="title"
               value={inputFieldDetail.title}
               onChange={handleInputField}
+              onFocus={() => handleInputFieldError("title", "")}
               placeholder="Enter category name"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-red-500 focus:outline-none"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                inputFieldError.title ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
             {inputFieldError.title && (
-              <p className="text-sm text-red-500 mt-1">{inputFieldError.title}</p>
+              <p className="text-red-500 text-sm mt-1">{inputFieldError.title}</p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-md transition"
+            className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-medium py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
           >
-            {loading ? 'Saving...' : editMode ? 'Update Category' : 'Create Category'}
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                {editMode ? 'Updating...' : 'Creating...'}
+              </>
+            ) : (
+              editMode ? 'Update Category' : 'Create Category'
+            )}
           </button>
         </form>
-      )}
+      </div>
     </div>
   );
 }

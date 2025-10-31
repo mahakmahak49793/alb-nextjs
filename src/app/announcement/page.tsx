@@ -60,57 +60,70 @@ const Announcement = () => {
     };
 
     // Delete announcement using POST method with SweetAlert confirmation
-    const deleteAnnouncement = async (announcementId: string) => {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: "You want to delete this announcement!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#d1d5db',
-            confirmButtonText: 'Delete',
-            cancelButtonText: 'Cancel',
-            reverseButtons: true
-        });
+const deleteAnnouncement = async (announcementId: string) => {
+    const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to delete this announcement!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#d1d5db',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+        background: '#fff'
+    });
 
-        if (result.isConfirmed) {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete-announcement`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ announcementId }),
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Refresh the announcements list after deletion
-                    await getAllAnnouncements();
-                    Swal.fire(
-                        'Deleted!',
-                        'Announcement has been deleted successfully.',
-                        'success'
-                    );
-                } else {
-                    Swal.fire(
-                        'Error!',
-                        data.message || 'Failed to delete announcement',
-                        'error'
-                    );
+    if (result.isConfirmed) {
+        try {
+            // Show loading
+            Swal.fire({
+                title: 'Deleting...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
                 }
-            } catch (error) {
-                console.error('Error deleting announcement:', error);
-                Swal.fire(
-                    'Error!',
-                    'Failed to delete announcement',
-                    'error'
-                );
-            }
-        }
-    };
+            });
 
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete-announcement`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ announcementId }),
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                await getAllAnnouncements();
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'Announcement has been deleted successfully.',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } else {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: data.message || 'Failed to delete announcement',
+                    confirmButtonColor: '#d33',
+                });
+            }
+        } catch (error) {
+            console.error('Error deleting announcement:', error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Failed to delete announcement',
+                confirmButtonColor: '#d33',
+            });
+        }
+    }
+};
     // Function to edit announcement - pass data via URL params
     const handleEditAnnouncement = (announcement: Announcement) => {
         // Create URLSearchParams to pass data
