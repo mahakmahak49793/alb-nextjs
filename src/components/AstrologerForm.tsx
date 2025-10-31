@@ -45,53 +45,49 @@ interface Remedy { _id: string; title: string }
 interface Language { _id: string; languageName: string }
 interface SlotDuration { _id: string; slotDuration: string; active: boolean }
 interface ConsultationPrice {
-  _id: string;
+  _id?: string;
   duration: SlotDuration;
   price: number;
 }
 
+/* ────────────────────── FORM STATE (API‑exact) ────────────────────── */
 interface AstrologerFormData {
-  name: string;
-  emerging_type: string;
+  astrologerName: string;
+  displayName: string;
+  title: string;
+  phoneNumber: string;
+  alternateNumber: string;
+  country_phone_code: string;
   email: string;
-  mobile: string;
-  altMobile: string;
-  currency: string;
-  gender: string;
   password: string;
-  confirmPassword: string;
-  dob: string;
+  confirm_password: string;
+  gender: string;
+  dateOfBirth: string;
   experience: string;
-  countryPhoneCode: string;
-  pinCode: string;
-  startTime: string;
-  endTime: string;
-  rating: number;
-  followers: number;
-  language: string[];
   address: string;
   country: string;
   state: string;
   city: string;
+  zipCode: string;
   youtubeLink: string;
-  freeMinutes: string;
-  bankName: string;
-  bankAccountNumber: string;
-  accountType: string;
-  ifscCode: string;
-  accountHolderName: string;
-  panNumber: string;
+  free_min: string;
+  bank_name: string;
+  account_number: string;
+  account_type: string;
+  IFSC_code: string;
+  account_holder_name: string;
+  panCard: string;
   aadharNumber: string;
-  consultationPrice: string;
+  consultation_price: string;
   call_price: string;
   commission_call_price: string;
-  total_call_duration: number;
+  totalCallDuration: number;
   chat_price: string;
   commission_chat_price: string;
-  total_chat_duration: number;
+  totalChatDuration: number;
   normal_video_call_price: number;
   commission_normal_video_call_price: number;
-  total_video_call_duration: number;
+  totalVideoCallDuration: number;
   video_call_price: number;
   commission_video_call_price: number;
   gift_commission: number;
@@ -102,65 +98,63 @@ interface AstrologerFormData {
   consultation_commission_videocall: string;
   consultation_videocall_price: string;
   consultation_commission: string;
-  shortBio: string;
+  short_bio: string;
   about: string;
   tagLine: string;
-  commissionRemark: string;
-  working: string;
-  longBio: string;
+  commission_remark: string;
+  workingOnOtherApps: string;
+  long_bio: string;
 }
 
+/* ────────────────────── PROPS ────────────────────── */
 interface Props {
   mode: 'Add' | 'Edit';
   initialData?: any;
   onSnack: (snack: { open: boolean; message: string }) => void;
 }
 
+/* ────────────────────── MAIN COMPONENT ────────────────────── */
 export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
   const isEdit = mode === 'Edit';
 
+  /* ────── INITIAL FORM STATE ────── */
   const [form, setForm] = useState<AstrologerFormData>({
-    name: initialData?.astrologerName || '',
-    emerging_type: initialData?.title || '',
+    astrologerName: initialData?.astrologerName || '',
+    displayName: initialData?.displayName || '',
+    title: initialData?.title || '',
+    phoneNumber: initialData?.phoneNumber || '',
+    alternateNumber: initialData?.alternateNumber || '',
+    country_phone_code: initialData?.country_phone_code || '91',
     email: initialData?.email || '',
-    mobile: initialData?.phoneNumber || '',
-    altMobile: initialData?.alternateNumber || '',
-    currency: initialData?.currency || 'INR',
-    gender: initialData?.gender || '',
     password: '',
-    confirmPassword: '',
-    dob: initialData?.dateOfBirth ? moment(initialData.dateOfBirth).format('YYYY-MM-DD') : '',
+    confirm_password: '',
+    gender: initialData?.gender || '',
+    dateOfBirth: initialData?.dateOfBirth ? moment(initialData.dateOfBirth).format('YYYY-MM-DD') : '',
     experience: initialData?.experience || '',
-    countryPhoneCode: '91',
-    pinCode: initialData?.zipCode || '',
-    startTime: initialData?.startTime || '',
-    endTime: initialData?.endTime || '',
-    rating: initialData?.rating || 0,
-    followers: initialData?.follower_count || 0,
-    language: initialData?.language?.map((l: any) => l.languageName) || [],
     address: initialData?.address || '',
     country: initialData?.country || 'India',
     state: initialData?.state || '',
     city: initialData?.city || '',
-    youtubeLink: 'https://www.youtube.com/',
-    freeMinutes: '5',
-    bankName: initialData?.account_name || '',
-    bankAccountNumber: initialData?.account_number || '',
-    accountType: initialData?.account_type || '',
-    ifscCode: initialData?.IFSC_code || '',
-    accountHolderName: initialData?.account_holder_name || '',
-    panNumber: initialData?.panCard || '',
+    zipCode: initialData?.zipCode || '',
+    youtubeLink: initialData?.youtubeLink || 'https://www.youtube.com/',
+    free_min: initialData?.free_min?.toString() || '5',
+    bank_name: initialData?.account_name || '',
+    account_number: initialData?.account_number || '',
+    account_type: initialData?.account_type || '',
+    IFSC_code: initialData?.IFSC_code || '',
+    account_holder_name: initialData?.account_holder_name || '',
+    panCard: initialData?.panCard || '',
     aadharNumber: initialData?.aadharNumber || '',
-    consultationPrice: '4',
+    consultation_price: initialData?.consultation_price || '4',
     call_price: initialData?.call_price || '',
     commission_call_price: initialData?.commission_call_price || '',
-    total_call_duration: initialData?.totalCallDuration / 60 || 0,
+    totalCallDuration: initialData?.totalCallDuration ? initialData.totalCallDuration / 60 : 0,
     chat_price: initialData?.chat_price || '',
     commission_chat_price: initialData?.commission_chat_price || '',
-    total_chat_duration: initialData?.totalChatDuration / 60 || 0,
+    totalChatDuration: initialData?.totalChatDuration ? initialData.totalChatDuration / 60 : 0,
     normal_video_call_price: initialData?.normal_video_call_price || 0,
     commission_normal_video_call_price: initialData?.commission_normal_video_call_price || 0,
-    total_video_call_duration: initialData?.totalVideoCallDuration / 60 || 0,
+    totalVideoCallDuration: initialData?.totalVideoCallDuration ? initialData.totalVideoCallDuration / 60 : 0,
     video_call_price: initialData?.video_call_price || 0,
     commission_video_call_price: initialData?.commission_video_call_price || 0,
     gift_commission: initialData?.gift_commission || 0,
@@ -171,12 +165,12 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
     consultation_commission_videocall: initialData?.consultation_commission_videocall || '',
     consultation_videocall_price: initialData?.consultation_videocall_price || '',
     consultation_commission: initialData?.consultation_commission || '',
-    shortBio: initialData?.short_bio || '',
+    short_bio: initialData?.short_bio || '',
     about: initialData?.about || '',
     tagLine: initialData?.tagLine || '',
-    commissionRemark: 'Hii',
-    working: 'No',
-    longBio: initialData?.long_bio || '',
+    commission_remark: initialData?.commission_remark || '',
+    workingOnOtherApps: initialData?.workingOnOtherApps || 'No',
+    long_bio: initialData?.long_bio || '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -189,21 +183,31 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
   const [slotDurations, setSlotDurations] = useState<SlotDuration[]>([]);
   const [consultationPrices, setConsultationPrices] = useState<ConsultationPrice[]>([]);
 
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(initialData?.skill?.map((s: any) => s._id) || []);
-  const [selectedRemedies, setSelectedRemedies] = useState<string[]>(initialData?.remedies?.map((r: any) => r._id) || []);
-  const [selectedMainExpertise, setSelectedMainExpertise] = useState<string[]>(initialData?.mainExpertise?.map((e: any) => e._id) || []);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(
+    initialData?.skill?.map((s: any) => s._id) || []
+  );
+  const [selectedRemedies, setSelectedRemedies] = useState<string[]>(
+    initialData?.remedies?.map((r: any) => r._id) || []
+  );
+  const [selectedMainExpertise, setSelectedMainExpertise] = useState<string[]>(
+    initialData?.mainExpertise?.map((e: any) => e._id) || []
+  );
 
-  const [image, setImage] = useState<{ file: string; bytes: File | null }>({ 
-    file: initialData ? `${api_url}${initialData.profileImage}` : '', 
-    bytes: null 
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
+    initialData?.language?.map((l: any) => l.languageName) || []
+  );
+
+  const [image, setImage] = useState<{ file: string; bytes: File | null }>({
+    file: initialData?.profileImage ? `${api_url}${initialData.profileImage}` : '',
+    bytes: null,
   });
-  const [bankProof, setBankProof] = useState<{ file: string; bytes: File | null }>({ 
-    file: initialData ? `${api_url}${initialData.bank_proof_image}` : '', 
-    bytes: null 
+  const [bankProof, setBankProof] = useState<{ file: string; bytes: File | null }>({
+    file: initialData?.bank_proof_image ? `${api_url}${initialData.bank_proof_image}` : '',
+    bytes: null,
   });
-  const [idProof, setIdProof] = useState<{ file: string; bytes: File | null }>({ 
-    file: initialData ? `${api_url}${initialData.id_proof_image}` : '', 
-    bytes: null 
+  const [idProof, setIdProof] = useState<{ file: string; bytes: File | null }>({
+    file: initialData?.id_proof_image ? `${api_url}${initialData.id_proof_image}` : '',
+    bytes: null,
   });
   const [bulkImages, setBulkImages] = useState<{ file: string; bytes: File | null }[]>(
     initialData?.multipleImages?.map((img: string) => ({ file: `${api_url}${img}`, bytes: null })) || []
@@ -217,6 +221,7 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
   const [selectedCountry, setSelectedCountry] = useState<any>({ name: 'India', isoCode: 'IN' });
   const [selectedState, setSelectedState] = useState<any>({});
 
+  /* ────── FETCH LOOKUPS ────── */
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -236,7 +241,7 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
         ]);
 
         if (!skillsRes.ok || !expertiseRes.ok || !remediesRes.ok || !languagesRes.ok || !slotsRes.ok) {
-          throw new Error('Failed to fetch data');
+          throw new Error('Failed to fetch lookup data');
         }
 
         const [skillsData, expertiseData, remediesData, languagesData, slotsData] = await Promise.all([
@@ -261,15 +266,15 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
           }
         }
       } catch (err) {
-        onSnack({ open: true, message: 'Failed to load data.' });
+        onSnack({ open: true, message: 'Failed to load lookup data.' });
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [isEdit, initialData?._id, onSnack]);
 
+  /* ────── HANDLERS ────── */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
@@ -284,6 +289,7 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
 
   const handleMultiSelectChange = (e: SelectChangeEvent<string[]>) => {
     const { name, value } = e.target;
+    if (name === 'language') setSelectedLanguages(value as string[]);
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
@@ -292,7 +298,7 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
     if (file && file.size < 500 * 1024) {
       setImage({ file: URL.createObjectURL(file), bytes: file });
     } else if (file) {
-      onSnack({ open: true, message: 'Image must be < 500KB' });
+      onSnack({ open: true, message: 'Profile image must be < 500KB' });
     }
   };
 
@@ -313,24 +319,29 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
     else setBulkVideos(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleCheckbox = (id: string, list: string[], setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-    setter(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const handleCheckbox = (
+    id: string,
+    list: string[],
+    setter: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
+    setter(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
   };
 
+  /* ────── VALIDATION ────── */
   const validate = () => {
     const newErrors: Record<string, string> = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const mobileRegex = /^\d{10}$/;
 
-    if (!form.name) newErrors.name = 'Name required';
+    if (!form.astrologerName) newErrors.astrologerName = 'Name required';
     if (!emailRegex.test(form.email)) newErrors.email = 'Invalid email';
-    if (!mobileRegex.test(form.mobile)) newErrors.mobile = '10-digit mobile required';
+    if (!mobileRegex.test(form.phoneNumber)) newErrors.phoneNumber = '10‑digit mobile required';
     if (!isEdit && !form.password) newErrors.password = 'Password required';
-    if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Passwords must match';
-    if (!form.dob) newErrors.dob = 'DOB required';
-    if (calculateAge(form.dob) < 18) newErrors.dob = 'Must be 18+';
+    if (form.password !== form.confirm_password) newErrors.confirm_password = 'Passwords must match';
+    if (!form.dateOfBirth) newErrors.dateOfBirth = 'DOB required';
+    if (calculateAge(form.dateOfBirth) < 18) newErrors.dateOfBirth = 'Must be 18+';
     if (!form.experience) newErrors.experience = 'Experience required';
-    if (form.language.length === 0) newErrors.language = 'Select at least one language';
+    if (selectedLanguages.length === 0) newErrors.language = 'Select at least one language';
     if (!image.bytes && !isEdit) newErrors.image = 'Profile image required';
     if (selectedSkills.length === 0) newErrors.skills = 'Select at least one skill';
     if (selectedRemedies.length === 0) newErrors.remedies = 'Select at least one remedy';
@@ -340,28 +351,35 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
     return Object.keys(newErrors).length === 0;
   };
 
+  /* ────── SUBMIT ────── */
   const handleSubmit = async () => {
     if (!validate()) return;
 
     const formData = new FormData();
+
+    // ---- BASIC FIELDS ----
     Object.entries(form).forEach(([key, value]) => {
       if (Array.isArray(value)) value.forEach(v => formData.append(`${key}[]`, v));
       else formData.append(key, value);
     });
 
+    // ---- FILES ----
     if (image.bytes) formData.append('profileImage', image.bytes);
-    if (bankProof.bytes) formData.append('bankProof', bankProof.bytes);
-    if (idProof.bytes) formData.append('idProof', idProof.bytes);
+    if (bankProof.bytes) formData.append('bank_proof_image', bankProof.bytes);
+    if (idProof.bytes) formData.append('id_proof_image', idProof.bytes);
     bulkImages.forEach(img => img.bytes && formData.append('multipleImages', img.bytes));
     bulkVideos.forEach(vid => vid.bytes && formData.append('multipleVideos', vid.bytes));
 
-    selectedSkills.forEach(id => formData.append('skills[]', id));
+    // ---- ARRAY FIELDS ----
+    selectedSkills.forEach(id => formData.append('skill[]', id));
     selectedRemedies.forEach(id => formData.append('remedies[]', id));
     selectedMainExpertise.forEach(id => formData.append('mainExpertise[]', id));
+    selectedLanguages.forEach(lang => formData.append('language[]', lang));
 
+    // ---- CONSULTATION PRICES ----
     consultationPrices.forEach((cp, i) => {
-      formData.append(`consultationPrice[${i}][duration]`, cp.duration._id);
-      formData.append(`consultationPrice[${i}][price]`, cp.price.toString());
+      formData.append(`consultationPrices[${i}][duration]`, cp.duration._id);
+      formData.append(`consultationPrices[${i}][price]`, cp.price.toString());
     });
 
     if (isEdit) formData.append('astrologerId', initialData._id);
@@ -387,9 +405,10 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}><CircularProgress /></Box>;
 
+  /* ────── RENDER ────── */
   return (
     <Grid container spacing={3}>
-      {/* Profile Image */}
+      {/* ── PROFILE IMAGE ── */}
       <Grid item xs={12} md={4}>
         <Box sx={{ border: '1px solid #C4C4C4', borderRadius: 1, p: 2 }}>
           <Grid container spacing={2} alignItems="center">
@@ -398,9 +417,9 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
             </Grid>
             <Grid item xs={9}>
               <label htmlFor="upload-image" style={{ cursor: 'pointer' }}>
-                <Typography variant="caption" color="error">*</Typography> Choose Astrologer Image to Upload
+                <Typography variant="caption" color="error">*</Typography> Choose Astrologer Image
                 <Typography variant="caption" sx={{ color: 'green', fontSize: '10px' }}>
-                  only png, jpg or jpeg files are allowed
+                  {/* png / jpg / jpeg (< 500KB) */}
                 </Typography>
                 <input id="upload-image" type="file" accept="image/*" hidden onChange={handleImage} />
               </label>
@@ -410,40 +429,36 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
         {errors.image && <Typography color="error" variant="caption">{errors.image}</Typography>}
       </Grid>
 
-      {/* Name */}
+      {/* ── BASIC INFO ── */}
       <Grid item xs={12} md={4}>
-        <TextField fullWidth label={<>Enter Full Name <span style={{ color: 'red' }}>*</span></>} name="name" value={form.name} onChange={handleChange} error={!!errors.name} helperText={errors.name} />
+        <TextField fullWidth label={<>Full Name <span style={{ color: 'red' }}>*</span></>} name="astrologerName" value={form.astrologerName} onChange={handleChange} error={!!errors.astrologerName} helperText={errors.astrologerName} />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <TextField fullWidth label="Display Name" name="displayName" value={form.displayName} onChange={handleChange} />
       </Grid>
 
-      {/* Email */}
       <Grid item xs={12} md={4}>
-        <TextField fullWidth label={<>Enter Email <span style={{ color: 'red' }}>*</span></>} name="email" value={form.email} onChange={handleChange} error={!!errors.email} helperText={errors.email} />
+        <TextField fullWidth label={<>Email <span style={{ color: 'red' }}>*</span></>} name="email" value={form.email} onChange={handleChange} error={!!errors.email} helperText={errors.email} />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <TextField fullWidth label={<>Mobile Number <span style={{ color: 'red' }}>*</span></>} name="phoneNumber" value={form.phoneNumber} onChange={handleChange} error={!!errors.phoneNumber} helperText={errors.phoneNumber} />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <TextField fullWidth label="Alternate Mobile" name="alternateNumber" value={form.alternateNumber} onChange={handleChange} />
       </Grid>
 
-      {/* Mobile */}
-      <Grid item xs={12} md={4}>
-        <TextField fullWidth label={<>Enter Mobile Number <span style={{ color: 'red' }}>*</span></>} name="mobile" value={form.mobile} onChange={handleChange} error={!!errors.mobile} helperText={errors.mobile} />
-      </Grid>
-
-      {/* Alt Mobile */}
-      <Grid item xs={12} md={4}>
-        <TextField fullWidth label="Alternate Mobile Number" name="altMobile" value={form.altMobile} onChange={handleChange} />
-      </Grid>
-
-      {/* Currency */}
       <Grid item xs={12} md={4}>
         <FormControl fullWidth>
-          <InputLabel>Select Currency *</InputLabel>
-          <Select name="currency" value={form.currency} onChange={handleSelectChange}>
+          <InputLabel>Currency *</InputLabel>
+          <Select name="currency" value={form.consultation_price ? 'INR' : ''} onChange={handleSelectChange}>
             <MenuItem value="INR">INR</MenuItem>
           </Select>
         </FormControl>
       </Grid>
 
-      {/* Gender */}
       <Grid item xs={12} md={4}>
         <FormControl fullWidth>
-          <InputLabel>Select Gender *</InputLabel>
+          <InputLabel>Gender *</InputLabel>
           <Select name="gender" value={form.gender} onChange={handleSelectChange}>
             <MenuItem value="Male">Male</MenuItem>
             <MenuItem value="Female">Female</MenuItem>
@@ -452,7 +467,7 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
         </FormControl>
       </Grid>
 
-      {/* Password */}
+      {/* ── PASSWORD (ADD ONLY) ── */}
       {!isEdit && (
         <>
           <Grid item xs={12} md={4}>
@@ -476,17 +491,16 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
               }}
             />
           </Grid>
-
           <Grid item xs={12} md={4}>
             <TextField
               fullWidth
               label={<>Confirm Password <span style={{ color: 'red' }}>*</span></>}
               type={showConfirmPassword ? 'text' : 'password'}
-              name="confirmPassword"
-              value={form.confirmPassword}
+              name="confirm_password"
+              value={form.confirm_password}
               onChange={handleChange}
-              error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword}
+              error={!!errors.confirm_password}
+              helperText={errors.confirm_password}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -501,27 +515,25 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
         </>
       )}
 
-      {/* DOB */}
+      {/* ── DOB & EXPERIENCE ── */}
       <Grid item xs={12} md={4}>
         <TextField
           fullWidth
           label={<>Date of Birth <span style={{ color: 'red' }}>*</span></>}
           type="date"
-          name="dob"
-          value={form.dob}
+          name="dateOfBirth"
+          value={form.dateOfBirth}
           onChange={handleChange}
-          error={!!errors.dob}
-          helperText={errors.dob}
+          error={!!errors.dateOfBirth}
+          helperText={errors.dateOfBirth}
           InputLabelProps={{ shrink: true }}
           inputProps={{ max: get_date_value(18) }}
         />
       </Grid>
-
-      {/* Experience */}
       <Grid item xs={12} md={4}>
         <TextField
           fullWidth
-          label={<>Experience in Years <span style={{ color: 'red' }}>*</span></>}
+          label={<>Experience (years) <span style={{ color: 'red' }}>*</span></>}
           type="number"
           name="experience"
           value={form.experience}
@@ -532,11 +544,11 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
         />
       </Grid>
 
-      {/* Language */}
+      {/* ── LANGUAGES ── */}
       <Grid item xs={12} md={4}>
         <FormControl fullWidth error={!!errors.language}>
           <InputLabel>Select Language *</InputLabel>
-          <Select name="language" multiple value={form.language} onChange={handleMultiSelectChange}>
+          <Select name="language" multiple value={selectedLanguages} onChange={handleMultiSelectChange}>
             {languages.map(l => (
               <MenuItem key={l._id} value={l.languageName}>{l.languageName}</MenuItem>
             ))}
@@ -545,24 +557,11 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
         </FormControl>
       </Grid>
 
-      {/* Emerging Type */}
-      <Grid item xs={12} md={4}>
-        <FormControl fullWidth>
-          <InputLabel>Select Emerging Type</InputLabel>
-          <Select name="emerging_type" value={form.emerging_type} onChange={handleSelectChange}>
-            <MenuItem value="Rising Star">Rising Star</MenuItem>
-            <MenuItem value="Top Astrologer">Top Astrologer</MenuItem>
-            <MenuItem value="Celebrity">Celebrity</MenuItem>
-          </Select>
-        </FormControl>
-      </Grid>
-
-      {/* Address */}
+      {/* ── ADDRESS ── */}
       <Grid item xs={12} md={8}>
         <TextField fullWidth label="Address" name="address" value={form.address} onChange={handleChange} />
       </Grid>
 
-      {/* Country */}
       <Grid item xs={12} md={4}>
         <FormControl fullWidth>
           <InputLabel>Country *</InputLabel>
@@ -582,7 +581,6 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
         </FormControl>
       </Grid>
 
-      {/* State */}
       <Grid item xs={12} md={4}>
         <FormControl fullWidth>
           <InputLabel>State *</InputLabel>
@@ -602,7 +600,6 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
         </FormControl>
       </Grid>
 
-      {/* City */}
       <Grid item xs={12} md={4}>
         <FormControl fullWidth>
           <InputLabel>City *</InputLabel>
@@ -614,58 +611,42 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
         </FormControl>
       </Grid>
 
-      {/* Pin Code */}
       <Grid item xs={12} md={4}>
-        <TextField fullWidth label="Pin Code" name="pinCode" value={form.pinCode} onChange={handleChange} />
+        <TextField fullWidth label="Pin Code" name="zipCode" value={form.zipCode} onChange={handleChange} />
       </Grid>
 
-      {/* Followers */}
+      {/* ── BANK DETAILS ── */}
       <Grid item xs={12} md={4}>
-        <TextField fullWidth label="Number Of Followers" type="number" name="followers" value={form.followers} onChange={handleChange} />
+        <TextField fullWidth label="Bank Name" name="bank_name" value={form.bank_name} onChange={handleChange} />
       </Grid>
-
-      {/* Bank Name */}
       <Grid item xs={12} md={4}>
-        <TextField fullWidth label="Bank Name" name="bankName" value={form.bankName} onChange={handleChange} />
+        <TextField fullWidth label={<>Account Number <span style={{ color: 'red' }}>*</span></>} name="account_number" value={form.account_number} onChange={handleChange} />
       </Grid>
-
-      {/* Bank Account Number */}
-      <Grid item xs={12} md={4}>
-        <TextField fullWidth label={<>Bank Account Number <span style={{ color: 'red' }}>*</span></>} name="bankAccountNumber" value={form.bankAccountNumber} onChange={handleChange} />
-      </Grid>
-
-      {/* Account Type */}
       <Grid item xs={12} md={4}>
         <FormControl fullWidth>
-          <InputLabel>Select Account Type</InputLabel>
-          <Select name="accountType" value={form.accountType} onChange={handleSelectChange}>
+          <InputLabel>Account Type</InputLabel>
+          <Select name="account_type" value={form.account_type} onChange={handleSelectChange}>
             <MenuItem value="saving">Saving</MenuItem>
             <MenuItem value="current">Current</MenuItem>
           </Select>
         </FormControl>
       </Grid>
 
-      {/* Account Holder Name */}
       <Grid item xs={12} md={4}>
-        <TextField fullWidth label="Account Holder Name" name="accountHolderName" value={form.accountHolderName} onChange={handleChange} />
+        <TextField fullWidth label="Account Holder Name" name="account_holder_name" value={form.account_holder_name} onChange={handleChange} />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <TextField fullWidth label="IFSC Code" name="IFSC_code" value={form.IFSC_code} onChange={handleChange} />
       </Grid>
 
-      {/* IFSC Code */}
       <Grid item xs={12} md={4}>
-        <TextField fullWidth label="IFSC Code" name="ifscCode" value={form.ifscCode} onChange={handleChange} />
+        <TextField fullWidth label={<>Aadhar Number <span style={{ color: 'red' }}>*</span></>} name="aadharNumber" value={form.aadharNumber} onChange={handleChange} />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <TextField fullWidth label={<>PAN Number <span style={{ color: 'red' }}>*</span></>} name="panCard" value={form.panCard} onChange={handleChange} />
       </Grid>
 
-      {/* Aadhar */}
-      <Grid item xs={12} md={4}>
-        <TextField fullWidth label={<>Aadhar Card Number <span style={{ color: 'red' }}>*</span></>} name="aadharNumber" value={form.aadharNumber} onChange={handleChange} />
-      </Grid>
-
-      {/* PAN */}
-      <Grid item xs={12} md={4}>
-        <TextField fullWidth label={<>PAN Card Number <span style={{ color: 'red' }}>*</span></>} name="panNumber" value={form.panNumber} onChange={handleChange} />
-      </Grid>
-
-      {/* Bank Proof */}
+      {/* ── PROOFS ── */}
       <Grid item xs={12} md={6}>
         <Box sx={{ border: '1px solid #C4C4C4', borderRadius: 1, p: 2 }}>
           <Grid container spacing={2}>
@@ -676,25 +657,18 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
               <label htmlFor="upload-bank-proof" style={{ cursor: 'pointer' }}>
                 Upload Bank Proof
                 <Typography variant="caption" sx={{ color: 'green', fontSize: '10px' }}>
-                  only png, jpg or jpeg files are allowed
+                  png / jpg / jpeg
                 </Typography>
-                <input
-                  id="upload-bank-proof"
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) setBankProof({ file: URL.createObjectURL(file), bytes: file });
-                  }}
-                />
+                <input id="upload-bank-proof" type="file" accept="image/*" hidden onChange={e => {
+                  const f = e.target.files?.[0];
+                  if (f) setBankProof({ file: URL.createObjectURL(f), bytes: f });
+                }} />
               </label>
             </Grid>
           </Grid>
         </Box>
       </Grid>
 
-      {/* ID Proof */}
       <Grid item xs={12} md={6}>
         <Box sx={{ border: '1px solid #C4C4C4', borderRadius: 1, p: 2 }}>
           <Grid container spacing={2}>
@@ -703,27 +677,21 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
             </Grid>
             <Grid item xs={9}>
               <label htmlFor="upload-id-proof" style={{ cursor: 'pointer' }}>
-                Upload Id Proof
+                Upload ID Proof
                 <Typography variant="caption" sx={{ color: 'green', fontSize: '10px' }}>
-                  only png, jpg or jpeg files are allowed
+                  png / jpg / jpeg
                 </Typography>
-                <input
-                  id="upload-id-proof"
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) setIdProof({ file: URL.createObjectURL(file), bytes: file });
-                  }}
-                />
+                <input id="upload-id-proof" type="file" accept="image/*" hidden onChange={e => {
+                  const f = e.target.files?.[0];
+                  if (f) setIdProof({ file: URL.createObjectURL(f), bytes: f });
+                }} />
               </label>
             </Grid>
           </Grid>
         </Box>
       </Grid>
 
-      {/* Bulk Images */}
+      {/* ── BULK IMAGES / VIDEOS ── */}
       <Grid item xs={12}>
         <Box sx={{ border: bulkImages.length ? `1px solid ${Color.primary}` : '1px solid #C4C4C4', borderRadius: 1, p: 2, mb: 2 }}>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
@@ -736,33 +704,20 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
               </Box>
             ))}
           </Box>
-          <label
-            htmlFor="upload-bulk-image"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              backgroundColor: '#F1F1F7',
-              padding: '8px',
-              borderRadius: '4px'
-            }}
-          >
-            <UploadImageSvg h={'25'} w={'25'} color="#000" />
+          <label htmlFor="upload-bulk-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', backgroundColor: '#F1F1F7', padding: '8px', borderRadius: '4px' }}>
+            <UploadImageSvg h="25" w="25" color="#000" />
             <Typography fontWeight={600}>Upload Image</Typography>
           </label>
-          <input id="upload-bulk-image" type="file" accept="image/*" hidden onChange={(e) => handleBulk(e, 'image')} />
+          <input id="upload-bulk-image" type="file" accept="image/*" hidden onChange={e => handleBulk(e, 'image')} />
         </Box>
       </Grid>
 
-      {/* Bulk Videos */}
       <Grid item xs={12}>
         <Box sx={{ border: bulkVideos.length ? `1px solid ${Color.primary}` : '1px solid #C4C4C4', borderRadius: 1, p: 2 }}>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
             {bulkVideos.map((vid, i) => (
               <Box key={i} sx={{ position: 'relative' }}>
-                <video controls style={{ width: '150px', height: '150px' }}>
+                <video controls style={{ width: 150, height: 150 }}>
                   <source src={vid.file} />
                 </video>
                 <IconButton size="small" sx={{ position: 'absolute', top: -10, right: -10, bgcolor: 'white' }} onClick={() => removeBulk(i, 'video')}>
@@ -771,27 +726,15 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
               </Box>
             ))}
           </Box>
-          <label
-            htmlFor="upload-bulk-video"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              backgroundColor: '#F1F1F7',
-              padding: '8px',
-              borderRadius: '4px'
-            }}
-          >
-            <UploadImageSvg h={'25'} w={'25'} color="#000" />
+          <label htmlFor="upload-bulk-video" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', backgroundColor: '#F1F1F7', padding: '8px', borderRadius: '4px' }}>
+            <UploadImageSvg h="25" w="25" color="#000" />
             <Typography fontWeight={600}>Upload Video</Typography>
           </label>
-          <input id="upload-bulk-video" type="file" accept="video/*" hidden onChange={(e) => handleBulk(e, 'video')} />
+          <input id="upload-bulk-video" type="file" accept="video/*" hidden onChange={e => handleBulk(e, 'video')} />
         </Box>
       </Grid>
 
-      {/* Consultation Commission */}
+      {/* ── CONSULTATION COMMISSION ── */}
       <Grid item xs={12}>
         <TextField
           fullWidth
@@ -802,31 +745,30 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
         />
       </Grid>
 
-      {/* Tag Line */}
+      {/* ── TAGLINE / BIOS ── */}
       <Grid item xs={12}>
         <TextField fullWidth label="Tag Line" name="tagLine" value={form.tagLine} onChange={handleChange} multiline rows={2} />
       </Grid>
-
-      {/* About */}
+      <Grid item xs={12}>
+        <TextField fullWidth label="Short Bio" name="short_bio" value={form.short_bio} onChange={handleChange} multiline rows={2} />
+      </Grid>
       <Grid item xs={12}>
         <TextField fullWidth label="About" name="about" value={form.about} onChange={handleChange} multiline rows={3} />
       </Grid>
-
-      {/* Long Bio */}
       <Grid item xs={12}>
         <TextField
           fullWidth
           label="Long Bio"
-          name="longBio"
-          value={form.longBio}
+          name="long_bio"
+          value={form.long_bio}
           onChange={handleChange}
           multiline
           rows={6}
-          placeholder="Enter detailed bio here..."
+          placeholder="Detailed biography..."
         />
       </Grid>
 
-      {/* Skills */}
+      {/* ── SKILLS / REMEDIES / EXPERTISE ── */}
       <Grid item xs={12}>
         <FormLabel component="legend">
           Skills <span style={{ color: 'red' }}>*</span>
@@ -836,19 +778,13 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
           {skills.sort((a, b) => a.skill.localeCompare(b.skill)).map(s => (
             <FormControlLabel
               key={s._id}
-              control={
-                <Checkbox
-                  checked={selectedSkills.includes(s._id)}
-                  onChange={() => handleCheckbox(s._id, selectedSkills, setSelectedSkills)}
-                />
-              }
+              control={<Checkbox checked={selectedSkills.includes(s._id)} onChange={() => handleCheckbox(s._id, selectedSkills, setSelectedSkills)} />}
               label={s.skill}
             />
           ))}
         </FormGroup>
       </Grid>
 
-      {/* Remedies */}
       <Grid item xs={12}>
         <FormLabel component="legend">
           Remedies <span style={{ color: 'red' }}>*</span>
@@ -858,19 +794,13 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
           {remedies.sort((a, b) => a.title.localeCompare(b.title)).map(r => (
             <FormControlLabel
               key={r._id}
-              control={
-                <Checkbox
-                  checked={selectedRemedies.includes(r._id)}
-                  onChange={() => handleCheckbox(r._id, selectedRemedies, setSelectedRemedies)}
-                />
-              }
+              control={<Checkbox checked={selectedRemedies.includes(r._id)} onChange={() => handleCheckbox(r._id, selectedRemedies, setSelectedRemedies)} />}
               label={r.title}
             />
           ))}
         </FormGroup>
       </Grid>
 
-      {/* Main Expertise */}
       <Grid item xs={12}>
         <FormLabel component="legend">
           Main Expertise <span style={{ color: 'red' }}>*</span>
@@ -880,26 +810,21 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
           {mainExpertise.sort((a, b) => a.mainExpertise.localeCompare(b.mainExpertise)).map(e => (
             <FormControlLabel
               key={e._id}
-              control={
-                <Checkbox
-                  checked={selectedMainExpertise.includes(e._id)}
-                  onChange={() => handleCheckbox(e._id, selectedMainExpertise, setSelectedMainExpertise)}
-                />
-              }
+              control={<Checkbox checked={selectedMainExpertise.includes(e._id)} onChange={() => handleCheckbox(e._id, selectedMainExpertise, setSelectedMainExpertise)} />}
               label={e.mainExpertise}
             />
           ))}
         </FormGroup>
       </Grid>
 
-      {/* Submit */}
+      {/* ── SUBMIT ── */}
       <Grid item xs={12}>
         <Button variant="contained" sx={{ bgcolor: Color.primary, color: '#fff' }} onClick={handleSubmit}>
           {isEdit ? 'Update' : 'Submit'}
         </Button>
       </Grid>
 
-      {/* Consultation Prices (Edit only) */}
+      {/* ── CONSULTATION PRICES (EDIT ONLY) ── */}
       {isEdit && (
         <ConsultationPriceSection
           astrologerId={initialData._id}
@@ -912,7 +837,7 @@ export default function AstrologerForm({ mode, initialData, onSnack }: Props) {
   );
 }
 
-// Consultation Price Section
+/* ────────────────────── CONSULTATION PRICE SECTION ────────────────────── */
 const ConsultationPriceSection = ({
   astrologerId,
   slotDurations,
@@ -967,7 +892,7 @@ const ConsultationPriceSection = ({
       <Box mt={3}>
         {consultationPrices.map((p, i) => (
           <Box key={p._id} display="flex" justifyContent="space-between" alignItems="center" p={1} borderBottom="1px solid #eee">
-            <Typography>{i + 1}. {p.duration.slotDuration} - ₹{p.price}</Typography>
+            <Typography>{i + 1}. {p.duration.slotDuration} – ₹{p.price}</Typography>
             <IconButton onClick={() => handleDelete(p.duration._id)}><DeleteSvg /></IconButton>
           </Box>
         ))}
