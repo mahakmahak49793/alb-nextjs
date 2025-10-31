@@ -1,7 +1,7 @@
 // app/astrologer/view-astrologer/components/gift-history.tsx
 import React, { useEffect, useState } from "react";
 import { IndianRupee } from "@/utils/common-function";
-import MainDatatable from "@/components/datatable/MainDatatable";
+import MainDatatable from "@/components/common/MainDatatable";
 import { TableColumn } from "react-data-table-component";
 import { base_url, get_gift_history_by_astrologer_id } from "@/lib/api-routes";
 
@@ -28,10 +28,10 @@ const GiftHistory: React.FC<GiftHistoryProps> = ({ astrologerId }) => {
   const [giftHistory, setGiftHistory] = useState<GiftHistoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const columns: TableColumn<GiftHistoryData>[] = [
+  const columns= [
     { 
       name: 'S.No.', 
-      cell: (row, rowIndex) => <div>{(rowIndex || 0) + 1}</div>,
+      cell: (row:any, rowIndex?:number) => <div>{(rowIndex || 0) + 1}</div>,
       width: '80px' 
     },
     { 
@@ -93,6 +93,9 @@ const GiftHistory: React.FC<GiftHistoryProps> = ({ astrologerId }) => {
       data={giftHistory} 
       columns={columns} 
       isLoading={isLoading}
+            url="/astrologer/view-astrologer"
+title="Gift"
+addButtonActive={false}
     />
   );
 };

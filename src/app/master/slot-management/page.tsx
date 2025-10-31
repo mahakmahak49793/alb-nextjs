@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import moment from 'moment';
 import { TableColumn } from 'react-data-table-component';
-import MainDatatable from '@/components/datatable/MainDatatable';
+import MainDatatable from '@/components/common/MainDatatable';
 import DatatableHeading from '@/components/datatable/DatatableHeading';
 // import { SwitchOffSvg, SwitchOnSvg } from '@/assets/svg';
 import { base_url } from '@/lib/api-routes';
@@ -175,20 +175,20 @@ const handleSubmit = async (e: React.FormEvent) => {
   }, [filteredData]);
 
   //* Datatable Columns
-  const columns: TableColumn<SlotDuration>[] = useMemo(
+  const columns= useMemo(
     () => [
       {
         name: 'S.No.',
-        selector: (_row, index) => (index !== undefined ? index + 1 : 0),
+        selector: (_row:any, index?:number) => (index !== undefined ? index + 1 : 0),
         width: '80px',
       },
       {
         name: 'Slot Duration (mins)',
-        selector: (row) => row?.slotDuration ?? '-',
+        selector: (row:any) => row?.slotDuration ?? '-',
       },
       {
         name: 'Status',
-        cell: (row) => (
+        cell: (row:any) => (
           <div
             style={{ cursor: 'pointer' }}
             onClick={() => updateSlotStatus(row._id)}
@@ -326,6 +326,8 @@ const handleSubmit = async (e: React.FormEvent) => {
         <MainDatatable
           columns={columns}
           data={filteredData}
+          title="Slot Management"
+          url="/master/slot-management"
           isLoading={loading}
         />
       </div>

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Chat } from "@mui/icons-material";
 import moment from "moment";
 import { IndianRupee, secondsToHMS } from "@/utils/common-function";
-import MainDatatable from "@/components/datatable/MainDatatable";
+import MainDatatable from "@/components/common/MainDatatable";
 import { TableColumn } from "react-data-table-component";
 import { base_url, get_chat_history_by_astrologer_id } from "@/lib/api-routes";
 
@@ -37,10 +37,10 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ astrologerId }) => {
   const [chatHistory, setChatHistory] = useState<ChatHistoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const columns: TableColumn<ChatHistoryData>[] = [
+  const columns= [
     { 
       name: 'S.No.', 
-      cell: (row, rowIndex) => <div>{(rowIndex || 0) + 1}</div>,
+      cell: (row:any, rowIndex?:number) => <div>{(rowIndex || 0) + 1}</div>,
       width: '80px' 
     },
     { 
@@ -136,6 +136,10 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ astrologerId }) => {
       data={chatHistory} 
       columns={columns} 
       isLoading={isLoading}
+      title="Chat"
+      addButtonActive={false}
+            url="/astrologer/view-astrologer"
+
     />
   );
 };

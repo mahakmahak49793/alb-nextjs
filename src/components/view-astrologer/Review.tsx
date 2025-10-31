@@ -1,6 +1,6 @@
 // app/astrologer/view-astrologer/components/review.tsx
 import React, { useEffect, useState } from "react";
-import MainDatatable from "@/components/datatable/MainDatatable";
+import MainDatatable from "@/components/common/MainDatatable";
 import { TableColumn } from "react-data-table-component";
 import { base_url, get_review_by_astrologer_id } from "@/lib/api-routes";
 import ViewModal from "./ViewModal";
@@ -38,10 +38,10 @@ const Review: React.FC<ReviewProps> = ({ astrologerId }) => {
 
   const closeModal = () => setModalIsOpen(false);
 
-  const columns: TableColumn<ReviewData>[] = [
+  const columns= [
     { 
       name: 'S.No.', 
-      cell: (row, rowIndex) => <div>{(rowIndex || 0) + 1}</div>,
+      cell: (row:any, rowIndex?:number) => <div>{(rowIndex || 0) + 1}</div>,
       width: '80px' 
     },
     { 
@@ -119,6 +119,9 @@ const Review: React.FC<ReviewProps> = ({ astrologerId }) => {
       <MainDatatable 
         data={reviews} 
         columns={columns} 
+              url="/astrologer/view-astrologer"
+title="Review"
+addButtonActive={false}
         isLoading={isLoading}
       />
 

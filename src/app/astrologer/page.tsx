@@ -22,7 +22,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { DeepSearchSpace } from "@/utils/common-function";
 
 import { Color } from "@/assets/colors";
-import MainDatatable from "@/components/datatable/MainDatatable";
+import MainDatatable from "@/components/common/MainDatatable";
 import { api_url, base_url, get_astrologer } from "@/lib/api-routes";
 import DatatableHeading from "@/components/datatable/DatatableHeading";
 import {
@@ -258,24 +258,24 @@ export default function AstrologerPage() {
   // -----------------------------------------------------------------
   // Table Columns
   // -----------------------------------------------------------------
-  const columns: AstrologerColumn[] = useMemo(
+  const columns=useMemo(
     () => [
       {
         name: "S.No.",
-        selector: (_row, index) => (index !== undefined ? index + 1 : 0),
+        selector: (_row:any, index?:number) => (index !== undefined ? index + 1 : 0),
         width: "80px",
       },
-      { name: "Name", selector: (row) => row.astrologerName },
-      { name: "Email", selector: (row) => row.email, width: "250px" },
-      { name: "Mobile", selector: (row) => row.phoneNumber },
+      { name: "Name", selector: (row:any) => row.astrologerName },
+      { name: "Email", selector: (row:any) => row.email, width: "250px" },
+      { name: "Mobile", selector: (row:any) => row.phoneNumber },
       {
         name: "Created Date",
-        selector: (row) => moment(row.createdAt).format("Do MMM YYYY"),
+        selector: (row:any) => moment(row.createdAt).format("Do MMM YYYY"),
         width: "140px",
       },
       {
         name: "Status",
-        cell: (row) => (
+        cell: (row:any) => (
           <div style={{ cursor: "pointer" }} onClick={() => toggleVerify(row)}>
             {row.isVerified ? <SwitchOnSvg /> : <SwitchOffSvg />}
           </div>
@@ -328,55 +328,16 @@ export default function AstrologerPage() {
   // -----------------------------------------------------------------
   return (
     <>
-      <div
-        style={{
-          padding: "20px",
-          backgroundColor: "#fff",
-          marginBottom: "20px",
-          boxShadow: "0px 0px 5px lightgrey",
-          borderRadius: "10px",
-        }}
-      >
-        <DatatableHeading
-          title="List Of Astrologers"
-          url="/astrologer/add-astrologer"
-          data={csvData}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "20px",
-            alignItems: "center",
-            marginBottom: "20px",
-            backgroundColor: "#fff",
-          }}
-        >
-          <input
-            type="search"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Search your data..."
-            style={{
-              padding: "8px 12px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
-              boxShadow: "0px 0px 5px rgba(0,0,0,0.1)",
-              width: "100%",
-              maxWidth: "250px",
-              fontSize: "15px",
-              outline: "none",
-            }}
-          />
-        </div>
+   
 
         <MainDatatable
           columns={columns}
           data={filteredData}
           isLoading={isLoading}
+          title="List of Astrologers"
+          url="/astrologer/add-astrologer"
         />
-      </div>
+    
 
       {/* Wallet Modal */}
       <Dialog
