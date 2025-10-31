@@ -85,6 +85,11 @@ const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
                     }
                   `}
                 >
+                  {/* Icon hamesha dikhega - ye line add karna bhool gaye the! */}
+                  <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                    {route.icon}
+                  </div>
+
                   <AnimatePresence>
                     {isSidebarOpen && (
                       <motion.div

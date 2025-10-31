@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -35,11 +35,13 @@ const menuItemAnimation = {
 interface SubRoute {
   path: string;
   name: string;
+  icon?: ReactNode;
 }
 
 interface Route {
   name: string;
   subRoutes: SubRoute[];
+  icon?: ReactNode;
 }
 
 interface SidebarMenuProps {
@@ -57,7 +59,6 @@ const SidebarMenu = ({ route, showAnimation, isSidebarOpen }: SidebarMenuProps) 
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-    // dispatch(CommonActions.setIsSidebarOpen(true));
   };
 
   useEffect(() => {
@@ -81,6 +82,11 @@ const SidebarMenu = ({ route, showAnimation, isSidebarOpen }: SidebarMenuProps) 
         onClick={toggleMenu}
       >
         <div className="flex items-center gap-2.5">
+          {/* Icon hamesha dikhega */}
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            {route.icon}
+          </div>
+
           <AnimatePresence>
             {isSidebarOpen && (
               <motion.div
@@ -95,9 +101,11 @@ const SidebarMenu = ({ route, showAnimation, isSidebarOpen }: SidebarMenuProps) 
             )}
           </AnimatePresence>
         </div>
+        
         {isSidebarOpen && (
-          <motion.div
+          <motion.div 
             animate={isMenuOpen ? { rotate: -90 } : { rotate: 0 }}
+            className="flex-shrink-0"
           >
             <FaAngleDown />
           </motion.div>
@@ -111,27 +119,38 @@ const SidebarMenu = ({ route, showAnimation, isSidebarOpen }: SidebarMenuProps) 
             initial="hidden"
             animate="show"
             exit="hidden"
-            className="flex flex-col"
+            className="flex flex-col ml-2"
           >
-            {route.subRoutes.map((subRoute, i) => (
-              <motion.div variants={menuItemAnimation} key={i} custom={i}>
+            {route.subRoutes?.map((subRoute, i) => (
+              <motion.div 
+                variants={menuItemAnimation} 
+                key={i} 
+                custom={i}
+              >
                 <Link
                   href={subRoute.path}
                   className={`
-                    flex items-center gap-2.5 py-[5px] px-2.5 pl-5 no-underline 
+                    flex items-center gap-2.5 py-[5px] px-2.5 
                     border-r-4 border-transparent my-[5px] mr-2.5 ml-0
-                    transition-all duration-200 ease-[cubic-bezier(0.6,-0.28,0.735,0.045)]
+                    transition-all duration-200 
                     hover:border-r-4 hover:border-white hover:bg-[#EF4444] hover:text-white 
                     hover:rounded-lg hover:rounded-tr-[10px] hover:rounded-br-[10px]
                     ${pathname === subRoute.path 
-                      ? "bg-[#EF4444] text-white border-r-4 border-white rounded-lg rounded-tr-[10px] rounded-br-[10px]" 
+                      ? "border-r-4 border-white bg-[#EF4444] text-white rounded-lg rounded-tr-[10px] rounded-br-[10px]" 
                       : "text-[#716767]"
                     }
                   `}
                 >
-                  <motion.div className="whitespace-nowrap text-[15.5px] py-0.5">
-                    {subRoute.name}
-                  </motion.div>
+                  {/* SubRoute icon bhi hamesha dikhega */}
+                  <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                    {subRoute.icon}
+                  </div>
+                  
+                  {isSidebarOpen && (
+                    <motion.div className="whitespace-nowrap text-[15.5px] py-0.5">
+                      {subRoute.name}
+                    </motion.div>
+                  )}
                 </Link>
               </motion.div>
             ))}
