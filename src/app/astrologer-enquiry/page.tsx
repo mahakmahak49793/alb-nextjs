@@ -289,11 +289,10 @@ const AstrologerEnquiryClient = () => {
       cell: (row: Astrologer) => (
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
           <div
-            onClick={() =>
-              router.push(
-                `/astrologer/edit-astrologer?mode=Edit&state=${encodeURIComponent(JSON.stringify(row))}`
-              )
-            }
+             onClick={(e) => {
+                e.stopPropagation(); // Prevent row click if in a table
+                router.push(`/astrologer/edit-astrologer?id=${row._id}`);
+              }}
             style={{ cursor: 'pointer' }}
           >
             <EditSvg />

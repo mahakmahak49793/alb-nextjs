@@ -279,19 +279,32 @@ const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>): Promise<void> 
       confirmButtonColor: '#3085d6',
     });
 
-    router.push('/astro-blog/blog');
-  } catch (error) {
-    console.error('Error submitting blog:', error);
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error!',
-      text: error instanceof Error ? error.message : 'Failed to submit blog. Please try again.',
-      confirmButtonColor: '#d33',
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+
+      const url = editBlog
+        ? `${base_url}api/admin/update_astro_blog`
+        : `${base_url}api/admin/add-astro-blog`;
+      const method = editBlog ? 'POST' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to ${editBlog ? 'update' : 'create'} blog`);
+      }
+
+      router.push('/astro-blog/blog');
+    } catch (error) {
+      console.error('Error submitting blog:', error);
+      alert(error instanceof Error ? error.message : 'Failed to submit blog. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
