@@ -258,7 +258,7 @@ const AddEditBlogContent = () => {
       const url = editBlog
         ? `${base_url}api/admin/update_astro_blog`
         : `${base_url}api/admin/add-astro-blog`;
-      const method = editBlog ? 'PUT' : 'POST';
+      const method = editBlog ? 'POST' : 'POST';
 
       const res = await fetch(url, {
         method,
