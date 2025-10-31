@@ -271,9 +271,10 @@ const DeepSearchSpace = (data: any[], searchText: string): any[] => {
 const DataTableCustomStyles = {
   headCells: {
     style: {
-      backgroundColor: '#f8f9fa',
+      backgroundColor: '#ef4444',
       fontWeight: 'bold',
       fontSize: '14px',
+      color: '#ffffff',
     },
   },
   cells: {

@@ -63,7 +63,7 @@ const IndianRupee = (amount: number) => {
   }).format(amount || 0);
 };
 
-// API Function - Updated to match your API response structure
+// API Function
 const fetchCustomerById = async (customerId: string): Promise<{ success: boolean; customer?: Customer; error?: string }> => {
   try {
     console.log('🔍 Fetching customer with ID:', customerId);
@@ -101,7 +101,7 @@ const fetchCustomerById = async (customerId: string): Promise<{ success: boolean
   }
 };
 
-const ViewCustomer = () => {
+function ViewCustomerReview() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const customerId = searchParams.get('id');
@@ -155,7 +155,10 @@ const ViewCustomer = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-gray-600 text-lg mb-4">Loading customer data...</div>
+          <div className="flex items-center gap-2 text-gray-600 mb-4">
+            <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+            Loading customer data...
+          </div>
           <div className="text-gray-400 text-sm">Customer ID: {customerId}</div>
         </div>
       </div>
@@ -179,9 +182,12 @@ const ViewCustomer = () => {
             </button>
             <button 
               onClick={loadCustomerData} 
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-2"
             >
-              🔄 Try Again
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Try Again
             </button>
           </div>
         </div>
@@ -224,8 +230,8 @@ const ViewCustomer = () => {
     banned_status,
     createdAt
   } = customerData;
-    const baseURL = process.env.NEXT_PUBLIC_API_URL;
-
+  
+  const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
   const formatAddress = () => {
     if (!address) return 'N/A';
@@ -247,7 +253,6 @@ const ViewCustomer = () => {
     if (!dateTimeString) return 'N/A';
     
     try {
-      // Handle different date formats
       if (dateTimeString.includes('T')) {
         return moment(dateTimeString).format('DD MMM YYYY, hh:mm A');
       } else {
@@ -259,7 +264,6 @@ const ViewCustomer = () => {
   };
 
   return (
-     <Suspense fallback={<div>Loading...</div>}>
     <div className="p-5">
       {/* Customer Info Card */}
       <div className="bg-white rounded-lg shadow-md mb-5 p-8">
@@ -269,7 +273,8 @@ const ViewCustomer = () => {
             <div className="relative w-24 h-24 flex-shrink-0">
               {image ? (
                 <Image
-src={`${baseURL}/uploads/${image}`}                  alt={customerName}
+                  src={`${baseURL}/uploads/${image}`}
+                  alt={customerName}
                   fill
                   className="rounded-full border-2 border-gray-300 object-cover"
                   onError={(e) => {
@@ -287,11 +292,6 @@ src={`${baseURL}/uploads/${image}`}                  alt={customerName}
             <div className="flex flex-col gap-2">
               <div className="font-bold text-lg text-gray-800">{customerName}</div>
               <div className="text-gray-600">{phoneNumber}</div>
-              {/* <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                isOnline ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-              }`}>
-                {isOnline ? '🟢 Online' : '⚫ Offline'}
-              </div> */}
             </div>
           </div>
 
@@ -315,48 +315,14 @@ src={`${baseURL}/uploads/${image}`}                  alt={customerName}
           {/* Details Section */}
           <div className="flex flex-col gap-4 md:border-l md:pl-6">
             <div className="font-bold text-lg text-gray-800">Details</div>
-           
             <div className="text-gray-600 text-sm">
               <span className="font-medium">Date of Birth:</span> {formatDateTime(dateOfBirth || '')}
             </div>
             <div className="text-gray-600 text-sm">
               <span className="font-medium">Time of Birth:</span> {formatDateTime(timeOfBirth || '')}
             </div>
-           
-            {/* <div className="text-gray-600 text-sm">
-              <span className="font-medium">Member since:</span> {moment(createdAt).format('DD MMM YYYY')}
-            </div> */}
           </div>
         </div>
-
-        {/* Status Badges */}
-        {/* <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="flex flex-wrap gap-2">
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              isOtpVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-            }`}>
-              {isOtpVerified ? '✅ Verified' : '⏳ Pending Verification'}
-            </span>
-            
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              new_user ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-            }`}>
-              {new_user ? '🆕 New User' : '👤 Existing User'}
-            </span>
-            
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              first_wallet_recharged ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
-            }`}>
-              {first_wallet_recharged ? '💳 First Recharge Done' : '💳 No Recharge Yet'}
-            </span>
-            
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              banned_status ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-            }`}>
-              {banned_status ? '🚫 Banned' : '✅ Active'}
-            </span>
-          </div>
-        </div> */}
       </div>
 
       {/* Tabs Navigation */}
@@ -390,38 +356,56 @@ src={`${baseURL}/uploads/${image}`}                  alt={customerName}
           </div>
         )}
 
-         {activeTab === 1 && (
+        {activeTab === 1 && (
           <div>
             <ChatHistory customerId={customerData._id} />
           </div>
         )}
 
         {activeTab === 2 && (
-  <div>
-    <CallHistory customerId={customerData._id} />
-  </div>
-)}
+          <div>
+            <CallHistory customerId={customerData._id} />
+          </div>
+        )}
 
-{activeTab === 3 && (
-  <div>
-    <VideoCallHistory customerId={customerData._id} />
-  </div>
-)}
-{activeTab === 4 && (
-  <div>
-    <LiveHistory customerId={customerData._id} />
-  </div>
-)}
-{activeTab === 5 && (
-  <div>
-    <ReviewHistory customerId={customerData._id} />
-  </div>
-)}
+        {activeTab === 3 && (
+          <div>
+            <VideoCallHistory customerId={customerData._id} />
+          </div>
+        )}
+        
+        {activeTab === 4 && (
+          <div>
+            <LiveHistory customerId={customerData._id} />
+          </div>
+        )}
+        
+        {activeTab === 5 && (
+          <div>
+            <ReviewHistory customerId={customerData._id} />
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+// ✅ Wrap with Suspense for loading fallback
+const ViewCustomer = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="flex items-center gap-2 text-gray-600">
+            <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+            Loading customer information...
+          </div>
+        </div>
+      }
+    >
+      <ViewCustomerReview />
     </Suspense>
   );
-  
 };
 
 export default ViewCustomer;

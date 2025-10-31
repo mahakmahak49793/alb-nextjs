@@ -37,10 +37,8 @@ const Review = () => {
       const data: ApiResponse<Review[]> = await response.json();
       
       if (data.success) {
-         const sortedReviews = (data.reviews || []).sort((a, b) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-        setAstrologersReviews(sortedReviews || []);
+       
+        setAstrologersReviews(data.reviews || []);
       } else {
         console.error('Failed to fetch reviews:', data.message);
       }

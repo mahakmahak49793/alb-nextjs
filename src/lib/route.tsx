@@ -96,12 +96,12 @@ export const RouteName = [
     // icon: <NotificationRouteSvg />,
     subRoutes: [
       {
-        path: "/customer-notification",
+        path: "/notification/customer-notification",
         name: "Customer Notification",
         // icon: <OtherRouteSvg />,
       },
       {
-        path: "/astrologer-notification",
+        path: "/notification/astrologer-notification",
         name: "Astrologer Notification",
         // icon: <OtherRouteSvg />,
       },
@@ -220,6 +220,10 @@ export const RouteName = [
     path: "/reports/admin-earning",
     name: "Admin Earning",
     // icon: <OtherRouteSvg />,
+  },
+  {
+    path: "/reports/report-orders",
+    name: "Report Order",
   },
   {
     path: "/language",

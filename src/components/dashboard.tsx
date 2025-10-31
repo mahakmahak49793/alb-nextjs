@@ -228,7 +228,7 @@ const Dashboard = () => {
                 <div className="text-sm text-gray-600">Today Customer</div>
                 <div className="text-2xl font-bold">{dashboardData?.todayCustomerRegistration || 0}</div>
               </div>
-              <TodayCustomerSvg />
+              <TodayCustomerSvg/>
             </div>
           </div>
         </Grid>

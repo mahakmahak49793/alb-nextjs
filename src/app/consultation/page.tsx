@@ -468,7 +468,7 @@ export default function Consultation() {
   };
 
   const columns = [
-    { name: '#', selector: (row: Consultation) => consultationData.indexOf(row) + 1, width: '60px' },
+    { name: 'S.No.', selector: (row: Consultation) => consultationData.indexOf(row) + 1, width: '60px' },
     { name: 'Astrologer', selector: (row: Consultation) => row?.astrologerId?.astrologerName || 'N/A', sortable: true },
     { name: 'Customer', selector: (row: Consultation) => row?.fullName || 'N/A', sortable: true },
     { name: 'Email', selector: (row: Consultation) => row?.customerId?.email || 'N/A' },
@@ -494,19 +494,19 @@ export default function Consultation() {
         </span>
       ),
     },
-    {
-      name: 'Action',
-      cell: (row: Consultation) => (
-        <div className="flex gap-3">
-          <button onClick={() => router.push(`/consultation/view-consultation?id=${row._id}`)} className="text-blue-600 hover:underline text-sm">
-            View
-          </button>
-          <button onClick={() => router.push(`/consultation/edit-consultation?id=${row._id}`)} className="text-green-600 hover:underline text-sm">
-            Edit
-          </button>
-        </div>
-      ),
-    },
+    // {
+    //   name: 'Action',
+    //   cell: (row: Consultation) => (
+    //     <div className="flex gap-3">
+    //       <button onClick={() => router.push(`/consultation/view-consultation?id=${row._id}`)} className="text-blue-600 hover:underline text-sm">
+    //         View
+    //       </button>
+    //       <button onClick={() => router.push(`/consultation/edit-consultation?id=${row._id}`)} className="text-green-600 hover:underline text-sm">
+    //         Edit
+    //       </button>
+    //     </div>
+    //   ),
+    // },
   ];
 
   return (
