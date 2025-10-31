@@ -7,7 +7,7 @@ interface InputFieldError {
     description?: string;
 }
 
-const AddAnnouncement = () => {
+function AddAnnouncementContent(){
     const router = useRouter();
     const searchParams = useSearchParams();
     const editorRef = useRef<HTMLDivElement>(null);
@@ -337,5 +337,13 @@ const AddAnnouncement = () => {
         </>
     );
 };
+const AddAnnouncement = () => {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="text-xl text-gray-600">Loading...</div></div>}>
+      <AddAnnouncementContent />
+    </Suspense>
+  );
+};
+
 
 export default AddAnnouncement;
