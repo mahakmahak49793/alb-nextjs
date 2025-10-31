@@ -54,18 +54,6 @@ const IndianRupee = (amount: string | number): string => {
   }).format(numAmount);
 };
 
-const secondsToHMS = (seconds: number): string => {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-
-  const formattedHours = hours.toString().padStart(2, '0');
-  const formattedMinutes = minutes.toString().padStart(2, '0');
-  const formattedSeconds = secs.toString().padStart(2, '0');
-
-  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-};
-
 // API function to fetch admin earnings
 const getAdminEarnings = async (): Promise<AdminEarningRow[]> => {
   try {
@@ -86,7 +74,7 @@ const AdminEarning: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // DataTable Columns
-  const columns= [
+  const columns = [
     {
       name: 'S.No.',
       selector: (row: AdminEarningRow) => adminEarningData.indexOf(row) + 1,
@@ -100,74 +88,65 @@ const AdminEarning: React.FC = () => {
           {row?.type === 'live_video_call' ? 'Live Call' : row?.type}
         </div>
       ),
+      width: '150px',
     },
     {
       name: 'Astrologers',
-      selector: (row:AdminEarningRow) => {
-        if (!row?.astrologerId) return 'N/A';
+      selector: (row: AdminEarningRow) => {
+        if (!row?.astrologerId) return '';
         if (typeof row.astrologerId === 'object' && row.astrologerId !== null) {
           return (row.astrologerId as AstrologerDetails).astrologerName || '';
         }
         return 'N/A';
       },
+      width: '120px',
     },
     {
       name: 'Customers',
-      selector: (row:AdminEarningRow) => row?.customerId?.customerName || row?.customerId?.email || 'N/A',
+      selector: (row: AdminEarningRow) => row?.customerId?.customerName || row?.customerId?.email || 'N/A',
+      width: '140px',
     },
     {
       name: 'Total Price',
-      selector: (row:AdminEarningRow) => row?.totalPrice,
-      cell: (row:AdminEarningRow) => IndianRupee(row?.totalPrice),
+      selector: (row: AdminEarningRow) => row?.totalPrice,
+      cell: (row: AdminEarningRow) => IndianRupee(row?.totalPrice),
     },
     {
       name: 'Admin Share',
-      selector: (row:AdminEarningRow) => row?.adminPrice,
-      cell: (row:AdminEarningRow) => IndianRupee(row?.adminPrice),
+      selector: (row: AdminEarningRow) => row?.adminPrice,
+      cell: (row: AdminEarningRow) => IndianRupee(row?.adminPrice),
     },
     {
       name: 'Astro Share',
-      selector: (row:AdminEarningRow) => row?.partnerPrice,
-      cell: (row:AdminEarningRow) => IndianRupee(row?.partnerPrice),
+      selector: (row: AdminEarningRow) => row?.partnerPrice,
+      cell: (row: AdminEarningRow) => IndianRupee(row?.partnerPrice),
     },
     {
       name: 'Duration',
-      selector: (row:AdminEarningRow) => row?.duration || 0,
-      cell: (row:AdminEarningRow) => (row?.duration ? `${row.duration} min` : 'N/A'),
+      selector: (row: AdminEarningRow) => row?.duration || 0,
+      cell: (row: AdminEarningRow) => (row?.duration ? `${row.duration} min` : 'N/A'),
     },
     {
       name: 'Charge/Min',
-      selector: (row:AdminEarningRow) => row?.chargePerMinutePrice || 0,
-      cell: (row:AdminEarningRow) => row?.chargePerMinutePrice ? IndianRupee(row.chargePerMinutePrice) : 'N/A',
+      selector: (row: AdminEarningRow) => row?.chargePerMinutePrice || 0,
+      cell: (row: AdminEarningRow) => row?.chargePerMinutePrice ? IndianRupee(row.chargePerMinutePrice) : 'N/A',
     },
     {
       name: 'Start Time',
-      selector: (row:AdminEarningRow) => row?.startTime || '',
-      cell: (row:AdminEarningRow) => row?.startTime || 'N/A',
+      selector: (row: AdminEarningRow) => row?.startTime || '',
+      cell: (row: AdminEarningRow) => row?.startTime || 'N/A',
     },
     {
       name: 'End Time',
-      selector: (row:AdminEarningRow) => row?.endTime || '',
-      cell: (row:AdminEarningRow) => row?.endTime || 'N/A',
+      selector: (row: AdminEarningRow) => row?.endTime || '',
+      cell: (row: AdminEarningRow) => row?.endTime || 'N/A',
     },
     {
       name: 'Date',
-      selector: (row:AdminEarningRow) => row?.createdAt || '',
-      cell: (row:AdminEarningRow) =>
+      selector: (row: AdminEarningRow) => row?.createdAt || '',
+      cell: (row: AdminEarningRow) =>
         row?.createdAt ? moment(row?.createdAt).format('DD-MM-YYYY') : 'N/A',
     },
-    // {
-    //   name: 'Transaction Type',
-    //   selector: (row) => row?.transactionType || '',
-    //   cell: (row) => (
-    //     <div style={{ 
-    //       color: row?.transactionType === 'CREDIT' ? '#10b981' : '#ef4444',
-    //       fontWeight: '500'
-    //     }}>
-    //       {row?.transactionType || 'N/A'}
-    //     </div>
-    //   ),
-    // },
   ];
 
   useEffect(() => {
@@ -183,12 +162,22 @@ const AdminEarning: React.FC = () => {
 
   return (
     <>
-      <MainDatatable
-        data={adminEarningData}
-        columns={columns}
-        title="Admin Earning"
-        isLoading={isLoading}
-      />
+      <div
+        style={{
+          padding: '20px',
+          backgroundColor: '#fff',
+          marginBottom: '20px',
+          boxShadow: '0px 0px 5px lightgrey',
+          borderRadius: '10px',
+        }}
+      >
+        <MainDatatable
+          data={adminEarningData}
+          columns={columns}
+          title="Admin Earning"
+          isLoading={isLoading}
+        />
+      </div>
     </>
   );
 };
