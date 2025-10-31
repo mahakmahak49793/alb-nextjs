@@ -1,14 +1,15 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Box, CircularProgress, Snackbar, Typography } from '@mui/material';
 import { base_url } from '@/lib/api-routes';
 import AstrologerForm from '@/components/AstrologerForm';
 
-export default function EditAstrologerPage() {
+// Inner component that uses useSearchParams
+function EditAstrologerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const id = searchParams.get('id'); // e.g. ?id=66f9a1c3e4b0c2d1e5f6a7b8
+  const id = searchParams.get('id');
 
   const [initialData, setInitialData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -28,7 +29,7 @@ export default function EditAstrologerPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ astrologerId: id }), // backend expects `astrologerId`
+          body: JSON.stringify({ astrologerId: id }),
         });
 
         if (!res.ok) {
@@ -37,7 +38,7 @@ export default function EditAstrologerPage() {
         }
 
         const result = await res.json();
-        console.log('Fetched astrologer:', result); // debug
+        console.log('Fetched astrologer:', result);
 
         if (!result.success || !result.results) {
           throw new Error(result.message || 'No data returned');
@@ -56,9 +57,6 @@ export default function EditAstrologerPage() {
     fetchAstrologer();
   }, [id, router]);
 
-  // --------------------------------------------------------
-  // UI
-  // --------------------------------------------------------
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
@@ -67,7 +65,7 @@ export default function EditAstrologerPage() {
     );
   }
 
-  if (!initialData) return null; // redirected on error
+  if (!initialData) return null;
 
   return (
     <>
@@ -86,5 +84,18 @@ export default function EditAstrologerPage() {
         <AstrologerForm mode="Edit" initialData={initialData} onSnack={setSnack} />
       </Box>
     </>
+  );
+}
+
+// Main component with Suspense boundary
+export default function EditAstrologerPage() {
+  return (
+    <Suspense fallback={
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
+        <CircularProgress />
+      </Box>
+    }>
+      <EditAstrologerContent />
+    </Suspense>
   );
 }

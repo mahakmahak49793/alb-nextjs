@@ -8,6 +8,7 @@ import MainDatatable from '@/components/datatable/MainDatatable';
 import DatatableHeading from '@/components/datatable/DatatableHeading';
 import { base_url } from '@/lib/api-routes';
 import { DeleteSvg } from '@/components/svgs/page';
+import Swal from 'sweetalert2';
 
 // ---------------------------------------------------------------------
 // Types
@@ -73,28 +74,44 @@ const PlatformCharges: React.FC = () => {
   };
 
   //* Handle Submit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  //* Handle Submit
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!handleValidation()) return;
+  if (!handleValidation()) return;
 
-    const { platform_charges } = inputFieldDetail;
+  const { platform_charges } = inputFieldDetail;
 
-    try {
-      const res = await fetch(`${base_url}api/admin/create-platform-charges`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ platformChargeAmount: platform_charges }),
-      });
+  try {
+    const res = await fetch(`${base_url}api/admin/create-platform-charges`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ platformChargeAmount: platform_charges }),
+    });
 
-      if (!res.ok) throw new Error('Failed to create platform charge');
+    if (!res.ok) throw new Error('Failed to create platform charge');
 
-      setInputFieldDetail({ platform_charges: '' });
-      await fetchPlatformCharges(); // Refresh list
-    } catch (error) {
-      console.error('Error creating platform charge:', error);
-    }
-  };
+    await Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: 'Platform charge created successfully!',
+      confirmButtonColor: '#3085d6',
+    });
+
+    setInputFieldDetail({ platform_charges: '' });
+    await fetchPlatformCharges(); // Refresh list
+  } catch (error) {
+    console.error('Error creating platform charge:', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: 'Failed to create platform charge. Please try again.',
+      confirmButtonColor: '#d33',
+    });
+  }
+};
+
+
 
   //* Fetch Platform Charges
   const fetchPlatformCharges = async () => {

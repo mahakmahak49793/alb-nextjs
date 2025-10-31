@@ -8,6 +8,7 @@ import MainDatatable from '@/components/datatable/MainDatatable';
 import DatatableHeading from '@/components/datatable/DatatableHeading';
 import { base_url } from '@/lib/api-routes';
 import { EditSvg, DeleteSvg } from '@/components/svgs/page';
+import Swal from 'sweetalert2';
 
 // ---------------------------------------------------------------------
 // Types
@@ -91,6 +92,7 @@ const PredefinedMessage: React.FC = () => {
   };
 
   //* Handle Submit (Add or Edit)
+//* Handle Submit (Add or Edit)
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!handleValidation()) return;
@@ -120,12 +122,24 @@ const handleSubmit = async (e: React.FormEvent) => {
       throw new Error(err.message || `Failed to ${mode.toLowerCase()} message`);
     }
 
+    await Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: `Message ${mode === 'Add' ? 'created' : 'updated'} successfully!`,
+      confirmButtonColor: '#3085d6',
+    });
+
     // Reset form
     setInputFieldDetail({ message: '', type: '', mode: 'Add', id: '' });
     await fetchMessages();
   } catch (error: any) {
     console.error('Error:', error);
-    alert(error.message);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error.message || `Failed to ${mode === 'Add' ? 'create' : 'update'} message`,
+      confirmButtonColor: '#d33',
+    });
   }
 };
 
