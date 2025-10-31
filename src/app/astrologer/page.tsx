@@ -21,11 +21,26 @@ import {
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { DeepSearchSpace } from '@/utils/common-function';
 
+<<<<<<< HEAD
 import { Color } from '@/assets/colors';
 import MainDatatable from '@/components/datatable/MainDatatable';
 import { api_url, base_url, get_astrologer } from '@/lib/api-routes';
 import DatatableHeading from '@/components/datatable/DatatableHeading';
 import { SwitchOnSvg, SwitchOffSvg, ViewSvg, EditSvg, WalletSvg, CrossSvg } from '@/components/svgs/page';
+=======
+import { Color } from "@/assets/colors";
+import MainDatatable from "@/components/common/MainDatatable";
+import { api_url, base_url, get_astrologer } from "@/lib/api-routes";
+import DatatableHeading from "@/components/datatable/DatatableHeading";
+import {
+  SwitchOnSvg,
+  SwitchOffSvg,
+  ViewSvg,
+  EditSvg,
+  WalletSvg,
+  CrossSvg,
+} from "@/components/svgs/page";
+>>>>>>> mahak
 
 // ---------------------------------------------------------------------
 // Types
@@ -238,9 +253,10 @@ export default function AstrologerPage() {
   // -----------------------------------------------------------------
   // Table Columns
   // -----------------------------------------------------------------
-  const columns: AstrologerColumn[] = useMemo(
+  const columns=useMemo(
     () => [
       {
+<<<<<<< HEAD
         name: 'S.No.',
         selector: (_row, index) => (index !== undefined ? index + 1 : 0),
         width: '80px',
@@ -257,6 +273,24 @@ export default function AstrologerPage() {
         name: 'Status',
         cell: (row) => (
           <div style={{ cursor: 'pointer' }} onClick={() => toggleVerify(row)}>
+=======
+        name: "S.No.",
+        selector: (_row:any, index?:number) => (index !== undefined ? index + 1 : 0),
+        width: "80px",
+      },
+      { name: "Name", selector: (row:any) => row.astrologerName },
+      { name: "Email", selector: (row:any) => row.email, width: "250px" },
+      { name: "Mobile", selector: (row:any) => row.phoneNumber },
+      {
+        name: "Created Date",
+        selector: (row:any) => moment(row.createdAt).format("Do MMM YYYY"),
+        width: "140px",
+      },
+      {
+        name: "Status",
+        cell: (row:any) => (
+          <div style={{ cursor: "pointer" }} onClick={() => toggleVerify(row)}>
+>>>>>>> mahak
             {row.isVerified ? <SwitchOnSvg /> : <SwitchOffSvg />}
           </div>
         ),
@@ -301,6 +335,7 @@ export default function AstrologerPage() {
   // -----------------------------------------------------------------
   return (
     <>
+<<<<<<< HEAD
       <div
         style={{
           padding: '20px',
@@ -346,6 +381,18 @@ export default function AstrologerPage() {
 
         <MainDatatable columns={columns} data={filteredData} isLoading={isLoading} />
       </div>
+=======
+   
+
+        <MainDatatable
+          columns={columns}
+          data={filteredData}
+          isLoading={isLoading}
+          title="List of Astrologers"
+          url="/astrologer/add-astrologer"
+        />
+    
+>>>>>>> mahak
 
       {/* Wallet Modal */}
       <Dialog

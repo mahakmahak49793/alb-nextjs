@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { UploadImageSvg } from "@/components/svgs/page";
+import Swal from "sweetalert2";
 
 const IMG_URL = process.env.NEXT_PUBLIC_IMG_URL || "";
 
@@ -188,14 +189,30 @@ const AddBanner = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert(stateData ? "Banner updated successfully!" : "Banner created successfully!");
-        router.push("/banner");
+        await Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: stateData ? 'Banner updated successfully!' : 'Banner created successfully!',
+          confirmButtonColor: '#3085d6',
+        });
+        
+        setTimeout(() => router.push("/banner"), 1000);
       } else {
-        alert(data.message || "Failed to save banner");
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: data.message || 'Failed to save banner',
+          confirmButtonColor: '#d33',
+        });
       }
     } catch (error) {
       console.error("Error submitting banner:", error);
-      alert("Error saving banner. Please try again.");
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Error saving banner. Please try again.',
+        confirmButtonColor: '#d33',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -296,6 +313,7 @@ const AddBanner = () => {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${
                   inputFieldError.bannerTitle ? "border-red-500" : "border-gray-300"
                 }`}
+                disabled={isLoading}
               />
               {inputFieldError.bannerTitle && (
                 <p className="text-red-600 text-sm mt-1">
@@ -317,6 +335,7 @@ const AddBanner = () => {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${
                   inputFieldError.redirectPage ? "border-red-500" : "border-gray-300"
                 }`}
+                disabled={isLoading}
               >
                 <option value="" disabled>
                   ---Select Redirect Page---
@@ -344,6 +363,7 @@ const AddBanner = () => {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${
                   inputFieldError.redirectUrl ? "border-red-500" : "border-gray-300"
                 }`}
+                disabled={isLoading}
               />
               {inputFieldError.redirectUrl && (
                 <p className="text-red-600 text-sm mt-1">
@@ -364,6 +384,7 @@ const AddBanner = () => {
                 onChange={handleInputField}
                 onFocus={() => handleInputFieldError("priorityPage", "")}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -379,7 +400,7 @@ const AddBanner = () => {
                   : "bg-red-500 hover:bg-red-600"
               }`}
             >
-              {isLoading ? "Submitting..." : "Submit"}
+              {isLoading ? "Submitting..." : (stateData ? "Update Banner" : "Add Banner")}
             </button>
           </div>
         </div>

@@ -4,11 +4,12 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import moment from 'moment';
 import { TableColumn } from 'react-data-table-component';
-import MainDatatable from '@/components/datatable/MainDatatable';
+import MainDatatable from '@/components/common/MainDatatable';
 import DatatableHeading from '@/components/datatable/DatatableHeading';
 // import { SwitchOffSvg, SwitchOnSvg } from '@/assets/svg';
 import { base_url } from '@/lib/api-routes';
 import { SwitchOnSvg, SwitchOffSvg } from '@/components/svgs/page';
+import Swal from 'sweetalert2';
 
 // ---------------------------------------------------------------------
 // Types
@@ -76,28 +77,44 @@ const SlotManagement: React.FC = () => {
   };
 
   //* Handle Submit - UPDATED: Using create_slots_duration endpoint
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+ //* Handle Submit - UPDATED: Using create_slots_duration endpoint
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!handleValidation()) return;
+  if (!handleValidation()) return;
 
-    const { slot_duration } = inputFieldDetail;
+  const { slot_duration } = inputFieldDetail;
 
-    try {
-      const res = await fetch(`${base_url}api/admin/create_slots_duration`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slotDuration: slot_duration }),
-      });
+  try {
+    const res = await fetch(`${base_url}api/admin/create_slots_duration`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slotDuration: slot_duration }),
+    });
 
-      if (!res.ok) throw new Error('Failed to create slot duration');
+    if (!res.ok) throw new Error('Failed to create slot duration');
 
-      setInputFieldDetail({ slot_duration: '' });
-      await fetchSlotDurations(); // Refresh list
-    } catch (error) {
-      console.error('Error creating slot duration:', error);
-    }
-  };
+    await Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: 'Slot duration created successfully!',
+      confirmButtonColor: '#3085d6',
+    });
+
+    setInputFieldDetail({ slot_duration: '' });
+    await fetchSlotDurations(); // Refresh list
+  } catch (error) {
+    console.error('Error creating slot duration:', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: 'Failed to create slot duration. Please try again.',
+      confirmButtonColor: '#d33',
+    });
+  }
+};
+
+
 
   //* Fetch Slot Durations
  const fetchSlotDurations = async () => {
@@ -158,20 +175,20 @@ const SlotManagement: React.FC = () => {
   }, [filteredData]);
 
   //* Datatable Columns
-  const columns: TableColumn<SlotDuration>[] = useMemo(
+  const columns= useMemo(
     () => [
       {
         name: 'S.No.',
-        selector: (_row, index) => (index !== undefined ? index + 1 : 0),
+        selector: (_row:any, index?:number) => (index !== undefined ? index + 1 : 0),
         width: '80px',
       },
       {
         name: 'Slot Duration (mins)',
-        selector: (row) => row?.slotDuration ?? '-',
+        selector: (row:any) => row?.slotDuration ?? '-',
       },
       {
         name: 'Status',
-        cell: (row) => (
+        cell: (row:any) => (
           <div
             style={{ cursor: 'pointer' }}
             onClick={() => updateSlotStatus(row._id)}
@@ -309,6 +326,8 @@ const SlotManagement: React.FC = () => {
         <MainDatatable
           columns={columns}
           data={filteredData}
+          title="Slot Management"
+          url="/master/slot-management"
           isLoading={loading}
         />
       </div>

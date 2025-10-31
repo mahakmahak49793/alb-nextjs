@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Grid, TextField, CircularProgress, Box } from '@mui/material';
 import { Color } from '@/assets/colors';
 import { base_url } from '@/lib/api-routes';
+import Swal from 'sweetalert2';
 
 // ---------------------------------------------------------------------
 // Types
@@ -89,53 +90,73 @@ const AddEditCategoryContent: React.FC = () => {
   };
 
   // Handle Submit
-  const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault();
+ // Handle Submit
+const handleSubmit = async (e: React.MouseEvent<HTMLDivElement>) => {
+  e.preventDefault();
 
-    if (!handleValidation()) return;
+  if (!handleValidation()) return;
 
-    const { title } = inputFieldDetail;
+  const { title } = inputFieldDetail;
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      if (editCategory) {
-        // UPDATE
-        const res = await fetch(`${base_url}api/admin/update_blog_category`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            blogCategoryId: editCategory._id,
-            blogCategoryName: title,
-          }),
-        });
+    if (editCategory) {
+      // UPDATE
+      const res = await fetch(`${base_url}api/admin/update_blog_category`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blogCategoryId: editCategory._id,
+          blogCategoryName: title,
+        }),
+      });
 
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.message || 'Failed to update category');
-        }
-      } else {
-        // CREATE
-        const res = await fetch(`${base_url}api/admin/add-blog-category`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ blog_category: title }),
-        });
-
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.message || 'Failed to create category');
-        }
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to update category');
       }
 
-      router.push('/astro-blog/category');
-    } catch (error: any) {
-      console.error('Error submitting category:', error);
-      alert(error.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
+      await Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Category updated successfully!',
+        confirmButtonColor: '#3085d6',
+      });
+    } else {
+      // CREATE
+      const res = await fetch(`${base_url}api/admin/add-blog-category`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blog_category: title }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to create category');
+      }
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Category created successfully!',
+        confirmButtonColor: '#3085d6',
+      });
     }
-  };
+
+    router.push('/astro-blog/category');
+  } catch (error: any) {
+    console.error('Error submitting category:', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error.message || 'Something went wrong',
+      confirmButtonColor: '#d33',
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div
