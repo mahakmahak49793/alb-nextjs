@@ -54,25 +54,25 @@ const MainExpertise = () => {
       width: '100px' 
     },
     {
-      name: 'Action',
-      cell: (row: MainExpertise) => (
-        <div className="flex gap-5 items-center">
-          <div 
-            onClick={() => router.push(`main-expertise/edit-main-expertise`)} 
-            className="cursor-pointer"
-          >
-            <EditSvg />
-          </div>
-          <div 
-            onClick={() => handleDeleteMainExpertise(row)}
-            className="cursor-pointer"
-          >
-            <DeleteSvg />
-          </div>
-        </div>
-      ),
-      width: "180px"
-    },
+  name: 'Action',
+  cell: (row: MainExpertise) => (
+    <div className="flex gap-5 items-center">
+      <div 
+        onClick={() => router.push(`/main-expertise/add-main-expertise?edit=true&id=${row._id}`)} 
+        className="cursor-pointer"
+      >
+        <EditSvg />
+      </div>
+      <div 
+        onClick={() => handleDeleteMainExpertise(row)}
+        className="cursor-pointer"
+      >
+        <DeleteSvg />
+      </div>
+    </div>
+  ),
+  width: "180px"
+},
   ];
 
   const openTextModal = (title: string, text: string) => {
@@ -105,20 +105,19 @@ const MainExpertise = () => {
   };
 
   const deleteMainExpertise = async (mainExpertiseId: string, mainExpertiseName: string) => {
-   const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You want to delete this Expertise!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#d1d5db',
-        confirmButtonText: 'Delete',
-        cancelButtonText: 'Cancel',
-        reverseButtons: true
-      });
-  
-      if (result.isConfirmed) {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: `You want to delete "${mainExpertiseName}"!`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#d1d5db',
+    confirmButtonText: 'Delete',
+    cancelButtonText: 'Cancel',
+    reverseButtons: true
+  });
 
+  if (result.isConfirmed) {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete-main-expertise`, {
         method: 'POST',
@@ -133,11 +132,11 @@ const MainExpertise = () => {
         setMainExpertiseData(prev => 
           prev.filter(item => item._id !== mainExpertiseId)
         );
-         Swal.fire(
-                    'Deleted!',
-                    'Expertise has been deleted successfully.',
-                    'success'
-                  );
+        Swal.fire(
+          'Deleted!',
+          'Expertise has been deleted successfully.',
+          'success'
+        );
       } else {
         alert('Failed to delete main expertise');
       }
@@ -145,7 +144,8 @@ const MainExpertise = () => {
       console.error('Error deleting main expertise:', error);
       alert('Error deleting main expertise');
     }
-  };}
+  }
+};
 
   const handleDeleteMainExpertise = (row: MainExpertise) => {
     deleteMainExpertise(row._id, row.mainExpertise);
