@@ -61,12 +61,12 @@ const Gift = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/gift/delete_gift`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete-gift`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ gift_id: giftId }),
+          body: JSON.stringify({ giftId: giftId }),
         });
         
         const data = await response.json();
