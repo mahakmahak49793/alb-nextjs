@@ -4,6 +4,7 @@ import { Avatar } from "@mui/material";
 import { DeleteSvg, EditSvg } from "@/components/svgs/page";
 import MainDatatable from "@/components/common/MainDatatable";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 interface MainExpertise {
   _id: string;
@@ -104,13 +105,23 @@ const MainExpertise = () => {
   };
 
   const deleteMainExpertise = async (mainExpertiseId: string, mainExpertiseName: string) => {
-    if (!confirm(`Are you sure you want to delete "${mainExpertiseName}"?`)) {
-      return;
-    }
+   const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to delete this Expertise!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#d1d5db',
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+      });
+  
+      if (result.isConfirmed) {
 
     try {
-      const response = await fetch('/api/main-expertise', {
-        method: 'DELETE',
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/delete-main-expertise`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -122,7 +133,11 @@ const MainExpertise = () => {
         setMainExpertiseData(prev => 
           prev.filter(item => item._id !== mainExpertiseId)
         );
-        alert('Main expertise deleted successfully');
+         Swal.fire(
+                    'Deleted!',
+                    'Expertise has been deleted successfully.',
+                    'success'
+                  );
       } else {
         alert('Failed to delete main expertise');
       }
@@ -130,7 +145,7 @@ const MainExpertise = () => {
       console.error('Error deleting main expertise:', error);
       alert('Error deleting main expertise');
     }
-  };
+  };}
 
   const handleDeleteMainExpertise = (row: MainExpertise) => {
     deleteMainExpertise(row._id, row.mainExpertise);
