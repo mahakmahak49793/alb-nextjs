@@ -1,24 +1,25 @@
 // app/astrologer/view-astrologer/components/review.tsx
 import React, { useEffect, useState } from "react";
-import MainDatatable from "@/components/datatable/MainDatatable";
+import MainDatatable from "@/components/common/MainDatatable";
 import { TableColumn } from "react-data-table-component";
 import { base_url, get_review_by_astrologer_id } from "@/lib/api-routes";
 import ViewModal from "./ViewModal";
 
-
+// Updated interface to match actual API response
 interface ReviewData {
-  _id: string;
-  astrologer: {
-    _id: string;
-    astrologerName: string;
-  };
-  customer: {
-    _id: string;
-    customerName: string;
-  };
-  ratings: number;
-  comments: string;
-  is_verified: boolean;
+  reviewText: string | undefined;
+  _id?: string;
+  type: string;
+  customerName: string;
+  customerImage?: string;
+  astrologerName: string;
+  astrologerImage?: string;
+  rating?: number; // Note: API uses 'rating' not 'ratings'
+  ratings?: number; // Keep both for backward compatibility
+  comments?: string;
+  comment?: string; // API might use 'comment' instead of 'comments'
+  is_verified?: boolean;
+  createdAt?: string;
 }
 
 interface ReviewProps {
@@ -38,58 +39,54 @@ const Review: React.FC<ReviewProps> = ({ astrologerId }) => {
 
   const closeModal = () => setModalIsOpen(false);
 
-  const columns: TableColumn<ReviewData>[] = [
+  const columns = [
     { 
       name: 'S.No.', 
-      cell: (row, rowIndex) => <div>{(rowIndex || 0) + 1}</div>,
+      cell: (row: any, rowIndex?: number) => <div>{(rowIndex || 0) + 1}</div>,
       width: '80px' 
     },
     { 
       name: 'Astrologer', 
-      selector: (row: ReviewData) => row?.astrologer?.astrologerName || 'N/A',
+      selector: (row: ReviewData) => row?.astrologerName || 'N/A',
       sortable: true 
     },
     { 
       name: 'Customer', 
-      selector: (row: ReviewData) => row?.customer?.customerName || 'N/A',
+      selector: (row: ReviewData) => row?.customerName || 'N/A',
+      sortable: true 
+    },
+    { 
+      name: 'Type', 
+      selector: (row: ReviewData) => row?.type || 'N/A',
       sortable: true 
     },
     { 
       name: 'Rating', 
-      selector: (row: ReviewData) => row.ratings.toString(),
-      sortable: true 
+      selector: (row: ReviewData) => {
+        // Handle both 'rating' and 'ratings' fields
+        const ratingValue = row?.rating ?? row?.ratings;
+        return ratingValue !== undefined && ratingValue !== null 
+          ? ratingValue.toString() 
+          : 'N/A';
+      },
+      sortable: true,
+      width: '100px'
     },
-    { 
-      name: 'Comment', 
-      cell: (row: ReviewData) => 
-        row?.comments ? (
-          <div 
-            style={{ cursor: "pointer", color: '#1976d2' }} 
-            onClick={() => openModal(row.comments)}
-          >
-            {row.comments.length > 50 ? `${row.comments.substring(0, 50)}...` : row.comments}
-          </div>
-        ) : 'N/A' 
-    },
-    { 
-      name: "Status", 
-      cell: (row: ReviewData) => (
-        <div style={{ 
-          color: row.is_verified ? 'green' : 'red',
-          fontWeight: 'bold'
-        }}>
-          {row.is_verified ? "Verified" : "Unverified"}
-        </div>
-      ) 
-    },
+   
   ];
 
   useEffect(() => {
     const fetchReviews = async () => {
-      if (!astrologerId) return;
+      if (!astrologerId) {
+        console.warn('No astrologerId provided');
+        setIsLoading(false);
+        return;
+      }
       
       try {
         setIsLoading(true);
+        console.log('Fetching reviews for astrologer:', astrologerId);
+        
         const response = await fetch(`${base_url}${get_review_by_astrologer_id}`, {
           method: 'POST',
           headers: {
@@ -102,10 +99,25 @@ const Review: React.FC<ReviewProps> = ({ astrologerId }) => {
         
         if (response.ok) {
           const data = await response.json();
-          setReviews(data.reviews || data.data || data);
+          console.log('API Response:', data);
+          
+          // Handle different possible response structures
+          const reviewsData = data.reviews || data.data || [];
+          
+          if (Array.isArray(reviewsData)) {
+            setReviews(reviewsData);
+            console.log('Reviews loaded:', reviewsData.length);
+          } else {
+            console.error('Invalid reviews data structure:', reviewsData);
+            setReviews([]);
+          }
+        } else {
+          console.error('Failed to fetch reviews:', response.status);
+          setReviews([]);
         }
       } catch (error) {
         console.error('Error fetching reviews:', error);
+        setReviews([]);
       } finally {
         setIsLoading(false);
       }
@@ -119,6 +131,9 @@ const Review: React.FC<ReviewProps> = ({ astrologerId }) => {
       <MainDatatable 
         data={reviews} 
         columns={columns} 
+        url="/astrologer/view-astrologer"
+        title="Review"
+        addButtonActive={false}
         isLoading={isLoading}
       />
 

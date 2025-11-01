@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import moment from "moment";
 import { IndianRupee, secondsToHMS } from "@/utils/common-function";
-import MainDatatable from "@/components/datatable/MainDatatable";
+import MainDatatable from "@/components/common/MainDatatable";
 import { TableColumn } from "react-data-table-component";
 import { base_url, get_call_history_by_astrologer_id } from "@/lib/api-routes";
 
@@ -33,10 +33,10 @@ const CallHistory: React.FC<CallHistoryProps> = ({ astrologerId }) => {
   const [callHistory, setCallHistory] = useState<CallHistoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const columns: TableColumn<CallHistoryData>[] = [
+  const columns = [
     { 
       name: 'S.No.', 
-      cell: (row, rowIndex) => <div>{(rowIndex || 0) + 1}</div>,
+      cell: (row:any, rowIndex?:number) => <div>{(rowIndex || 0) + 1}</div>,
       width: '80px' 
     },
     { 
@@ -115,7 +115,10 @@ const CallHistory: React.FC<CallHistoryProps> = ({ astrologerId }) => {
     <MainDatatable 
       data={callHistory} 
       columns={columns} 
+      title="Call"
       isLoading={isLoading}
+      addButtonActive={false}
+      url="/astrologer/view-astrologer"
     />
   );
 };

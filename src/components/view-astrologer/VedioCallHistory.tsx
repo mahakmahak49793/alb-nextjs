@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import moment from "moment";
 import { IndianRupee, secondsToHMS } from "@/utils/common-function";
-import MainDatatable from "@/components/datatable/MainDatatable";
+import MainDatatable from "@/components/common/MainDatatable";
 import { TableColumn } from "react-data-table-component";
 import { base_url, get_video_call_history_by_astrologer_id } from "@/lib/api-routes";
 
@@ -33,10 +33,10 @@ const VideoCallHistory: React.FC<VideoCallHistoryProps> = ({ astrologerId }) => 
   const [videoCallHistory, setVideoCallHistory] = useState<VideoCallHistoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const columns: TableColumn<VideoCallHistoryData>[] = [
+  const columns = [
     { 
       name: 'S.No.', 
-      cell: (row, rowIndex) => <div>{(rowIndex || 0) + 1}</div>,
+      cell: (row:any, rowIndex?:number) => <div>{(rowIndex || 0) + 1}</div>,
       width: '80px' 
     },
     { 
@@ -115,6 +115,9 @@ const VideoCallHistory: React.FC<VideoCallHistoryProps> = ({ astrologerId }) => 
     <MainDatatable 
       data={videoCallHistory} 
       columns={columns} 
+            url="/astrologer/view-astrologer"
+title="Video Call"
+addButtonActive={false}
       isLoading={isLoading}
     />
   );

@@ -5,6 +5,7 @@ import { DeleteSvg, EditSvg } from "@/components/svgs/page";
 import MainDatatable from "@/components/common/MainDatatable";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import Swal from "sweetalert2";
 
 interface MainExpertise {
   _id: string;
@@ -147,9 +148,10 @@ const MainExpertise = () => {
   }
 };
 
-  const handleDeleteMainExpertise = (row: MainExpertise) => {
-    deleteMainExpertise(row._id, row.mainExpertise);
-  };
+// Update the handleDeleteMainExpertise to keep the same signature:
+const handleDeleteMainExpertise = (row: MainExpertise) => {
+  deleteMainExpertise(row._id, row.mainExpertise);
+};
 
   useEffect(() => {
     getMainExpertise();

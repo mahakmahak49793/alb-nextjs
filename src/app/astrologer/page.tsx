@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import moment from "moment";
 import { CSVLink } from "react-csv";
+import Swal from "sweetalert2";
 import DataTable, { TableColumn } from "react-data-table-component";
 import {
   Button,
@@ -22,7 +23,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { DeepSearchSpace } from "@/utils/common-function";
 
 import { Color } from "@/assets/colors";
-import MainDatatable from "@/components/datatable/MainDatatable";
+import MainDatatable from "@/components/common/MainDatatable";
 import { api_url, base_url, get_astrologer } from "@/lib/api-routes";
 import DatatableHeading from "@/components/datatable/DatatableHeading";
 import {
@@ -208,74 +209,153 @@ export default function AstrologerPage() {
     }
   };
 
-  // -----------------------------------------------------------------
-  // Verify Toggle
-  // -----------------------------------------------------------------
-  const toggleVerify = async (astro: Astrologer) => {
-    try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/astrologer/verify-astrologer-profile`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            astrologerId: astro._id,
-            isVerified: !astro.isVerified,
-          }),
-        }
-      );
-      await fetchAstrologers();
-    } catch (e) {
-      console.error(e);
-    }
-  };
+ 
+const toggleVerify = async (astro: Astrologer) => {
+  const result = await Swal.fire({
+    title: 'Change Verification Status?',
+    text: `Are you sure you want to ${astro.isVerified ? 'unverify' : 'verify'} ${astro.astrologerName}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, change it!',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    // Show loading
+    Swal.fire({
+      title: 'Updating...',
+      text: 'Please wait',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/astrologer/verify-astrologer-profile`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          astrologerId: astro._id,
+          isVerified: !astro.isVerified,
+        }),
+      }
+    );
+    
+    await fetchAstrologers();
+    
+    Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: `Astrologer ${!astro.isVerified ? 'verified' : 'unverified'} successfully`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+  } catch (e) {
+    console.error(e);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to update verification status'
+    });
+  }
+};
+
+const openEdit = (astro: Astrologer) => setEditState({ open: true, astro });
+  const closeEdit = () => setEditState({ open: false, astro: null });
+
+// -----------------------------------------------------------------
+// Change Status with Swal
+// -----------------------------------------------------------------
+const changeStatus = async (
+  field: "chat_status" | "call_status" | "video_call_status",
+  id: string,
+  current: string | undefined
+) => {
+  const newVal = current === "online" ? "offline" : "online";
+  const fieldName = field.replace('_status', '').replace('_', ' ');
+  
+  const result = await Swal.fire({
+    title: `Change ${fieldName} status?`,
+    text: `Set ${fieldName} to ${newVal}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: `Yes, set to ${newVal}`,
+    cancelButtonText: 'Cancel'
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    Swal.fire({
+      title: 'Updating Status...',
+      text: 'Please wait',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    await fetch("/api/astrologers/status", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ astrologerId: id, field, value: newVal }),
+    });
+    
+    await fetchAstrologers();
+    closeEdit();
+    
+    Swal.fire({
+      icon: 'success',
+      title: 'Status Updated!',
+      text: `${fieldName} set to ${newVal}`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+  } catch (e) {
+    console.error(e);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to update status'
+    });
+  }
+};
 
   // -----------------------------------------------------------------
   // Edit Status Modal
   // -----------------------------------------------------------------
-  const openEdit = (astro: Astrologer) => setEditState({ open: true, astro });
-  const closeEdit = () => setEditState({ open: false, astro: null });
-
-  const changeStatus = async (
-    field: "chat_status" | "call_status" | "video_call_status",
-    id: string,
-    current: string | undefined
-  ) => {
-    const newVal = current === "online" ? "offline" : "online";
-    try {
-      await fetch("/api/astrologers/status", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ astrologerId: id, field, value: newVal }),
-      });
-      await fetchAstrologers();
-      closeEdit();
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  
+  
 
   // -----------------------------------------------------------------
   // Table Columns
   // -----------------------------------------------------------------
-  const columns: AstrologerColumn[] = useMemo(
+  const columns=useMemo(
     () => [
       {
         name: "S.No.",
-        selector: (_row, index) => (index !== undefined ? index + 1 : 0),
+        selector: (_row:any, index?:number) => (index !== undefined ? index + 1 : 0),
         width: "80px",
       },
-      { name: "Name", selector: (row) => row.astrologerName },
-      { name: "Email", selector: (row) => row.email, width: "250px" },
-      { name: "Mobile", selector: (row) => row.phoneNumber },
+      { name: "Name", selector: (row:any) => row.astrologerName },
+      { name: "Email", selector: (row:any) => row.email, width: "250px" },
+      { name: "Mobile", selector: (row:any) => row.phoneNumber },
       {
         name: "Created Date",
-        selector: (row) => moment(row.createdAt).format("Do MMM YYYY"),
+        selector: (row:any) => moment(row.createdAt).format("Do MMM YYYY"),
         width: "140px",
       },
       {
         name: "Status",
-        cell: (row) => (
+        cell: (row:any) => (
           <div style={{ cursor: "pointer" }} onClick={() => toggleVerify(row)}>
             {row.isVerified ? <SwitchOnSvg /> : <SwitchOffSvg />}
           </div>
@@ -328,55 +408,16 @@ export default function AstrologerPage() {
   // -----------------------------------------------------------------
   return (
     <>
-      <div
-        style={{
-          padding: "20px",
-          backgroundColor: "#fff",
-          marginBottom: "20px",
-          boxShadow: "0px 0px 5px lightgrey",
-          borderRadius: "10px",
-        }}
-      >
-        <DatatableHeading
-          title="List Of Astrologers"
-          url="/astrologer/add-astrologer"
-          data={csvData}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "20px",
-            alignItems: "center",
-            marginBottom: "20px",
-            backgroundColor: "#fff",
-          }}
-        >
-          <input
-            type="search"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Search your data..."
-            style={{
-              padding: "8px 12px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
-              boxShadow: "0px 0px 5px rgba(0,0,0,0.1)",
-              width: "100%",
-              maxWidth: "250px",
-              fontSize: "15px",
-              outline: "none",
-            }}
-          />
-        </div>
+   
 
         <MainDatatable
           columns={columns}
           data={filteredData}
           isLoading={isLoading}
+          title="List of Astrologers"
+          url="/astrologer/add-astrologer"
         />
-      </div>
+    
 
       {/* Wallet Modal */}
       <Dialog

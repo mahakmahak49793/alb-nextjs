@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import moment from "moment";
 import { IndianRupee, secondsToHMS } from "@/utils/common-function";
-import MainDatatable from "@/components/datatable/MainDatatable";
+import MainDatatable from "@/components/common/MainDatatable";
 import { TableColumn } from "react-data-table-component";
 import { base_url, get_live_history_by_astrologer_id } from "@/lib/api-routes";
 
@@ -33,10 +33,10 @@ const LiveHistory: React.FC<LiveHistoryProps> = ({ astrologerId }) => {
   const [liveHistory, setLiveHistory] = useState<LiveHistoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const columns: TableColumn<LiveHistoryData>[] = [
+  const columns= [
     { 
       name: 'S.No.', 
-      cell: (row, rowIndex) => <div>{(rowIndex || 0) + 1}</div>,
+      cell: (row:any, rowIndex?:number) => <div>{(rowIndex || 0) + 1}</div>,
       width: '80px' 
     },
     { 
@@ -115,6 +115,9 @@ const LiveHistory: React.FC<LiveHistoryProps> = ({ astrologerId }) => {
     <MainDatatable 
       data={liveHistory} 
       columns={columns} 
+            url="/astrologer/view-astrologer"
+title="Live"
+addButtonActive={false}
       isLoading={isLoading}
     />
   );

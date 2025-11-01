@@ -4,6 +4,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import AnnouncementPageEditor from "@/components/announcementPageEditor";
 
+interface InputFieldError {
+    description?: string;
+}
+
+interface NotificationState {
+    show: boolean;
+    type: 'success' | 'error' | '';
+    message: string;
+}
+
 function AddAnnouncementReview() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -15,9 +25,22 @@ function AddAnnouncementReview() {
 
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(editMode && !announcementDescriptionFromUrl);
-    const [initialContent, setInitialContent] = useState<string>(
-        announcementDescriptionFromUrl ? decodeURIComponent(announcementDescriptionFromUrl) : ''
-    );
+    const [notification, setNotification] = useState<NotificationState>({
+        show: false,
+        type: '',
+        message: ''
+    });
+
+    const [initialContent, setInitialContent] = useState(
+  announcementDescriptionFromUrl || ''
+);
+    // Show notification
+    const showNotification = (type: 'success' | 'error', message: string) => {
+        setNotification({ show: true, type, message });
+        setTimeout(() => {
+            setNotification({ show: false, type: '', message: '' });
+        }, 3000);
+    };
 
     // Fetch announcement data if in edit mode and description is not in URL
     useEffect(() => {
