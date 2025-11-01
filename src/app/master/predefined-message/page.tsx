@@ -422,6 +422,7 @@ const openMessageModal = (title: string, text: string) => {
           title="Predefined Messages"
           url="/master/predefined-messages"
           isLoading={loading}
+          addButtonActive={false}
         />
       
     </>
