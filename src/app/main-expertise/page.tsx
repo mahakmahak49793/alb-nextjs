@@ -5,7 +5,6 @@ import { DeleteSvg, EditSvg } from "@/components/svgs/page";
 import MainDatatable from "@/components/common/MainDatatable";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
-import Swal from "sweetalert2";
 
 interface MainExpertise {
   _id: string;
