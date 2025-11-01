@@ -149,74 +149,81 @@ const AddBanner = () => {
   };
 
   // Handle Submit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
 
-    if (!handleValidation()) {
-      return;
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!handleValidation()) {
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const { redirectPage, bannerTitle, redirectUrl, priorityPage } = bannerDetail;
+    const formData = new FormData();
+
+    if (stateData) {
+      formData.append("bannersId", stateData._id);
     }
 
-    setIsLoading(true);
+    formData.append("redirectTo", redirectPage);
+    formData.append("title", bannerTitle);
+    formData.append("bannerFor", "app");
+    formData.append("redirectionUrl", redirectUrl);
+    formData.append("priorityPage", priorityPage);
+    
+    if (image.bytes) {
+      formData.append("bannerImage", image.bytes);
+    }
 
-    try {
-      const { redirectPage, bannerTitle, redirectUrl, priorityPage } = bannerDetail;
-      const formData = new FormData();
+    const endpoint = stateData 
+      ? `${process.env.NEXT_PUBLIC_API_URL}/api/admin/update-banners`
+      : `${process.env.NEXT_PUBLIC_API_URL}/api/admin/add-banners`;
 
-      if (stateData) {
-        // Edit mode
-        formData.append("bannersId", stateData._id);
+    // Show loading alert
+    Swal.fire({
+      title: `${stateData ? 'Updating' : 'Creating'} Banner...`,
+      text: 'Please wait',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
       }
+    });
 
-      formData.append("redirectTo", redirectPage);
-      formData.append("title", bannerTitle);
-      formData.append("bannerFor", "app");
-      formData.append("redirectionUrl", redirectUrl);
-      formData.append("priorityPage", priorityPage);
-      
-      if (image.bytes) {
-        formData.append("bannerImage", image.bytes);
-      }
+    const response = await fetch(endpoint, {
+      method: "POST",
+      body: formData,
+    });
 
-      const endpoint = stateData 
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/admin/update-banners`
-        : `${process.env.NEXT_PUBLIC_API_URL}/api/admin/add-banners`;
+    const data = await response.json();
 
-      const response = await fetch(endpoint, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        await Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: stateData ? 'Banner updated successfully!' : 'Banner created successfully!',
-          confirmButtonColor: '#3085d6',
-        });
-        
-        setTimeout(() => router.push("/banner"), 1000);
-      } else {
-        await Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: data.message || 'Failed to save banner',
-          confirmButtonColor: '#d33',
-        });
-      }
-    } catch (error) {
-      console.error("Error submitting banner:", error);
+    if (response.ok && data.success) {
       await Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'Error saving banner. Please try again.',
-        confirmButtonColor: '#d33',
+        icon: 'success',
+        title: 'Success!',
+        text: stateData ? 'Banner updated successfully!' : 'Banner created successfully!',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'OK'
       });
-    } finally {
-      setIsLoading(false);
+      
+      router.push("/banner");
+    } else {
+      throw new Error(data.message || 'Failed to save banner');
     }
-  };
+  } catch (error) {
+    console.error("Error submitting banner:", error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error instanceof Error ? error.message : 'Error saving banner. Please try again.',
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Try Again'
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Show loading until component is mounted on client
   if (!isMounted) {

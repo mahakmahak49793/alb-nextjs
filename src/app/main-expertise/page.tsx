@@ -4,6 +4,7 @@ import { Avatar } from "@mui/material";
 import { DeleteSvg, EditSvg } from "@/components/svgs/page";
 import MainDatatable from "@/components/common/MainDatatable";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 interface MainExpertise {
   _id: string;
@@ -103,38 +104,71 @@ const MainExpertise = () => {
     }
   };
 
-  const deleteMainExpertise = async (mainExpertiseId: string, mainExpertiseName: string) => {
-    if (!confirm(`Are you sure you want to delete "${mainExpertiseName}"?`)) {
-      return;
-    }
 
-    try {
-      const response = await fetch('/api/main-expertise', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ mainExpertiseId }),
-      });
 
-      if (response.ok) {
-        // Remove the item from local state
-        setMainExpertiseData(prev => 
-          prev.filter(item => item._id !== mainExpertiseId)
-        );
-        alert('Main expertise deleted successfully');
-      } else {
-        alert('Failed to delete main expertise');
+const deleteMainExpertise = async (mainExpertiseId: string, mainExpertiseName: string) => {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: `You want to delete "${mainExpertiseName}"?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    // Show loading
+    Swal.fire({
+      title: 'Deleting...',
+      text: 'Please wait',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
       }
-    } catch (error) {
-      console.error('Error deleting main expertise:', error);
-      alert('Error deleting main expertise');
-    }
-  };
+    });
 
-  const handleDeleteMainExpertise = (row: MainExpertise) => {
-    deleteMainExpertise(row._id, row.mainExpertise);
-  };
+    const response = await fetch('/api/main-expertise', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ mainExpertiseId }),
+    });
+
+    if (response.ok) {
+      // Remove the item from local state
+      setMainExpertiseData(prev => 
+        prev.filter(item => item._id !== mainExpertiseId)
+      );
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Main expertise deleted successfully',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } else {
+      throw new Error('Failed to delete main expertise');
+    }
+  } catch (error) {
+    console.error('Error deleting main expertise:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to delete main expertise'
+    });
+  }
+};
+
+// Update the handleDeleteMainExpertise to keep the same signature:
+const handleDeleteMainExpertise = (row: MainExpertise) => {
+  deleteMainExpertise(row._id, row.mainExpertise);
+};
 
   useEffect(() => {
     getMainExpertise();

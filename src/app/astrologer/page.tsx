@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import moment from "moment";
 import { CSVLink } from "react-csv";
+import Swal from "sweetalert2";
 import DataTable, { TableColumn } from "react-data-table-component";
 import {
   Button,
@@ -208,52 +209,131 @@ export default function AstrologerPage() {
     }
   };
 
-  // -----------------------------------------------------------------
-  // Verify Toggle
-  // -----------------------------------------------------------------
-  const toggleVerify = async (astro: Astrologer) => {
-    try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/astrologer/verify-astrologer-profile`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            astrologerId: astro._id,
-            isVerified: !astro.isVerified,
-          }),
-        }
-      );
-      await fetchAstrologers();
-    } catch (e) {
-      console.error(e);
-    }
-  };
+ 
+const toggleVerify = async (astro: Astrologer) => {
+  const result = await Swal.fire({
+    title: 'Change Verification Status?',
+    text: `Are you sure you want to ${astro.isVerified ? 'unverify' : 'verify'} ${astro.astrologerName}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, change it!',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    // Show loading
+    Swal.fire({
+      title: 'Updating...',
+      text: 'Please wait',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/astrologer/verify-astrologer-profile`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          astrologerId: astro._id,
+          isVerified: !astro.isVerified,
+        }),
+      }
+    );
+    
+    await fetchAstrologers();
+    
+    Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: `Astrologer ${!astro.isVerified ? 'verified' : 'unverified'} successfully`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+  } catch (e) {
+    console.error(e);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to update verification status'
+    });
+  }
+};
+
+const openEdit = (astro: Astrologer) => setEditState({ open: true, astro });
+  const closeEdit = () => setEditState({ open: false, astro: null });
+
+// -----------------------------------------------------------------
+// Change Status with Swal
+// -----------------------------------------------------------------
+const changeStatus = async (
+  field: "chat_status" | "call_status" | "video_call_status",
+  id: string,
+  current: string | undefined
+) => {
+  const newVal = current === "online" ? "offline" : "online";
+  const fieldName = field.replace('_status', '').replace('_', ' ');
+  
+  const result = await Swal.fire({
+    title: `Change ${fieldName} status?`,
+    text: `Set ${fieldName} to ${newVal}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: `Yes, set to ${newVal}`,
+    cancelButtonText: 'Cancel'
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    Swal.fire({
+      title: 'Updating Status...',
+      text: 'Please wait',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    await fetch("/api/astrologers/status", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ astrologerId: id, field, value: newVal }),
+    });
+    
+    await fetchAstrologers();
+    closeEdit();
+    
+    Swal.fire({
+      icon: 'success',
+      title: 'Status Updated!',
+      text: `${fieldName} set to ${newVal}`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+  } catch (e) {
+    console.error(e);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to update status'
+    });
+  }
+};
 
   // -----------------------------------------------------------------
   // Edit Status Modal
   // -----------------------------------------------------------------
-  const openEdit = (astro: Astrologer) => setEditState({ open: true, astro });
-  const closeEdit = () => setEditState({ open: false, astro: null });
-
-  const changeStatus = async (
-    field: "chat_status" | "call_status" | "video_call_status",
-    id: string,
-    current: string | undefined
-  ) => {
-    const newVal = current === "online" ? "offline" : "online";
-    try {
-      await fetch("/api/astrologers/status", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ astrologerId: id, field, value: newVal }),
-      });
-      await fetchAstrologers();
-      closeEdit();
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  
+  
 
   // -----------------------------------------------------------------
   // Table Columns

@@ -1,6 +1,8 @@
 'use client';
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Swal from "sweetalert2";
+import AnnouncementPageEditor from "@/components/announcementPageEditor";
 
 interface InputFieldError {
     description?: string;
@@ -29,6 +31,9 @@ function AddAnnouncementContent() {
         message: ''
     });
 
+    const [initialContent, setInitialContent] = useState(
+  announcementDescriptionFromUrl || ''
+);
     // Show notification
     const showNotification = (type: 'success' | 'error', message: string) => {
         setNotification({ show: true, type, message });
