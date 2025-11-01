@@ -195,7 +195,7 @@ export default function AstrologerPage() {
     };
 
     try {
-      const res = await fetch("/api/astrologers/wallet", {
+      const res = await fetch(`${base_url}api/admin/add_deduct_astrologer_wallet`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
