@@ -1,18 +1,10 @@
 'use client';
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Swal from "sweetalert2";
+import AnnouncementPageEditor from "@/components/announcementPageEditor";
 
-interface InputFieldError {
-    description?: string;
-}
-
-interface NotificationState {
-    show: boolean;
-    type: 'success' | 'error' | '';
-    message: string;
-}
-
-function AddAnnouncementContent() {
+function AddAnnouncementReview() {
     const router = useRouter();
     const searchParams = useSearchParams();
     
@@ -23,19 +15,9 @@ function AddAnnouncementContent() {
 
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(editMode && !announcementDescriptionFromUrl);
-    const [notification, setNotification] = useState<NotificationState>({
-        show: false,
-        type: '',
-        message: ''
-    });
-
-    // Show notification
-    const showNotification = (type: 'success' | 'error', message: string) => {
-        setNotification({ show: true, type, message });
-        setTimeout(() => {
-            setNotification({ show: false, type: '', message: '' });
-        }, 3000);
-    };
+    const [initialContent, setInitialContent] = useState<string>(
+        announcementDescriptionFromUrl ? decodeURIComponent(announcementDescriptionFromUrl) : ''
+    );
 
     // Fetch announcement data if in edit mode and description is not in URL
     useEffect(() => {
@@ -143,18 +125,20 @@ function AddAnnouncementContent() {
     );
 }
 
-// Main component with Suspense
+// ✅ Wrap with Suspense for loading fallback
 const AddAnnouncement = () => {
     return (
-        <Suspense fallback={
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="flex items-center gap-2 text-gray-600">
-                    <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                    Loading...
+        <Suspense
+            fallback={
+                <div className="flex justify-center items-center min-h-screen">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="text-lg text-gray-600">Loading...</div>
+                    </div>
                 </div>
-            </div>
-        }>
-            <AddAnnouncementContent />
+            }
+        >
+            <AddAnnouncementReview />
         </Suspense>
     );
 };
