@@ -148,17 +148,17 @@ const Banner = () => {
     {
       name: "S.No.",
       selector: (row: Banner, index?: number) => (index ?? 0) + 1,
-      width: "80px",
+      
     },
     {
       name: "Title",
       selector: (row: Banner) => row?.title || "N/A",
-      width: "180px",
+      
     },
     {
       name: "Redirect Page",
       selector: (row: Banner) => row?.redirectTo || "N/A",
-      width: "170px",
+      
     },
     {
       name: "Redirect Url",
@@ -167,7 +167,7 @@ const Banner = () => {
         const url = row.redirectionUrl;
         return url.length > 50 ? `${url.slice(0, 50)}...` : url;
       },
-      width: "280px",
+      
     },
     {
       name: "Banner",
